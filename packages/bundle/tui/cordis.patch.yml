@@ -1,0 +1,31 @@
+# The dsh-tui bundle patch: the interactive terminal surface over dsh-base.
+# It mounts no Host, HTTP server, Web runtime, or browser plugin. An ordinary
+# provider plugin injects `cmdlineArgs`, parses this app's flags
+# (`dsh --profile tui --resume <id> ...`) and this app's --help, then the
+# runner creates or resumes one Agent through the core registry, traces its
+# durable events to the terminal, submits user input as follow-up turns, and
+# restores the terminal before requesting process exit.
+
+- id: system-prompt
+  config:
+    persona: >-
+      You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}.
+
+# The shared module-reload HMR row stays off; the terminal front door owns its
+# full screen and cannot survive a mid-session reload.
+- id: hmr
+  disabled: true
+
+- insert:
+    - id: tui-startup
+      name: '@deepseek-ai/dsh-tui/startup'
+
+    # Reads its startup values from the ordinary tuiStartup provider.
+    - id: tui-runner
+      name: '@deepseek-ai/dsh-tui'
+      inject: [tuiStartup]
+      config:
+        resume: !!js ctx.tuiStartup.resume
+        workspace: !!js ctx.tuiStartup.workspace ?? process.cwd()
+        model: !!js ctx.tuiStartup.model
+        permission: !!js ctx.tuiStartup.permission
