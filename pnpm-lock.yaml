@@ -5086,6 +5086,21 @@ importers:
         specifier: workspace:^
         version: link:../user-questions
 
+  packages/interaction/tui-renderer:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+
   packages/interaction/user-approval:
     dependencies:
       '@deepseek-ai/schemastery':
