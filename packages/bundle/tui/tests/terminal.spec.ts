@@ -1,47 +1,8 @@
-/** Terminal lifecycle: raw-mode ownership, synchronous restore, Ctrl+C machine, crash restore. */
+/** Terminal lifecycle: Ctrl+C machine and crash restore. */
 
 import { EventEmitter } from 'node:events'
 import { afterEach, describe, expect, it } from 'vitest'
-import { CtrlCController, installCrashRestore, TerminalSession } from '../src/terminal.ts'
-import type { TerminalDevice } from '../src/terminal.ts'
-
-/** Fake device recording every setRawMode call. */
-function fakeDevice(isTTY = true): TerminalDevice & { calls: boolean[] } {
-  const calls: boolean[] = []
-  return { isTTY, setRawMode: (raw) => { calls.push(raw) }, calls }
-}
-
-describe('TerminalSession', () => {
-  it('enters and restores raw mode', () => {
-    const device = fakeDevice()
-    const session = new TerminalSession(device)
-    expect(session.active).toBe(false)
-    session.enter()
-    expect(session.active).toBe(true)
-    session.restore()
-    expect(session.active).toBe(false)
-    expect(device.calls).toEqual([true, false])
-  })
-
-  it('never touches a non-TTY device', () => {
-    const device = fakeDevice(false)
-    const session = new TerminalSession(device)
-    session.enter()
-    expect(session.active).toBe(false)
-    session.restore()
-    expect(device.calls).toEqual([])
-  })
-
-  it('is idempotent on repeated enter and restore', () => {
-    const device = fakeDevice()
-    const session = new TerminalSession(device)
-    session.enter()
-    session.enter()
-    session.restore()
-    session.restore()
-    expect(device.calls).toEqual([true, false])
-  })
-})
+import { CtrlCController, installCrashRestore } from '../src/terminal.ts'
 
 describe('CtrlCController', () => {
   const now = (): number => 1_000_000

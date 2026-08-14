@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Folded terminal transcript model and presentation seam for the `dsh --profile tui` surface. The transcript projects one session's durable `session/event` stream into display items; the pi-tui-backed presentation layer and interaction adapters land in later milestones on top of this model.
+Folded terminal transcript model and pi-tui-backed presentation layer for the `dsh --profile tui` surface. The transcript projects one session's durable `session/event` stream into display items; the presenter renders them on the alternate screen with a scroll viewport, status row, and input editor. Interaction adapters land in later milestones on top of the presenter seam.
 
 ## Transcript model
 
@@ -22,6 +22,9 @@ Transcript material is **append-origin surface events only**. The session surfac
 | Export | Role |
 |---|---|
 | `./transcript` | The `Transcript` fold model and the `textOf` block-text extractor. |
+| `./presenter` | `TuiPresenter` — the pi-tui alternate-screen surface (scroll viewport, status row, editor) plus the `processTerminal()` production backend. |
+| `./sanitize` | `sanitizeText`/`needsSanitize` display sanitizer for untrusted model and tool text. |
+| `./format` | `formatItem`/`formatStatus` display formatting for folded items and the status row. |
 | `./invariant` | Package-owned invariant companion (no runtime invariant; the fold is a projection, and the session layer owns event validation). |
 
 ## Model Experience
@@ -34,6 +37,7 @@ None; the model folds no request prefix.
 
 ## Known Limitations and Deferred Work
 
-- **Fold model only** — there is no viewport, scrollback, or presentation layer yet. The renderer milestone builds the pi-tui-backed surface on `Transcript` and moves the bundle's line-oriented tracer out.
+- **Plain-text presenter** — the transcript renders as sanitized plain lines with no markdown rendering, diff cards, colors, or theming; the theme and card milestones build on the `TuiPresenter` seam.
+- **No interaction adapters** — approval prompts, question pickers, and slash commands are later milestones; the presenter exposes the editor and raw-key listener they mount on.
 - **Visible text only** — chunk accumulation keeps `text-delta` content; reasoning deltas and tool-call content blocks are not accumulated separately (the assembled `assistant/message` is retained for renderers that need the full block structure).
 - **No ordering validation** — the fold trusts the session layer's sequence order; out-of-order events are folded as received.

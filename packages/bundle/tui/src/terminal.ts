@@ -1,46 +1,10 @@
 /**
- * Terminal lifecycle for the TUI front door: raw-mode ownership, synchronous
- * restoration on exit and crash paths, and the Ctrl+C key state machine. All
- * terminal effects flow through an injectable device so unit tests run
- * without a TTY.
+ * Terminal lifecycle for the TUI front door: the Ctrl+C key state machine and
+ * the crash-restore handler. Raw-mode and alternate-screen ownership moved to
+ * the pi-tui presenter with the renderer milestone; these helpers drive the
+ * presenter's stop path and classify user Ctrl+C presses.
  * @module @deepseek-ai/dsh-tui/terminal
  */
-
-/** Injectable terminal device (production: `process.stdin`). */
-export interface TerminalDevice {
-  readonly isTTY: boolean
-  setRawMode(raw: boolean): void
-}
-
-/**
- * Owns raw-mode state and its synchronous restore. Raw mode turns Ctrl+C into
- * input byte 0x03 (cfmakeraw clears ISIG), so the launcher's SIGINT chain
- * never sees a user's Ctrl+C; this session is the TUI's own terminal handle.
- */
-export class TerminalSession {
-  private raw = false
-
-  constructor(private readonly device: TerminalDevice) {}
-
-  /** Enter raw mode; no-op when the device is not a TTY or already raw. */
-  enter(): void {
-    if (!this.device.isTTY || this.raw) return
-    this.device.setRawMode(true)
-    this.raw = true
-  }
-
-  /** Leave raw mode. Synchronous so crash and dispose paths can run it last. */
-  restore(): void {
-    if (!this.raw) return
-    this.device.setRawMode(false)
-    this.raw = false
-  }
-
-  /** Whether raw mode is currently active. */
-  get active(): boolean {
-    return this.raw
-  }
-}
 
 /** Ctrl+C press outcomes from {@link CtrlCController.press}. */
 export type CtrlCAction = 'hard-exit' | 'cancel' | 'clear-input' | 'quit'
@@ -96,10 +60,11 @@ export interface CrashEmitter {
 }
 
 /**
- * Install a crash handler that synchronously restores the terminal before
- * reporting the failure. Without it an uncaught exception leaves termios in
- * raw mode and the user's shell unusable.
- * @param restore - synchronous terminal restoration.
+ * Install a crash handler that synchronously stops the presenter (restoring
+ * raw mode and the alternate screen) before reporting the failure. Without it
+ * an uncaught exception leaves the user's shell unusable.
+ * @param restore - synchronous presenter stop; must be safe to call when no
+ *   presenter is active.
  * @param crash - process-level failure reporting (forced exit).
  * @param emitter - host emitter; defaults to `process`.
  * @returns the disposer that removes the handler.

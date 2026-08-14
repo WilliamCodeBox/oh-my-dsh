@@ -5,7 +5,7 @@
  * visible hex escapes so a prompt-injected sequence cannot move the cursor,
  * rewrite the title, or reach the clipboard. Plain text passes through
  * unchanged, so the hot path pays nothing when no control is present.
- * @module @deepseek-ai/dsh-tui/sanitize
+ * @module @deepseek-ai/dsh-tui-renderer
  */
 
 /**

@@ -1,21 +1,14 @@
 /**
  * @deepseek-ai/dsh-tui — the interactive terminal surface bundle. The patch
- * rides over dsh-base without Host, HTTP, or browser rows; this runner creates
- * or resumes one Agent through the core registry, traces its durable events to
- * the terminal, submits user input as follow-up turns (steering while a turn
- * runs), owns raw-mode input through the Ctrl+C state machine, and restores
- * the terminal before requesting process exit.
- *
- * The current surface is line-oriented event tracing (the M0 skeleton); the
- * full-screen renderer, scroll viewport, and the approval / user-questions /
- * commands adapters land in later milestones and stay out of this package's
- * runtime rows until then.
- *
- * @module @deepseek-ai/dsh-tui
+ * rides over `dsh-base`: the runner creates or resumes one Agent through
+ * `ctx.agents`, folds its durable `session/event` stream into the renderer's
+ * transcript, and drives the surface. On a TTY the pi-tui presenter owns the
+ * full-screen terminal (raw mode, alternate screen, input editor); a non-TTY
+ * stdin is driven as a pipe with the line-oriented tracer.
  */
 
 import { randomUUID } from 'node:crypto'
-import { TextDecoder } from 'node:util'
+
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
@@ -24,14 +17,15 @@ import type {} from '@deepseek-ai/dsh-agent-default-model'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
+import { TuiPresenter, Transcript, formatStatus, processTerminal, sanitizeText } from '@deepseek-ai/dsh-tui-renderer'
 import type {} from '@deepseek-ai/dsh-permission-presets'
 // Empty type imports carry the Loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-cmdline'
-import { sanitizeText } from './sanitize.ts'
-import { CtrlCController, installCrashRestore, TerminalSession } from './terminal.ts'
-import type { CrashEmitter, TerminalDevice } from './terminal.ts'
+
+import { CtrlCController, installCrashRestore } from './terminal.ts'
+import type { CrashEmitter } from './terminal.ts'
 
 /** Stable Cordis plugin name. */
 export const name = 'tui-runner'
@@ -41,11 +35,11 @@ export const inject = ['agentDefaultModel', 'agents', 'sessions']
 
 /** Plugin config: startup values resolved from the injected provider service. */
 export interface Config {
-  /** Persisted session id to resume instead of creating a fresh session. */
+  /** Resume this persisted session instead of creating a fresh one. */
   resume?: string
-  /** Workspace root; the runner defaults to the invoking directory. */
+  /** Session workspace root; defaults to the invoking directory. */
   workspace?: string
-  /** Provider/model pair in `provider/model` form. */
+  /** `provider/model` pair for this session; defaults to the current selection. */
   model?: string
   /** Permission preset applied at session creation. */
   permission?: string
@@ -74,24 +68,28 @@ interface TuiIo {
 export const internals: {
   stdout: TuiIo['stdout']
   stderr: TuiIo['stderr']
-  device: TerminalDevice
+  /** Whether stdin is interactive; the presenter runs only on a TTY. */
+  isTTY: boolean
   hardExit: (code: number) => void
   createInput: () => InputSource
+  /** The pi-tui terminal backend; tests inject an in-memory device. */
+  createTerminal: () => ReturnType<typeof processTerminal>
   /** Host emitter for the crash-restore handler; tests inject a safe emitter. */
   crashEmitter: CrashEmitter
 } = {
   stdout: process.stdout,
   stderr: process.stderr,
-  device: {
-    isTTY: process.stdin.isTTY,
-    setRawMode: raw => process.stdin.setRawMode(raw),
-  },
+  isTTY: process.stdin.isTTY,
   hardExit: code => process.exit(code),
   createInput: () => new StdinInputSource(process.stdin),
+  createTerminal: () => processTerminal(),
   crashEmitter: process,
 }
 
-/** One decoded key from the terminal input source. */
+/** Presenter active in the current run; the crash handler stops it. */
+let activePresenter: TuiPresenter | undefined
+
+/** One decoded key from the pipe input source. */
 export type TuiKey =
   | { kind: 'char'; char: string }
   | { kind: 'backspace' }
@@ -104,10 +102,10 @@ export interface InputSource {
 }
 
 /**
- * Raw-stdin byte source. Multi-byte UTF-8 survives chunk boundaries through a
- * streaming decoder; the M0 keymap recognizes Enter, Ctrl+C, backspace, and
- * printable characters, and ignores escape sequences until the keymap
- * milestone.
+ * Raw-stdin byte source for the pipe path. Multi-byte UTF-8 survives chunk
+ * boundaries through a streaming decoder; the keymap recognizes Enter,
+ * Ctrl+C, backspace, and printable characters, and ignores escape sequences
+ * until the keymap milestone.
  */
 export class StdinInputSource implements InputSource {
   private readonly decoder = new TextDecoder()
@@ -157,7 +155,7 @@ export class StdinInputSource implements InputSource {
     return await new Promise<TuiKey | undefined>((resolve) => { this.waiters.push(resolve) })
   }
 
-  /** Detach stream listeners; the terminal is restored separately. */
+  /** Detach stream listeners; the presenter owns terminal restore separately. */
   dispose(): void {
     this.stream.removeAllListeners('data')
     this.stream.removeAllListeners('end')
@@ -174,7 +172,7 @@ function reasonKind(reason: SessionEvent<'turn/end'>['data']['reason']): string 
   return reason.kind
 }
 
-/** One compact durable-event trace line for the line-oriented surface. */
+/** One compact durable-event trace line for the pipe surface. */
 function traceLine(event: SessionEvent): string {
   switch (event.type) {
     case 'user/message': {
@@ -222,11 +220,48 @@ function installSelection(selection: ModelSelectionRef['current']): (agentCtx: C
   }
 }
 
+/** Submit one user line: steering while a turn runs, a follow-up turn otherwise. */
+function submitLine(agent: Agent, line: string): void {
+  const message = createUserMessage({ content: [{ type: 'text', text: line }], source: { kind: 'user' } })
+  if (agent.status === 'running') agent.steer(message)
+  else agent.followup(message)
+}
+
 /** How the input loop ended, and with which exit code. */
 type InputOutcome = { kind: 'quit'; code: number } | { kind: 'hard-exit'; code: number }
 
 /**
- * Drive the key loop until EOF or a Ctrl+C quit. User lines are submitted as
+ * Drive the presenter path: the pi-tui editor submits lines and the Ctrl+C
+ * raw-key machine owns cancel/clear/quit. The outcome resolves on a Ctrl+C
+ * quit; the presenter keeps running until the caller stops it.
+ */
+async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<InputOutcome> {
+  const ctrlC = new CtrlCController()
+  return await new Promise<InputOutcome>((resolve) => {
+    presenter.onKey((data) => {
+      if (data !== '\x03') return false
+      const action = ctrlC.press(agent.status === 'running', presenter.getInput() === '')
+      switch (action) {
+        case 'clear-input':
+          presenter.setInput('')
+          break
+        case 'cancel':
+          agent.cancel({ kind: 'user' }, { keepInbox: true })
+          break
+        case 'quit':
+          resolve({ kind: 'quit', code: 0 })
+          break
+        case 'hard-exit':
+          resolve({ kind: 'hard-exit', code: 130 })
+          break
+      }
+      return true
+    })
+  })
+}
+
+/**
+ * Drive the pipe path until EOF or a Ctrl+C quit. User lines are submitted as
  * follow-up turns while idle and steering while a turn runs; cancellation
  * preserves queued inbox work.
  * @param input - the key source.
@@ -251,9 +286,7 @@ async function driveInput(
         break
       case 'submit': {
         if (line === '') break
-        const message = createUserMessage({ content: [{ type: 'text', text: line }], source: { kind: 'user' } })
-        if (agent.status === 'running') agent.steer(message)
-        else agent.followup(message)
+        submitLine(agent, line)
         line = ''
         break
       }
@@ -278,11 +311,11 @@ async function driveInput(
 }
 
 /**
- * Create or resume one Agent, trace its durable events, drive user input, and
- * request exit. The terminal is restored before the graceful flush so the
- * user's shell returns even while persistence drains.
+ * Create or resume one Agent, fold its durable events into the transcript,
+ * drive the surface, and request exit. The presenter is stopped before the
+ * graceful flush so the user's shell returns even while persistence drains.
  */
-async function run(ctx: Context, config: Config, io: TuiIo, terminal: TerminalSession, input: InputSource): Promise<void> {
+async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource): Promise<void> {
   await ctx.get('loader')?.await()
   const agents = ctx.get('agents')
   const defaultModel = ctx.get('agentDefaultModel')
@@ -310,25 +343,57 @@ async function run(ctx: Context, config: Config, io: TuiIo, terminal: TerminalSe
     permission.set(agent.session, config.permission)
   }
 
+  const transcript = new Transcript()
+  // Resume replays stored seed events first: constructor seeds never emit
+  // through `session/event`, so a resumed transcript starts from storage.
+  for (const event of agent.session.events) transcript.fold(event)
+
   // The shared app-ctx pattern (api-proxy, ACP): one root listener filtered by
   // session, so subagent sessions never trace into the TUI transcript.
   const offEvents = ctx.on('session/event', (session: Session, event: SessionEvent) => {
     if (session !== agent.session) return
-    const line = traceLine(event)
-    if (line !== '') io.stdout.write(sanitizeText(line) + '\n')
+    transcript.fold(event)
+    if (activePresenter === undefined) {
+      const line = traceLine(event)
+      if (line !== '') io.stdout.write(sanitizeText(line) + '\n')
+    }
   })
 
-  const outcome = await driveInput(input, agent)
-
-  offEvents()
-  terminal.restore()
-  if (outcome.kind === 'hard-exit') {
-    io.hardExit(outcome.code)
-    return
+  const interactive = internals.isTTY
+  let presenter: TuiPresenter | undefined
+  if (interactive) {
+    presenter = new TuiPresenter(internals.createTerminal(), transcript, {
+      onSubmit: (line) => { submitLine(agent, line) },
+      statusLine: () => formatStatus(transcript.state),
+    })
+    activePresenter = presenter
   }
-  await sessions.flush(agent.session)
-  await handle.dispose()
-  io.exit(outcome.code)
+
+  try {
+    presenter?.start()
+    const outcome = presenter !== undefined
+      ? await drivePresenter(presenter, agent)
+      : await driveInput(input, agent)
+
+    // Stop the presenter before the graceful flush so the shell is usable
+    // while persistence drains; the pipe path has no presenter.
+    offEvents()
+    presenter?.stop()
+    activePresenter = undefined
+
+    if (outcome.kind === 'hard-exit') {
+      io.hardExit(outcome.code)
+      return
+    }
+    await sessions.flush(agent.session)
+    await handle.dispose()
+    io.exit(outcome.code)
+  } catch (error) {
+    offEvents()
+    presenter?.stop()
+    activePresenter = undefined
+    throw error
+  }
 }
 
 /**
@@ -341,14 +406,15 @@ export function apply(ctx: Context, config: Config): void {
   if (exit === undefined) {
     throw new Error('tui-runner: the launcher must provide ctx.appExit before the tree mounts')
   }
-  const terminal = new TerminalSession(internals.device)
-  terminal.enter()
   const io: TuiIo = { stdout: internals.stdout, stderr: internals.stderr, exit, hardExit: internals.hardExit }
-  const crash = installCrashRestore(() => { terminal.restore() }, (code) => { internals.hardExit(code) }, internals.crashEmitter)
+  const crash = installCrashRestore(
+    () => { activePresenter?.stop() },
+    (code) => { internals.hardExit(code) },
+    internals.crashEmitter,
+  )
   const input = internals.createInput()
-  void run(ctx, config, io, terminal, input).catch((error: unknown) => {
+  void run(ctx, config, io, input).catch((error: unknown) => {
     crash()
-    terminal.restore()
     io.stderr.write(`dsh: ${error instanceof Error ? error.message : String(error)}\n`)
     io.exit(1)
   })

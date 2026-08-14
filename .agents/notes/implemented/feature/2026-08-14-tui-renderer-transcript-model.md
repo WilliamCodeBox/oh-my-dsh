@@ -36,6 +36,6 @@ Chunk accumulation keeps `text-delta` only; the assembled `assistant/message` is
 ## Consequences
 
 - `packages/interaction/tui-renderer` ships `Transcript`, `textOf`, item/state types, and the invariant companion; 16 behavioral tests cover streaming, tool pairing, turn brackets, compaction notes, and side state. Typecheck, workspace constraints, and the Model Experience doc gate pass.
-- The bundle's `traceLine`/`StdinInputSource`/`TerminalSession` machinery stays in place until the presenter slice; the M0 surface contract is unchanged by this note.
-- Resume replay is not yet wired: stored seed events are not re-emitted through `session/event` (constructor seeds do not emit), so the runner must read storage and fold seed events before live events. The presenter slice owns this.
+- The bundle's line tracer stays as the non-TTY pipe surface; the presenter slice ([2026-08-14-tui-renderer-presenter](2026-08-14-tui-renderer-presenter.md)) replaced the TTY surface with the pi-tui presenter and moved `TerminalSession` out.
+- Resume replay is wired by the presenter slice: stored seed events never re-emit through `session/event` (constructor seeds do not emit), so the runner folds `agent.session.events` before live events.
 - The renderer package home decision in the M0 note is now recorded: `interaction/`.

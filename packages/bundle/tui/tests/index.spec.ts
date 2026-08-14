@@ -1,4 +1,4 @@
-/** Interactive runner: event tracing, follow-up submission, steering, Ctrl+C machine, resume, permission, exit mapping. */
+/** Interactive runner: presenter and pipe surfaces, follow-up submission, steering, Ctrl+C machine, resume, permission, exit mapping. */
 
 import { EventEmitter } from 'node:events'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -24,6 +24,55 @@ class ScriptedInput implements InputSource {
   }
 }
 
+/** In-memory Terminal (structural match) capturing lifecycle and the input callback. */
+class FakeTerminal {
+  writes: string[] = []
+  started = false
+  stopped = false
+  private onInput?: (data: string) => void
+
+  start(onInput: (data: string) => void, _onResize: () => void): void {
+    this.onInput = onInput
+    this.started = true
+  }
+
+  stop(): void {
+    this.stopped = true
+  }
+
+  async drainInput(): Promise<void> {}
+
+  /** Deliver raw key data as the terminal would. */
+  send(data: string): void {
+    this.onInput?.(data)
+  }
+
+  write(data: string): void {
+    this.writes.push(data)
+  }
+
+  get columns(): number {
+    return 80
+  }
+
+  get rows(): number {
+    return 24
+  }
+
+  get kittyProtocolActive(): boolean {
+    return false
+  }
+
+  moveBy(_lines: number): void {}
+  hideCursor(): void {}
+  showCursor(): void {}
+  clearLine(): void {}
+  clearFromCursor(): void {}
+  clearScreen(): void {}
+  setTitle(_title: string): void {}
+  setProgress(_active: boolean): void {}
+}
+
 /** What one run observed about the agent and the process. */
 interface Recorded {
   followup: UserMessage[]
@@ -31,7 +80,6 @@ interface Recorded {
   cancel: Array<{ cause: unknown; options: unknown }>
   resume: ResumeAgentOptions[]
   createdOptions: Array<{ sessionId: string; agentOptions: unknown }>
-  rawMode: boolean[]
   hardExits: number[]
   permissions: Array<{ session: Session; name: string }>
 }
@@ -47,21 +95,29 @@ interface RunResult {
 interface Script {
   /** Fixed status for the live agent (defaults to `idle`). */
   status?: 'idle' | 'running'
+  /** Runs after the session is created; seed events for the resume fold. */
+  afterCreate?(session: Session): void
   afterFollowup?(ctx: Context, session: Session, message: UserMessage): void
 }
 
 /**
  * Mount the real registries around a scripted Agent factory and drive one
- * `apply()` with a scripted key source.
+ * `apply()` with a scripted key source (pipe path) or an in-memory terminal
+ * (presenter path, `opts.tty`).
  */
-async function bench(keys: readonly TuiKey[], config: Record<string, unknown>, script: Script = {}): Promise<{
+async function bench(
+  keys: readonly TuiKey[],
+  config: Record<string, unknown>,
+  script: Script = {},
+  opts: { tty?: boolean } = {},
+): Promise<{
   ctx: Context
   recorded: Recorded
   run(): Promise<RunResult>
 }> {
   const ctx = new Context()
   const recorded: Recorded = {
-    followup: [], steer: [], cancel: [], resume: [], createdOptions: [], rawMode: [], hardExits: [], permissions: [],
+    followup: [], steer: [], cancel: [], resume: [], createdOptions: [], hardExits: [], permissions: [],
   }
   await ctx.plugin(SessionStore)
   await ctx.plugin(AgentRegistry)
@@ -70,6 +126,7 @@ async function bench(keys: readonly TuiKey[], config: Record<string, unknown>, s
   async function createAgentImpl(ownerCtx: Context, options: CreateAgentOptions): Promise<AgentHandle> {
     const session = ctx.sessions.create(options.sessionId, { meta: options.meta ?? {} })
     recorded.createdOptions.push({ sessionId: options.sessionId, agentOptions: options.agentOptions })
+    script.afterCreate?.(session)
     const agentCtx = ownerCtx.extend({ agent: {} })
     const agent = {
       id: session.id,
@@ -108,6 +165,7 @@ async function bench(keys: readonly TuiKey[], config: Record<string, unknown>, s
 
   return {
     ctx,
+
     recorded,
     run: async () => {
       let out = ''
@@ -116,7 +174,7 @@ async function bench(keys: readonly TuiKey[], config: Record<string, unknown>, s
       ctx.on('session/flush', () => { order.push('flush') })
       internals.stdout = { write: (chunk: string) => { out += chunk; return true } }
       internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
-      internals.device = { isTTY: true, setRawMode: (raw) => { recorded.rawMode.push(raw) } }
+      internals.isTTY = opts.tty ?? false
       internals.createInput = () => new ScriptedInput(keys)
       let resolveExited: (code: number) => void = () => {}
       const exited = new Promise<number>((resolve) => { resolveExited = resolve })
@@ -146,6 +204,18 @@ function appendTurn(session: Session, message: UserMessage, text: string): void 
   session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
 }
 
+/** Minimal agent factory for tests that never reach the surface. */
+function minimalAgents(): unknown {
+  return {
+    create: async () => {
+      const session = { id: 'session-x', events: [] } as unknown as Session
+      const agent = { session, status: 'idle', ctx: new Context(), cancel: () => {}, followup: () => {}, steer: () => {} } as unknown as Agent
+      return { agent, dispose: () => Promise.resolve() }
+    },
+    resume: () => Promise.reject(new Error('not used')),
+  }
+}
+
 describe('tui runner', () => {
   it('submits a line as a follow-up turn, traces events, and quits cleanly on Ctrl+C', async () => {
     const test = await bench(
@@ -164,7 +234,6 @@ describe('tui runner', () => {
     expect(result.out).toContain('[user] hi')
     expect(result.out).toContain('[assistant] hello back')
     expect(result.out).toContain('[turn/end] 1 completed')
-    expect(test.recorded.rawMode).toEqual([true, false])
     expect(result.order).toEqual(['flush', 'exit'])
     await test.ctx.fiber.dispose()
   })
@@ -296,7 +365,6 @@ describe('tui runner', () => {
       },
     )
     const result = await test.run()
-    console.log('TRACE OUT2=', JSON.stringify(result.out), 'code=', result.code, 'err=', JSON.stringify(result.err))
     expect(result.out).toContain('[user]')
     expect(result.out).toContain('[assistant] visible')
     expect(result.out).toContain('[assistant]')
@@ -363,33 +431,86 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
-  it('restores the terminal and force-exits on an uncaughtException', async () => {
+  it('runs the presenter on a TTY: editor submit follows up and Ctrl+C quits', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('hello')
+    terminal.send('\r')
+    terminal.send('\x03')
+    const result = await runPromise
+    expect(result.code).toBe(0)
+    expect(test.recorded.followup).toHaveLength(1)
+    expect(test.recorded.followup[0]!.content).toEqual([{ type: 'text', text: 'hello' }])
+    expect(terminal.stopped).toBe(true)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('cancels a running turn on Ctrl+C over the presenter, then force-exits on the second press', async () => {
+    const test = await bench([], {}, { status: 'running' }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('\x03')
+    await vi.waitFor(() => { expect(test.recorded.cancel).toHaveLength(1) })
+    expect(test.recorded.cancel[0]).toEqual({ cause: { kind: 'user' }, options: { keepInbox: true } })
+    terminal.send('\x03')
+    const result = await runPromise
+    expect(result.code).toBe(130)
+    expect(test.recorded.hardExits).toEqual([130])
+    await test.ctx.fiber.dispose()
+  })
+
+  it('folds stored seed events into the presenter transcript on resume', async () => {
+    const test = await bench([], { resume: 'session-persisted' }, {
+      afterCreate: (session) => {
+        session.append('turn/start', { turn: 1 })
+        session.append('user/message', {
+          role: 'user', content: [{ type: 'text', text: 'seed question' }], source: { kind: 'user' }, id: MessageId('seed-u'),
+        }, { surfaceOp: 'append' })
+        session.append('assistant/message', {
+          turn: 1, step: 1,
+          message: createAssistantMessage({ content: [{ type: 'text', text: 'seed answer' }], source: { provider: 'p', model: 'm' } }),
+        }, { surfaceOp: 'append' })
+        session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
+      },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    const rendered = terminal.writes.join('')
+    expect(rendered).toContain('seed question')
+    expect(rendered).toContain('seed answer')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(0)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('stops the presenter and force-exits on an uncaughtException', async () => {
     const ctx = new Context()
     const emitter = new EventEmitter()
+    const terminal = new FakeTerminal()
     const hardExits: number[] = []
-    const rawMode: boolean[] = []
     internals.stdout = { write: () => true }
     internals.stderr = { write: () => true }
-    internals.device = { isTTY: true, setRawMode: (raw) => { rawMode.push(raw) } }
+    internals.isTTY = true
+    internals.createTerminal = () => terminal
     internals.hardExit = (code) => { hardExits.push(code) }
     internals.crashEmitter = emitter
     internals.createInput = () => new ScriptedInput([])
     ctx.provide('appExit', () => {})
     ctx.provide('agentDefaultModel', { currentSelection: () => ({ provider: 'p', model: 'm' }) } as never)
     ctx.provide('sessions', { flush: () => Promise.resolve(true) } as never)
-    ctx.provide('agents', {
-      create: async () => {
-        const session = { id: 'session-x' } as Session
-        const agent = { session, status: 'idle', ctx: new Context(), cancel: () => {}, followup: () => {}, steer: () => {} } as unknown as Agent
-        return { agent, dispose: () => Promise.resolve() }
-      },
-      resume: () => Promise.reject(new Error('not used')),
-    } as never)
+    ctx.provide('agents', minimalAgents() as never)
     apply(ctx, new Config({}))
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
     emitter.emit('uncaughtException', new Error('boom'))
-    await new Promise(resolve => setTimeout(resolve, 10))
-    expect(hardExits).toEqual([1])
-    expect(rawMode).toEqual([true, false])
+    await vi.waitFor(() => { expect(hardExits).toEqual([1]) })
+    expect(terminal.stopped).toBe(true)
     await ctx.fiber.dispose()
   })
 
@@ -399,21 +520,13 @@ describe('tui runner', () => {
     ctx.provide('permissionPresets', { set: (session: Session, name: string) => { permissions.push({ session, name }) } } as never)
     ctx.provide('agentDefaultModel', { currentSelection: () => ({ provider: 'p', model: 'm' }) } as never)
     ctx.provide('sessions', { flush: () => Promise.resolve(true) } as never)
-    ctx.provide('agents', {
-      create: async () => {
-        const session = { id: 'session-x' } as Session
-        const agent = { session, status: 'idle', ctx: new Context(), cancel: () => {}, followup: () => {}, steer: () => {} } as unknown as Agent
-        return { agent, dispose: () => Promise.resolve() }
-      },
-      resume: () => Promise.reject(new Error('not used')),
-    } as never)
+    ctx.provide('agents', minimalAgents() as never)
     let err = ''
     let resolved: (code: number) => void = () => {}
     const exited = new Promise<number>((resolve) => { resolved = resolve })
     ctx.provide('appExit', resolved)
     internals.stdout = { write: () => true }
     internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
-    internals.device = { isTTY: true, setRawMode: () => {} }
     internals.hardExit = () => {}
     internals.createInput = () => new ScriptedInput([{ kind: 'ctrl-c' }])
     apply(ctx, new Config({ permission: 'danger-full-access' }))
@@ -429,7 +542,6 @@ describe('tui runner', () => {
     let err = ''
     internals.stdout = { write: () => true }
     internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
-    internals.device = { isTTY: true, setRawMode: () => {} }
     internals.hardExit = () => {}
     internals.createInput = () => new ScriptedInput([])
     let resolved: (code: number) => void = () => {}
@@ -437,14 +549,7 @@ describe('tui runner', () => {
     ctx.provide('appExit', resolved)
     ctx.provide('agentDefaultModel', { currentSelection: () => ({ provider: 'p', model: 'm' }) } as never)
     ctx.provide('sessions', { flush: () => Promise.resolve(true) } as never)
-    ctx.provide('agents', {
-      create: async () => {
-        const session = { id: 'session-x' } as Session
-        const agent = { session, status: 'idle', ctx: new Context(), cancel: () => {}, followup: () => {}, steer: () => {} } as unknown as Agent
-        return { agent, dispose: () => Promise.resolve() }
-      },
-      resume: () => Promise.reject(new Error('not used')),
-    } as never)
+    ctx.provide('agents', minimalAgents() as never)
     apply(ctx, new Config({ permission: 'danger-full-access' }))
     expect(await exited).toBe(1)
     expect(err).toBe('dsh: tui-runner: --permission needs the dsh-permission-presets service\n')
@@ -456,7 +561,6 @@ describe('tui runner', () => {
     let err = ''
     internals.stdout = { write: () => true }
     internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
-    internals.device = { isTTY: true, setRawMode: () => {} }
     internals.hardExit = () => {}
     internals.createInput = () => new ScriptedInput([])
     let resolved: (code: number) => void = () => {}
@@ -476,7 +580,6 @@ describe('tui runner', () => {
     let err = ''
     internals.stdout = { write: () => true }
     internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
-    internals.device = { isTTY: true, setRawMode: () => {} }
     internals.hardExit = () => {}
     internals.createInput = () => new ScriptedInput([])
     let resolved: (code: number) => void = () => {}
@@ -500,7 +603,6 @@ describe('tui runner', () => {
     const ctx = new Context()
     internals.stdout = { write: () => true }
     internals.stderr = { write: () => true }
-    internals.device = { isTTY: true, setRawMode: () => {} }
     internals.hardExit = () => {}
     internals.createInput = () => new ScriptedInput([])
     let resolved: (code: number) => void = () => {}
@@ -600,7 +702,8 @@ describe('StdinInputSource', () => {
     input.dispose()
   })
 
-  it('default hardExit forces the process to exit', () => {    const spy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exited') })
+  it('default hardExit forces the process to exit', () => {
+    const spy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exited') })
     try {
       expect(() => { originalInternals.hardExit(130) }).toThrow('exited')
     } finally {
@@ -608,14 +711,7 @@ describe('StdinInputSource', () => {
     }
   })
 
-  it('default device toggles raw mode on process.stdin', () => {
-    if (process.stdin.isTTY) {
-      originalInternals.device.setRawMode(true)
-      originalInternals.device.setRawMode(false)
-    } else {
-      // A non-TTY stdin rejects raw mode; the default closure still runs and
-      // surfaces the stream's error instead of silently succeeding.
-      expect(() => { originalInternals.device.setRawMode(true) }).toThrow()
-    }
+  it('default createTerminal returns a process terminal', () => {
+    expect(originalInternals.createTerminal()).toBeDefined()
   })
 })
