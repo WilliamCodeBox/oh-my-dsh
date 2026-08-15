@@ -180,9 +180,10 @@ describe.skipIf(process.platform === 'win32')('tui profile PTY case (real Loader
         // The editor renders the typed line; Enter submits the follow-up.
         { waitFor: 'hello', send: '\r' },
         // Give the keyless turn time to fail fast and settle, then quit on an
-        // empty, idle prompt.
+        // empty, idle prompt. Ctrl+C quits with the SIGINT convention code
+        // through the normal shutdown path.
         { delayMs: 9000, send: '\x03' },
-      ], 0)
+      ], 130)
       // The typed line was rendered by the editor (not just echoed).
       expect(output).toContain('hello')
       // The alternate screen was restored on quit.

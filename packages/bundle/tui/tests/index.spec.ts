@@ -10,6 +10,8 @@ import { CallId, createAssistantMessage, createToolResultMessage, MessageId } fr
 import SessionStore from '@deepseek-ai/dsh-session'
 import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
 import { apply, Config, internals, StdinInputSource } from '../src/index.ts'
+import { Keymap } from '../src/keymap.ts'
+import { textOf } from '@deepseek-ai/dsh-tui-renderer'
 import type { InputSource, TuiKey } from '../src/index.ts'
 
 const originalInternals = { ...internals }
@@ -229,7 +231,9 @@ describe('tui runner', () => {
       { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'hello back') } },
     )
     const result = await test.run()
-    expect(result.code).toBe(0)
+    // Ctrl+C quits with the SIGINT convention code through the normal
+    // shutdown path; 0 would mean a clean EOF.
+    expect(result.code).toBe(130)
     expect(test.recorded.followup).toHaveLength(1)
     expect(result.out).toContain('[user] hi')
     expect(result.out).toContain('[assistant] hello back')
@@ -294,8 +298,58 @@ describe('tui runner', () => {
     const result = await test.run()
     // The first Ctrl+C cleared 'a'; 'b' then backspace emptied the line; the
     // empty submit submitted nothing; the final Ctrl+C quit with no turn.
-    expect(result.code).toBe(0)
+    expect(result.code).toBe(130)
     expect(test.recorded.followup).toHaveLength(0)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('edits the line at the cursor: left/right/home/end, delete, escape-clear', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: 'a' },
+        { kind: 'char', char: 'b' },
+        { kind: 'left' },
+        { kind: 'char', char: 'x' },
+        { kind: 'home' },
+        { kind: 'char', char: 'y' },
+        { kind: 'end' },
+        { kind: 'delete' },
+        { kind: 'escape' },
+        { kind: 'char', char: 'z' },
+        { kind: 'submit' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'ok') } },
+    )
+    const result = await test.run()
+    // 'ab' → left → 'axb' → home → 'yaxb' → end → delete drops 'b' → escape
+    // clears → 'z' submits as the only line.
+    expect(test.recorded.followup).toHaveLength(1)
+    expect(test.recorded.followup[0]!.content).toEqual([{ type: 'text', text: 'z' }])
+    expect(result.code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('recalls submitted lines with up/down history and restores the draft', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: 'o' }, { kind: 'char', char: 'n' }, { kind: 'char', char: 'e' }, { kind: 'submit' },
+        { kind: 'char', char: 't' }, { kind: 'char', char: 'w' }, { kind: 'char', char: 'o' }, { kind: 'submit' },
+        { kind: 'up' }, { kind: 'up' },
+        { kind: 'submit' },
+        { kind: 'down' }, { kind: 'down' },
+        { kind: 'char', char: '!' }, { kind: 'submit' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'ok') } },
+    )
+    const result = await test.run()
+    // up×2 recalls 'one' and submits it again; down×2 returns to the empty
+    // draft (historyIndex -1, nothing to recall) and '!' submits alone.
+    expect(test.recorded.followup.map(message => textOf(message.content))).toEqual(['one', 'two', 'one', '!'])
+    expect(result.code).toBe(130)
     await test.ctx.fiber.dispose()
   })
 
@@ -441,7 +495,9 @@ describe('tui runner', () => {
     terminal.send('\r')
     terminal.send('\x03')
     const result = await runPromise
-    expect(result.code).toBe(0)
+    // Ctrl+C quits with the SIGINT convention code; the presenter still
+    // stopped and restored the terminal before the graceful flush.
+    expect(result.code).toBe(130)
     expect(test.recorded.followup).toHaveLength(1)
     expect(test.recorded.followup[0]!.content).toEqual([{ type: 'text', text: 'hello' }])
     expect(terminal.stopped).toBe(true)
@@ -486,7 +542,7 @@ describe('tui runner', () => {
     expect(rendered).toContain('seed question')
     expect(rendered).toContain('seed answer')
     terminal.send('\x03')
-    expect((await runPromise).code).toBe(0)
+    expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   })
 
@@ -530,7 +586,9 @@ describe('tui runner', () => {
     internals.hardExit = () => {}
     internals.createInput = () => new ScriptedInput([{ kind: 'ctrl-c' }])
     apply(ctx, new Config({ permission: 'danger-full-access' }))
-    expect(await exited).toBe(0)
+    // Ctrl+C quits with the SIGINT convention code; the preset still applied
+    // before the input loop started.
+    expect(await exited).toBe(130)
     expect(permissions).toHaveLength(1)
     expect(permissions[0]!.name).toBe('danger-full-access')
     expect(err).toBe('')
@@ -644,17 +702,41 @@ describe('StdinInputSource', () => {
     source.dispose()
   })
 
-  it('routes Enter, backspace, ESC, and unprintable bytes correctly', async () => {
+  it('routes Enter, backspace, escape sequences, and unprintable bytes correctly', async () => {
     const stream = fakeStream()
     const source = new StdinInputSource(stream)
     stream.emit('data', Buffer.from('\r\x7f\x1b[A\x00'))
     expect(await source.next()).toEqual({ kind: 'submit' })
     expect(await source.next()).toEqual({ kind: 'backspace' })
-    // ESC begins a dropped key sequence; the following `[A` bytes are ordinary
-    // printable characters, and \x00 is not printable.
-    expect(await source.next()).toEqual({ kind: 'char', char: '[' })
-    expect(await source.next()).toEqual({ kind: 'char', char: 'A' })
+    // ESC [ A is the cursor-up sequence; \x00 is not printable.
+    expect(await source.next()).toEqual({ kind: 'up' })
     stream.emit('end')
+    expect(await source.next()).toBeUndefined()
+    source.dispose()
+  })
+
+  it('decodes navigation sequences held across chunk boundaries', async () => {
+    const stream = fakeStream()
+    const source = new StdinInputSource(stream)
+    // ESC and `[5` arrive before the final `~` of PgUp; a bare ESC waits for
+    // the next byte before committing as Escape.
+    stream.emit('data', Buffer.from('\x1b'))
+    stream.emit('data', Buffer.from('[5'))
+    stream.emit('data', Buffer.from('~'))
+    expect(await source.next()).toEqual({ kind: 'page-up' })
+    stream.emit('data', Buffer.from('\x1b'))
+    stream.emit('data', Buffer.from('x'))
+    expect(await source.next()).toEqual({ kind: 'escape' })
+    expect(await source.next()).toEqual({ kind: 'char', char: 'x' })
+    source.dispose()
+  })
+
+  it('flushes a trailing bare ESC as Escape at EOF', async () => {
+    const stream = fakeStream()
+    const source = new StdinInputSource(stream)
+    stream.emit('data', Buffer.from('\x1b'))
+    stream.emit('end')
+    expect(await source.next()).toEqual({ kind: 'escape' })
     expect(await source.next()).toBeUndefined()
     source.dispose()
   })
@@ -713,5 +795,48 @@ describe('StdinInputSource', () => {
 
   it('default createTerminal returns a process terminal', () => {
     expect(originalInternals.createTerminal()).toBeDefined()
+  })
+})
+
+describe('Keymap', () => {
+  /** Decode one chunk and return the keys. */
+  function decode(text: string): TuiKey[] {
+    return new Keymap().push(text)
+  }
+
+  it('maps CSI letter finals to navigation keys', () => {
+    expect(decode('\x1b[A\x1b[B\x1b[C\x1b[D\x1b[H\x1b[F')).toEqual([
+      { kind: 'up' }, { kind: 'down' }, { kind: 'right' }, { kind: 'left' }, { kind: 'home' }, { kind: 'end' },
+    ])
+  })
+
+  it('maps SS3 application-cursor finals', () => {
+    expect(decode('\x1bOA\x1bOD')).toEqual([{ kind: 'up' }, { kind: 'left' }])
+  })
+
+  it('maps tilde finals for Home/End/PgUp/PgDn/Delete and their variants', () => {
+    expect(decode('\x1b[1~\x1b[4~\x1b[7~\x1b[8~\x1b[5~\x1b[6~\x1b[3~')).toEqual([
+      { kind: 'home' }, { kind: 'end' }, { kind: 'home' }, { kind: 'end' },
+      { kind: 'page-up' }, { kind: 'page-down' }, { kind: 'delete' },
+    ])
+  })
+
+  it('maps modifier parameters to the base key', () => {
+    expect(decode('\x1b[1;5A\x1b[1;2~')).toEqual([{ kind: 'up' }, { kind: 'home' }])
+  })
+
+  it('consumes unknown but well-formed sequences silently', () => {
+    expect(decode('\x1b[Z\x1b[2~\x1b[0~')).toEqual([])
+  })
+
+  it('commits a bare ESC as Escape only when the next byte decides', () => {
+    expect(decode('\x1b')).toEqual([])
+    expect(decode('\x1bx')).toEqual([{ kind: 'escape' }, { kind: 'char', char: 'x' }])
+  })
+
+  it('flushes a pending ESC as Escape at EOF', () => {
+    const keymap = new Keymap()
+    expect(keymap.push('\x1b')).toEqual([])
+    expect(keymap.flush()).toEqual([{ kind: 'escape' }])
   })
 })

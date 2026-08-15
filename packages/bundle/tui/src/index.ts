@@ -26,6 +26,7 @@ import type {} from '@deepseek-ai/dsh-cmdline'
 
 import { CtrlCController, installCrashRestore } from './terminal.ts'
 import type { CrashEmitter } from './terminal.ts'
+import { Keymap } from './keymap.ts'
 
 /** Stable Cordis plugin name. */
 export const name = 'tui-runner'
@@ -93,8 +94,18 @@ let activePresenter: TuiPresenter | undefined
 export type TuiKey =
   | { kind: 'char'; char: string }
   | { kind: 'backspace' }
+  | { kind: 'delete' }
   | { kind: 'submit' }
   | { kind: 'ctrl-c' }
+  | { kind: 'escape' }
+  | { kind: 'left' }
+  | { kind: 'right' }
+  | { kind: 'up' }
+  | { kind: 'down' }
+  | { kind: 'home' }
+  | { kind: 'end' }
+  | { kind: 'page-up' }
+  | { kind: 'page-down' }
 
 /** Injectable input source; `next()` resolves to `undefined` at EOF. */
 export interface InputSource {
@@ -104,11 +115,12 @@ export interface InputSource {
 /**
  * Raw-stdin byte source for the pipe path. Multi-byte UTF-8 survives chunk
  * boundaries through a streaming decoder; the keymap recognizes Enter,
- * Ctrl+C, backspace, and printable characters, and ignores escape sequences
- * until the keymap milestone.
+ * Ctrl+C, backspace, printable characters, and the ESC sequences the keymap
+ * decodes (arrows, Home/End, PgUp/PgDn, Delete).
  */
 export class StdinInputSource implements InputSource {
   private readonly decoder = new TextDecoder()
+  private readonly keymap = new Keymap()
   private queue: TuiKey[] = []
   private waiters: Array<(key: TuiKey | undefined) => void> = []
   private ended = false
@@ -121,18 +133,7 @@ export class StdinInputSource implements InputSource {
   /** Decode one raw chunk into keys and drain any pending waiters. */
   private push(chunk: Buffer): void {
     const text = this.decoder.decode(chunk, { stream: true })
-    for (const char of text) {
-      const code = char.charCodeAt(0)
-      if (code === 0x03) this.enqueue({ kind: 'ctrl-c' })
-      else if (code === 0x0d || code === 0x0a) this.enqueue({ kind: 'submit' })
-      else if (code === 0x7f || code === 0x08) this.enqueue({ kind: 'backspace' })
-      else if (code === 0x1b) {
-        // ESC begins a key sequence (arrows, alt, modifiers); the M0 keymap
-        // does not decode them, so the byte is dropped instead of entering the
-        // input line as a control character.
-      }
-      else if (code >= 0x20) this.enqueue({ kind: 'char', char })
-    }
+    for (const key of this.keymap.push(text)) this.enqueue(key)
   }
 
   /** Deliver one key to a waiter, or buffer it for a later `next()`. */
@@ -143,6 +144,7 @@ export class StdinInputSource implements InputSource {
   }
 
   private pushEof(): void {
+    for (const key of this.keymap.flush()) this.enqueue(key)
     this.ended = true
     for (const waiter of this.waiters.splice(0)) waiter(undefined)
   }
@@ -249,7 +251,10 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
           agent.cancel({ kind: 'user' }, { keepInbox: true })
           break
         case 'quit':
-          resolve({ kind: 'quit', code: 0 })
+          // A user interrupt quits with the SIGINT convention code; the quit
+          // is graceful (presenter stop, flush, terminal restore), not the
+          // crash-restore hard exit.
+          resolve({ kind: 'quit', code: 130 })
           break
         case 'hard-exit':
           resolve({ kind: 'hard-exit', code: 130 })
@@ -263,7 +268,8 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
 /**
  * Drive the pipe path until EOF or a Ctrl+C quit. User lines are submitted as
  * follow-up turns while idle and steering while a turn runs; cancellation
- * preserves queued inbox work.
+ * preserves queued inbox work. The line editor supports cursor movement
+ * (arrows/Home/End), Delete, Escape to clear, and up/down history recall.
  * @param input - the key source.
  * @param agent - the live agent being driven.
  * @returns the input-loop outcome.
@@ -273,21 +279,87 @@ async function driveInput(
   agent: Agent,
 ): Promise<InputOutcome> {
   let line = ''
+  let cursor = 0
+  const history: string[] = []
+  let historyIndex = -1
+  let draft = ''
   const ctrlC = new CtrlCController()
   while (true) {
     const key = await input.next()
     if (key === undefined) return { kind: 'quit', code: 0 }
     switch (key.kind) {
       case 'char':
-        line += key.char
+        line = `${line.slice(0, cursor)}${key.char}${line.slice(cursor)}`
+        cursor += key.char.length
         break
       case 'backspace':
-        line = line.slice(0, -1)
+        if (cursor > 0) {
+          line = `${line.slice(0, cursor - 1)}${line.slice(cursor)}`
+          cursor -= 1
+        }
+        break
+      case 'delete':
+        if (cursor < line.length) {
+          line = `${line.slice(0, cursor)}${line.slice(cursor + 1)}`
+        }
+        break
+      case 'left':
+        cursor = Math.max(0, cursor - 1)
+        break
+      case 'right':
+        cursor = Math.min(line.length, cursor + 1)
+        break
+      case 'home':
+        cursor = 0
+        break
+      case 'end':
+        cursor = line.length
+        break
+      case 'up': {
+        if (historyIndex === -1) draft = line
+        if (historyIndex < history.length - 1) {
+          historyIndex += 1
+          // Bounded by the guard above; the undefined check is a logic-slip
+          // net, not a reachable branch.
+          const recalled = history[history.length - 1 - historyIndex]
+          if (recalled !== undefined) {
+            line = recalled
+            cursor = line.length
+          }
+        }
+        break
+      }
+      case 'down': {
+        if (historyIndex === 0) {
+          historyIndex = -1
+          line = draft
+          cursor = line.length
+        } else if (historyIndex > 0) {
+          historyIndex -= 1
+          const recalled = history[history.length - 1 - historyIndex]
+          if (recalled !== undefined) {
+            line = recalled
+            cursor = line.length
+          }
+        }
+        break
+      }
+      case 'page-up':
+      case 'page-down':
+        // A single-line buffer has nothing to page; consume without editing.
+        break
+      case 'escape':
+        line = ''
+        cursor = 0
         break
       case 'submit': {
         if (line === '') break
         submitLine(agent, line)
+        history.push(line)
+        historyIndex = -1
+        draft = ''
         line = ''
+        cursor = 0
         break
       }
       case 'ctrl-c': {
@@ -295,12 +367,15 @@ async function driveInput(
         switch (action) {
           case 'clear-input':
             line = ''
+            cursor = 0
             break
           case 'cancel':
             agent.cancel({ kind: 'user' }, { keepInbox: true })
             break
           case 'quit':
-            return { kind: 'quit', code: 0 }
+            // A user interrupt quits with the SIGINT convention code; the
+            // pipe path has no presenter to restore, so the quit is direct.
+            return { kind: 'quit', code: 130 }
           case 'hard-exit':
             return { kind: 'hard-exit', code: 130 }
         }

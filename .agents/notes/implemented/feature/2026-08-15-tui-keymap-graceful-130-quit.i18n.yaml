@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-15-tui-keymap-graceful-130-quit.md
+2026-08-15-tui-keymap-graceful-130-quit.md: 5e26a7e3657b924ca837f529c8e8f146fb68023f
+2026-08-15-tui-keymap-graceful-130-quit.zh.md: c9a08cbd0eaf18957f0d313e14ab2dad37072e33

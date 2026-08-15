@@ -18,11 +18,10 @@ export type CtrlCAction = 'hard-exit' | 'cancel' | 'clear-input' | 'quit'
  * - a press with a non-empty input line clears the line and does NOT arm the
  *   force-exit window (typing is not a hang);
  * - a press with an empty line cancels a running turn;
- * - a press with an empty line while idle quits;
+ * - a press with an empty line while idle quits gracefully — the runner exits
+ *   130, the SIGINT convention code, through the normal shutdown path
+ *   (presenter stop, flush, terminal restore), never the crash hard-exit;
  * - a second empty-line press inside the window force-exits (the hang escape).
- *
- * The refined policy (cancel then graceful 130 quit) lands with the keymap in
- * a later milestone; the window semantics here are the skeleton.
  */
 export class CtrlCController {
   private lastPress = 0
