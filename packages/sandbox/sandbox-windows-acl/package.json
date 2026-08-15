@@ -1,13 +1,13 @@
 {
   "name": "@williamcodebox/omd-sandbox-windows-acl",
   "description": "Windows ACL write-restriction sandbox backend (restricted-token spawn with capability-SID write allowlist) for the DeepSeek Harness sandbox seam",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
     "directory": "packages/sandbox/sandbox-windows-acl"
   },
   "type": "module",

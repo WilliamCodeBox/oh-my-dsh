@@ -1,7 +1,7 @@
 {
   "name": "@williamcodebox/omd-client-ui-jobs",
   "description": "Session-header background-job list: live registry state mirrored from session/jobs frames",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -39,7 +39,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
     "directory": "packages/client/ui-jobs"
   },
   "publishConfig": {

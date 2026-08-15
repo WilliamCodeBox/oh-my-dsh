@@ -1,13 +1,13 @@
 {
   "name": "@williamcodebox/omd-client-connection",
   "description": "Wire consumer layer: HTTP-up/WebSocket-down client, ConnectionController dual streams with reconnect, and fixture api",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
     "directory": "packages/client/connection"
   },
   "type": "module",

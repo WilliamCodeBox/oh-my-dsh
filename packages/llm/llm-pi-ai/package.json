@@ -1,13 +1,13 @@
 {
   "name": "@williamcodebox/omd-llm-pi-ai",
   "description": "pi-ai-backed DeepSeek adapter for the DeepSeek Harness LLM seam (design-verification twin of dsh-llm-deepseek)",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
     "directory": "packages/llm/llm-pi-ai"
   },
   "type": "module",

@@ -1,13 +1,13 @@
 {
   "name": "@williamcodebox/omd-client-ui-primitives",
   "description": "Pure React atoms for the omd web UI: controls, icons, markdown, and JSON inspectors (zero cordis)",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
     "directory": "packages/client/ui-primitives"
   },
   "type": "module",
