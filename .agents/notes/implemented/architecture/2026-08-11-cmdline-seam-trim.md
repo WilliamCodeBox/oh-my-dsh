@@ -25,7 +25,7 @@ Express all three with interfaces that already exist:
 
 ## Consequences
 
-- A deployment that supervises `dsh --profile headless` with SIGTERM now observes exit 0 instead of 143; the caller sent the signal and sees no answer on stdout.
+- A deployment that supervises `omd --profile headless` with SIGTERM now observes exit 0 instead of 143; the caller sent the signal and sees no answer on stdout.
 - The reload chain runs in every `dsh web` process; a deployment that must not expose `/plugins/events` disables the `client-hmr` row in its patch layer.
 - One-shot runs mount the config-watch rows they previously skipped, costing a few milliseconds of startup.
 - The vendored Loader/Include divergence shrinks by one protocol symbol and one state machine, and `rescope-vendor:check` passes again (the modification log's rescope entry is restored to the position its exact-edit anchor requires).

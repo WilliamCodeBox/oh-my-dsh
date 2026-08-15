@@ -15,7 +15,7 @@ Archived: 2026-08-03
 
 播种复用现有的 TUI skill 路径，而非新增一条。`createTuiChat` 已有 `invokeSkill(name, instructions)`——即键入 `/skill:<name>` 所走的代码，包含“未知 skill”通知。启动器通过一个新的启动上下文槽 `INITIAL_SKILL_KEY`（`tuiInitialSkill`）把 skill 名称传给 TUI，与 `CONFIGURED_AGENT_IDENTITIES_KEY`/`TUI_GOODBYE_MESSAGE_KEY` 一致：`ctx.provide` 是从启动器 argv 进入 Loader 挂载插件的唯一通道。TUI 的 `apply()` 读取该槽并折叠进 `config.initialSkill`；`ui.start()` 成功后，`createTuiChat` 在其被设置时调用一次 `invokeSkill(config.initialSkill, '')`。
 
-**新鲜性在启动器而非 TUI 中把关。** `runSkillSession` 总是创建全新会话，且仅在 `resumeSessionId === undefined` 时提供该槽，因此之后 `dsh --resume <id>` 恢复该会话时是普通 TUI 会话，不会重复注入。TUI 保持通用：它只是把接到的 skill 在启动时调用一次。
+**新鲜性在启动器而非 TUI 中把关。** `runSkillSession` 总是创建全新会话，且仅在 `resumeSessionId === undefined` 时提供该槽，因此之后 `omd --resume <id>` 恢复该会话时是普通 TUI 会话，不会重复注入。TUI 保持通用：它只是把接到的 skill 在启动时调用一次。
 
 **`migrate`/`upgrade` 不接受任何默认界面选项**（`upgrade` 另带[实验性门槛](2026-07-31-experimental-subcommand-gate.md)的 `--experimental`）。它们不带 `--resume`、`--config` 或 `-p`；引导式全新会话入口没有可恢复或可重配置的内容。任何泄漏的默认界面选项都会明确报错，与 Commander 适配器中 `web`/`meta` 的拒绝模式一致。两个 mode 共用一个 `SkillSessionInvocation` 判别式（`mode: 'migrate' | 'upgrade'`）；`bin.ts` 将 mode 映射为 `dsh-${mode}`。
 
@@ -35,7 +35,7 @@ Archived: 2026-08-03
 
 **播种自然语言指令（“使用 dsh-migrate skill……”）而非 `/skill:<name>`。** 在此否决：字面 skill 调用路径会确定性地把 skill 正文渲染进首轮，与手动命令完全一致，而不依赖模型自行选择加载该 skill。
 
-**在 `migrate`/`upgrade` 上支持 `--resume`。** 已否决：它们是一次性引导入口。恢复的会话是可经默认界面 `dsh --resume <id>` 到达的普通 TUI 会话；恢复时重新注入 skill 会重复首轮。
+**在 `migrate`/`upgrade` 上支持 `--resume`。** 已否决：它们是一次性引导入口。恢复的会话是可经默认界面 `omd --resume <id>` 到达的普通 TUI 会话；恢复时重新注入 skill 会重复首轮。
 
 **在 TUI 之外读取 `INITIAL_SKILL_KEY`（如同 `agent-loop` 读取 `CONFIGURED_AGENT_IDENTITIES_KEY` 那样），而非在 TUI 的 `apply()` 中。** 无此必要：`initialSkill` 是在 `createTuiChat` 中消费的 TUI `Config` 字段，因此在 TUI 入口处把该槽位折叠进配置，可以让它与其他由启动器持有的运行时读取（`tuiResumeHost`、`tuiGoodbyeMessage`）并列，且不触及任何其他插件。
 

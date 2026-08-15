@@ -123,7 +123,7 @@ describe('tui command-line provider', () => {
 
   it('prints its own help and leaves the runner pending', async () => {
     const { values, observed } = await bootStartup(['--help'])
-    expect(observed.out).toContain('dsh --profile tui')
+    expect(observed.out).toContain('omd --profile tui')
     expect(values).toBeUndefined()
     expect(observed.runnerConfig).toBeUndefined()
     expect(observed.exits).toEqual([0])

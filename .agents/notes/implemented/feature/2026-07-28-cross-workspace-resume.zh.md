@@ -12,7 +12,7 @@ Status: implemented
 
 接着选择器又过滤了一次。它在展示前丢弃 `cwd` 与当前会话不同的记录，而 `summarizeResumeCandidate` 又独立地把不同的 `cwd` 标记为 `disabledReason: 'different workspace'`，于是一个确实进入了存储的外部会话既被隐藏，也会被拒绝。
 
-最后，恢复流程从不切换目录。宿主通过 `process.execve` 重新执行 `dsh --resume=<id>`，而它会继承 cwd。会话*头部*的 cwd 会从日志中还原，但 `dsh-fs-local`、bash 执行器以及 glob／grep 解析路径时依据的是进程 cwd，所以恢复一个外部会话会在回放它的 transcript（文本记录）的同时，作用到错误的项目上。
+最后，恢复流程从不切换目录。宿主通过 `process.execve` 重新执行 `omd --resume=<id>`，而它会继承 cwd。会话*头部*的 cwd 会从日志中还原，但 `dsh-fs-local`、bash 执行器以及 glob／grep 解析路径时依据的是进程 cwd，所以恢复一个外部会话会在回放它的 transcript（文本记录）的同时，作用到错误的项目上。
 
 ## Decision
 
@@ -24,7 +24,7 @@ Status: implemented
 
 因此 `summarizeResumeCandidate` 去掉了 `'different workspace'`，并新增 `'session has no recorded workspace'`。这是一条真正新增的拒绝理由，而不是改名：没有 `cwd` 的头部没有指明任何目录供宿主进入，所以即便它的日志完好也无法完成交接。
 
-**交接。** `TuiResumeHost.handoff` 在 `SessionId` 之外还接收目标 `cwd`。`preflightResume` 把两者一起解析并一起返回，因此调用方无法从它展示过的那一行里重新推导出一个陈旧目录——在列表展示与预检之间 `cwd` 发生了变化的记录，会在*重新读取到的*目录中恢复，这也是原先「拒绝发生变化的 cwd」的行为如今变成携带新路径完成交接的原因。已交付的宿主在 dispose（资源释放）应用之前切换目录：不可达的目录必须在调用方还能恢复终端时就拒绝，因为拆卸之后已经没有任何所有者可供汇报。恢复始终使用默认的 `dsh --resume` 接口，因为 `meta` 会拒绝父级选项；交接过程已经进入持久化保存的目标目录。
+**交接。** `TuiResumeHost.handoff` 在 `SessionId` 之外还接收目标 `cwd`。`preflightResume` 把两者一起解析并一起返回，因此调用方无法从它展示过的那一行里重新推导出一个陈旧目录——在列表展示与预检之间 `cwd` 发生了变化的记录，会在*重新读取到的*目录中恢复，这也是原先「拒绝发生变化的 cwd」的行为如今变成携带新路径完成交接的原因。已交付的宿主在 dispose（资源释放）应用之前切换目录：不可达的目录必须在调用方还能恢复终端时就拒绝，因为拆卸之后已经没有任何所有者可供汇报。恢复始终使用默认的 `omd --resume` 接口，因为 `meta` 会拒绝父级选项；交接过程已经进入持久化保存的目标目录。
 
 ## Alternatives considered
 
@@ -32,7 +32,7 @@ Status: implemented
 
 **保留 `./.sessions`，并额外扫描 Harness home 根目录。** 否决：两个根目录意味着两份 SQLite 索引，以及一份合并列表——其中各行的活跃状态与版本权威来源并不相同，而这一切只是为了保住不做迁移的决策本就已经放弃的那部分日志可见性。
 
-**把现有的项目本地日志迁移到共享根目录。** 被需求方否决。项目 `./.sessions` 下的会话仍留在磁盘上，从该目录显式执行 `dsh --resume <id>` 仍可恢复，只是不再出现在 `/resume` 中。
+**把现有的项目本地日志迁移到共享根目录。** 被需求方否决。项目 `./.sessions` 下的会话仍留在磁盘上，从该目录显式执行 `omd --resume <id>` 仍可恢复，只是不再出现在 `/resume` 中。
 
 **把所有 workspace 铺成一个扁平列表。** 否决：这会丢掉绝大多数场景想要的「本项目」默认值，而在一个繁忙的 home 目录里，当前项目的会话会和无关会话争夺注意力。
 

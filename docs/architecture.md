@@ -29,7 +29,7 @@ Layers apply to an empty entry list in this order: each bundle in the profile's 
 To see the tree your machine actually boots:
 
 ```sh
-dsh --profile web --dump-config
+omd --profile web --dump-config
 ```
 
 Any row it prints can be replaced by a patch of your own.

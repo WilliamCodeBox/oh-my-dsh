@@ -17,7 +17,7 @@ The target is `SOURCE_ROOT` in `apps/cli/src/tui.ts` — `fileURLToPath(new URL(
 
 The mechanism is one `process.chdir(workspace)` inside `runTui`, guarded by an optional third parameter that only the `meta` dispatch passes. The cwd *is* the workspace seam in the shipped tree: `examples/tui-agent/cordis.yml` derives the session cwd (`!!js process.cwd()`), the `./.sessions` persistence root, and the HMR watch root (`root: ['.']`) from it, so one chdir moves all three together and meta sessions land in the checkout's gitignored `.sessions/`. It runs after both `.env` layers are loaded — the bin's invoking-directory load and the personal one — so the ambient > project > personal precedence is untouched. `DEFAULT_CONFIG` and `SOURCE_ROOT` are absolute and TUI mode passes no snapshot mode, so config resolution is chdir-independent.
 
-`meta` always starts a fresh session and accepts no default-surface options; its only option is the [experimental gate](2026-07-31-experimental-subcommand-gate.md)'s `--experimental`. `--config` would boot a foreign tree against the harness workspace, which is the default surface's `--config` case rather than this command; `-p` is not interactive, and resume re-enters the persisted session's own workspace through `dsh --resume <id>`. Any leaked default-surface option fails loud.
+`meta` always starts a fresh session and accepts no default-surface options; its only option is the [experimental gate](2026-07-31-experimental-subcommand-gate.md)'s `--experimental`. `--config` would boot a foreign tree against the harness workspace, which is the default surface's `--config` case rather than this command; `-p` is not interactive, and resume re-enters the persisted session's own workspace through `omd --resume <id>`. Any leaked default-surface option fails loud.
 
 ## Testing
 
@@ -37,6 +37,6 @@ The mode was verified interactively instead. Launched from `$HOME`, a `pwd` tool
 
 ## Consequences
 
-Starting a session on dsh's own source is `dsh meta --experimental` from anywhere (or bare `dsh meta` under `DSH_EXPERIMENTAL=1`), and the workspace is guaranteed to be the same checkout the model is told about. The command always starts fresh; an ordinary `dsh --resume <id>` later restores the session and enters its persisted workspace.
+Starting a session on dsh's own source is `dsh meta --experimental` from anywhere (or bare `dsh meta` under `DSH_EXPERIMENTAL=1`), and the workspace is guaranteed to be the same checkout the model is told about. The command always starts fresh; an ordinary `omd --resume <id>` later restores the session and enters its persisted workspace.
 
 `runTui` gains an optional third parameter, so the workspace override is visible at the one function that owns TUI composition rather than hidden in a second copy of it.

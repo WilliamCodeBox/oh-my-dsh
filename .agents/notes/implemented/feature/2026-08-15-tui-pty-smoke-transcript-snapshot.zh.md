@@ -2,7 +2,7 @@
 
 ## 问题
 
-`dsh --profile tui` 的完整旅程——启动、渲染、输入、退出、终端恢复——缺少组装级验收。`process.stdin` 输入从未送达 presenter，Ctrl+C 时进程静默以 1 退出；两者都是真实 bug 而非测试基建缺口，只有真实 PTY 才能暴露。
+`omd --profile tui` 的完整旅程——启动、渲染、输入、退出、终端恢复——缺少组装级验收。`process.stdin` 输入从未送达 presenter，Ctrl+C 时进程静默以 1 退出；两者都是真实 bug 而非测试基建缺口，只有真实 PTY 才能暴露。
 
 ## 改动
 
@@ -10,7 +10,7 @@
   - `apply()` 无条件创建 `StdinInputSource`，它给 `process.stdin` 挂了 `data` 监听器。pi-tui 的 `ProcessTerminal.start()` 会调用 `setEncoding('utf8')`，回调收到的是字符串，`TextDecoder.decode(string)` 在监听器内抛 `TypeError`，崩溃了 EventEmitter 分发，crash-restore 硬退出抢先于任何错误输出。现在输入源只在非 TTY 路径创建（`internals.createInput()`）；TTY 模式下 stdin 归 presenter 独占。
   - `apply()` 的 catch 先 `crash()`（同步硬退出）再写错误信息，错误被静默丢弃；现在先写后 crash。
 - `packages/boot/app-boot/src/profile.ts` — 注册 `tui` profile 模板（`base` + `tui`），全新 `DSH_HOME` 自动初始化该 profile；PTY 冒烟与真实用户无需预装即可启动。
-- `apps/cli/tests/tui-pty.snapshot.ts` — snapshot 门禁内的 keyless PTY case：POSIX python 驱动把 `dsh --profile tui` fork 进 pty，等 editor 边框 marker，输入，提交 keyless 后续回合，等待，发 Ctrl+C，断言退出码 0、输入已渲染、备用屏已恢复（`ESC[?1049l`）。`describe.skipIf(win32)`；src 与 built-lib 两种模式都跑。
+- `apps/cli/tests/tui-pty.snapshot.ts` — snapshot 门禁内的 keyless PTY case：POSIX python 驱动把 `omd --profile tui` fork 进 pty，等 editor 边框 marker，输入，提交 keyless 后续回合，等待，发 Ctrl+C，断言退出码 0、输入已渲染、备用屏已恢复（`ESC[?1049l`）。`describe.skipIf(win32)`；src 与 built-lib 两种模式都跑。
 - `examples/tui-agent/` — 新示例持有转录快照：录制的 `session.jsonl`（turn 括号、流式 chunk、tool call/result 配对、compaction replace、aborted turn）经 `Transcript`/`TranscriptView` 折叠后与 `terminal.expected.txt` 比对。compaction 断言钉死"replace surface op 不得抹掉人类已见内容"的决策。依赖声明进 `examples/package.json`。
 
 ## 为何这样设计

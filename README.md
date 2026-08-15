@@ -17,7 +17,7 @@ DeepSeek Harness is currently in _developer preview_ and is iterating rapidly. *
 Install `Node.js`, then run:
 
 ```sh
-npx @deepseek-ai/dsh web
+npx @deepseek-ai/omd web
 ```
 
 The command starts the Web UI, served at `http://127.0.0.1:3080` by default. See [Web UI guide](docs/user/guide/index.md).
@@ -31,7 +31,7 @@ git clone https://github.com/deepseek-ai/deepseek-harness.git
 cd deepseek-harness
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm omd web
 ```
 
 ## Community and support

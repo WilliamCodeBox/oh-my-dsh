@@ -11,9 +11,9 @@ TUI 功能已齐但不够丝滑：无法上翻历史、状态行缺 token/耗时
   - `Transcript` 累加已定稿助手消息的 token 用量（`state.usage`）；`formatStatus` 显示 `tokens i+o` 与最近完成 turn 的耗时。
   - `TranscriptView` 接受可选 `TranscriptTheme`；默认 identity（快照 fixture 保持纯文本），presenter 传 16 色 ANSI 主题（用户青色、工具黄、turn 灰、命令品红）。
   - `formatItem` 把工具/命令参数与结果行截断在 300 字符并附显式 `…(+N)`。
-- `packages/bundle/tui` — pipe 路径 EOF 时先 `await agent.whenIdle()` 再退出，`echo task | dsh --profile tui` 会把管道任务跑完而不是在流末尾中止。
+- `packages/bundle/tui` — pipe 路径 EOF 时先 `await agent.whenIdle()` 再退出，`echo task | omd --profile tui` 会把管道任务跑完而不是在流末尾中止。
 - `apps/cli/tests/tui-pty.snapshot.ts` — PTY 驱动新增 `resize` action（TIOCSWINSZ + SIGWINCH）；case 中途 resize 仍断言干净退出 130 与备用屏恢复。
-- `examples/tui-agent` — 交互旅程快照（`tui-interaction.snapshot.ts`）钉死每个适配器产出的条目渲染（审批放行的工具卡片、命令卡片、aborted turn）；组装重放 case（`tui-replay.snapshot.ts`）启动 `dsh --profile tui --patch replay.cordis.yml`——禁用真实 DeepSeek 适配器，`dsh-llm-replay` 在 profile 默认 provider/model 下服务 fixture——管道输入一行，跑完整 agent loop，断言 trace 流（chunks、定稿消息、完成的 turn）。lib 模式下重放包经临时 profile 祖先链上的 `node_modules` symlink 解析（built loader 从 profile 目录解析 patch 内插件）。
+- `examples/tui-agent` — 交互旅程快照（`tui-interaction.snapshot.ts`）钉死每个适配器产出的条目渲染（审批放行的工具卡片、命令卡片、aborted turn）；组装重放 case（`tui-replay.snapshot.ts`）启动 `omd --profile tui --patch replay.cordis.yml`——禁用真实 DeepSeek 适配器，`dsh-llm-replay` 在 profile 默认 provider/model 下服务 fixture——管道输入一行，跑完整 agent loop，断言 trace 流（chunks、定稿消息、完成的 turn）。lib 模式下重放包经临时 profile 祖先链上的 `node_modules` symlink 解析（built loader 从 profile 目录解析 patch 内插件）。
 
 ## 为何这样设计
 

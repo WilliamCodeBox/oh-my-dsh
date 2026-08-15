@@ -15,7 +15,7 @@ The approval / user-questions / commands adapters and the strict-TTY contract la
 
 ## App command line
 
-The `tui-startup` provider ([`src/startup.ts`](src/startup.ts)) injects `ctx.cmdlineArgs` ([`dsh-cmdline`](../../boot/cmdline/README.md)), parses this app's flags, and provides `tuiStartup`; the runner row injects that service and reads its config from lazy `!!js` expressions. `dsh --profile tui --help` prints this app's help and boots nothing.
+The `tui-startup` provider ([`src/startup.ts`](src/startup.ts)) injects `ctx.cmdlineArgs` ([`dsh-cmdline`](../../boot/cmdline/README.md)), parses this app's flags, and provides `tuiStartup`; the runner row injects that service and reads its config from lazy `!!js` expressions. `omd --profile tui --help` prints this app's help and boots nothing.
 
 | Flag | Meaning |
 |---|---|

@@ -37,7 +37,7 @@ export interface TuiStartupValues {
  */
 function tuiCommand(): Command {
   return new Command()
-    .name('dsh --profile tui')
+    .name('omd --profile tui')
     .description('Start an interactive terminal coding session.')
     .helpOption('-h, --help', 'show this help')
     .option('--resume <session-id>', 'resume a persisted session instead of creating a fresh one')
@@ -46,9 +46,9 @@ function tuiCommand(): Command {
     .option('--permission <preset>', 'permission preset: read-only | workspace-write | danger-full-access')
     .addHelpText('after', `
 Examples:
-  dsh --profile tui
-  dsh --profile tui --resume <session-id>
-  dsh --profile tui --model deepseek-official/deepseek-v4-pro
+  omd --profile tui
+  omd --profile tui --resume <session-id>
+  omd --profile tui --model deepseek-official/deepseek-v4-pro
 `)
 }
 

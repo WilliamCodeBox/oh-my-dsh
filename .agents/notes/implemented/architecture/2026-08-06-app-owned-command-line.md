@@ -6,7 +6,7 @@ English | [中文](2026-08-06-app-owned-command-line.zh.md)
 
 ## Problem
 
-After profiles, compositions were installable but their command lines were not. `apps/cli` still declared the Web flag family (`--host`, `--port`, `--dev`, `--workspace-root`, `--trusted-host`) and the one-shot task positional, then derived patches for row ids it hardcoded (`webserver`, `api-gateway`, `connection`, `web-runtime`). An out-of-tree app such as [turtle-ui](https://github.com/deepseek-harness/turtle-ui) could contribute rows but had no way to accept a flag: `dsh --profile tui --resume <session>` had nowhere to be parsed, and `dsh --profile web --help` printed the launcher's help rather than the web app's.
+After profiles, compositions were installable but their command lines were not. `apps/cli` still declared the Web flag family (`--host`, `--port`, `--dev`, `--workspace-root`, `--trusted-host`) and the one-shot task positional, then derived patches for row ids it hardcoded (`webserver`, `api-gateway`, `connection`, `web-runtime`). An out-of-tree app such as [turtle-ui](https://github.com/deepseek-harness/turtle-ui) could contribute rows but had no way to accept a flag: `omd --profile tui --resume <session>` had nowhere to be parsed, and `omd --profile web --help` printed the launcher's help rather than the web app's.
 
 ## Decision
 
@@ -18,7 +18,7 @@ The boot mounts the composition once. Cordis holds each row until its injections
 
 The shipped apps moved their flags into their bundles: `dsh-web-app` owns the Web family, and `dsh-headless` owns the task positional and rejects a missing task as a usage error. `apps/cli/src/web.ts` is gone; `runProfile` no longer knows any flag-target row id. Out of tree, turtle-ui gained `--resume <session>` / `--session <id>` the same way, which is the design's real validation: an installed plugin added a flag with no launcher change.
 
-Two further consequences. Loader mounts sibling rows concurrently, so one row can activate while another still mounts or while the whole boot is rolling back; the Web bundle therefore publishes its URL only after its own Loader tree settles. The Web bundle's runtime plugin owns the harness-source prompt section too, so `dsh web` and `dsh --profile web` boot identically without Web-specific launcher setup.
+Two further consequences. Loader mounts sibling rows concurrently, so one row can activate while another still mounts or while the whole boot is rolling back; the Web bundle therefore publishes its URL only after its own Loader tree settles. The Web bundle's runtime plugin owns the harness-source prompt section too, so `dsh web` and `omd --profile web` boot identically without Web-specific launcher setup.
 
 ## Why Loader owns the ordering
 

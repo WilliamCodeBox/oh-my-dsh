@@ -1,4 +1,4 @@
-# Agent Note: dsh --dump-config prints the composed config tree
+# Agent Note: omd --dump-config prints the composed config tree
 
 Status: implemented
 Archived: 2026-08-07
@@ -11,7 +11,7 @@ The booted tree is a composition the user never sees: the shipped base, a surfac
 
 ## Decision
 
-`dsh --dump-config` and `dsh web --dump-config` print the composed entry list — base, surface overlay, then the `--config` or personal overlay, exactly the layers that surface's boot assembles — as YAML on stdout and exit without booting. `dsh --dump-default-config` / `dsh web --dump-default-config` stop at the surface overlay, so diffing the two outputs shows precisely what the user layer changes.
+`omd --dump-config` and `dsh web --dump-config` print the composed entry list — base, surface overlay, then the `--config` or personal overlay, exactly the layers that surface's boot assembles — as YAML on stdout and exit without booting. `omd --dump-default-config` / `dsh web --dump-default-config` stop at the surface overlay, so diffing the two outputs shows precisely what the user layer changes.
 
 The dump cannot drift from what boots because it shares the mounting code: the vendored include exports its patch algorithm as the pure `applyEntryPatches(data, patches, warn)` (the private `applyPatches` method now delegates to it) and its `!!js` YAML dialect as `entryListSchema`; `dsh-app-boot`'s `renderConfigDump()` composes labeled layers and renders through both, and `apps/cli/src/dump-config.ts` is a thin surface-selection wrapper. `!!js` expressions print verbatim and unevaluated — the dump shows composition, not one process's environment — and a patch whose target row is absent goes to stderr with its layer label, mirroring the Loader's boot-time warning. Launcher-owned boot-context values (session identity, web CLI-flag patches, the frontend dist path) are per-invocation facts outside the config tree and do not appear. The dump flags reject boot-only flags (`-p`, `--resume`, `--config-replace`) and each other, and `--dump-default-config` takes no `--config`.
 
@@ -25,7 +25,7 @@ Each run of same-provenance rows is preceded by a `# ==` comment naming the file
 
 **Reimplement the patch merge in the CLI.** Rejected: a second implementation of `applyPatches` would silently drift from the vendored include — the exact failure mode the feature exists to debug. Exporting the include's own algorithm costs one logged vendor modification and guarantees identity.
 
-**A `/dump-config` TUI command instead of flags.** Rejected as the only form: the primary use is a piped `dsh --dump-config | diff - <(dsh --dump-default-config)` style workflow, which needs a boot-free non-TTY surface. A TUI command can be added later over the same `renderConfigDump`.
+**A `/dump-config` TUI command instead of flags.** Rejected as the only form: the primary use is a piped `omd --dump-config | diff - <(omd --dump-default-config)` style workflow, which needs a boot-free non-TTY surface. A TUI command can be added later over the same `renderConfigDump`.
 
 ## Consequences
 

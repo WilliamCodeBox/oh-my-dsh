@@ -320,7 +320,7 @@ async function driveInput(
     const key = await input.next()
     if (key === undefined) {
       // EOF: drain any in-flight follow-up turn before quitting, so piped
-      // input (`echo task | dsh --profile tui`) runs to completion.
+      // input (`echo task | omd --profile tui`) runs to completion.
       await agent.whenIdle()
       return { kind: 'quit', code: 0 }
     }
@@ -596,7 +596,7 @@ export function apply(ctx: Context, config: Config): void {
   const input = internals.isTTY ? undefined : internals.createInput()
   void run(ctx, config, io, input).catch((error: unknown) => {
     // Report before the crash restore: the restore path hard-exits.
-    io.stderr.write(`dsh: ${error instanceof Error ? error.message : String(error)}\n`)
+    io.stderr.write(`omd: ${error instanceof Error ? error.message : String(error)}\n`)
     crash()
     io.exit(1)
   })

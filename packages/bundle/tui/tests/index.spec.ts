@@ -796,7 +796,7 @@ describe('tui runner', () => {
     ctx.provide('agents', minimalAgents() as never)
     apply(ctx, new Config({ permission: 'danger-full-access' }))
     expect(await exited).toBe(1)
-    expect(err).toBe('dsh: tui-runner: --permission needs the dsh-permission-presets service\n')
+    expect(err).toBe('omd: tui-runner: --permission needs the dsh-permission-presets service\n')
     await ctx.fiber.dispose()
   })
 
@@ -815,7 +815,7 @@ describe('tui runner', () => {
     ctx.provide('agents', { create: () => Promise.reject(new Error('factory exploded')), resume: () => Promise.reject(new Error('not used')) } as never)
     apply(ctx, new Config({}))
     expect(await exited).toBe(1)
-    expect(err).toBe('dsh: factory exploded\n')
+    expect(err).toBe('omd: factory exploded\n')
     await ctx.fiber.dispose()
   })
 
@@ -839,7 +839,7 @@ describe('tui runner', () => {
     ctx.provide('agents', { create: () => rejected, resume: () => Promise.reject(new Error('not used')) } as never)
     apply(ctx, new Config({}))
     expect(await exited).toBe(1)
-    expect(err).toBe('dsh: factory exploded\n')
+    expect(err).toBe('omd: factory exploded\n')
     await ctx.fiber.dispose()
   })
 

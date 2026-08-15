@@ -25,7 +25,7 @@ Archived: 2026-08-03
 
 **保留 `experimental-` 名称前缀。** 按用户的指示拒绝：前缀让每次调用都付出代价，稳定时也会变成破坏性的重命名，而不是删除一个门槛。
 
-**父级 `--experimental` 标志（`dsh --experimental meta`）。** 拒绝：默认界面刻意保持纯选项形式并启用 `enablePositionalOptions`，跨子命令边界泄漏的父级选项都被视为拼错的调用。一个只被两个子命令消费的父级标志，恰恰就是适配器在其他所有地方都拒绝的泄漏选项形态。
+**父级 `--experimental` 标志（`omd --experimental meta`）。** 拒绝：默认界面刻意保持纯选项形式并启用 `enablePositionalOptions`，跨子命令边界泄漏的父级选项都被视为拼错的调用。一个只被两个子命令消费的父级标志，恰恰就是适配器在其他所有地方都拒绝的泄漏选项形态。
 
 **在 `parseDshArgs` 内部读取 `process.env`。** 拒绝：本仓库在进程边界做验证，并保持类型化接缝的纯粹性；否则测试必须在每个用例前后修改并恢复 `process.env`。
 
@@ -33,4 +33,4 @@ Archived: 2026-08-03
 
 ## Consequences
 
-日常调用缩短为 `dsh meta --experimental` 和 `dsh upgrade --experimental`；在环境中设置了 `DSH_EXPERIMENTAL=1` 的开发者可以直接使用 `dsh meta`/`dsh upgrade`。`dsh --help` 将这两个命令标注为 `(experimental)`。在命令稳定之前，门槛的代价是一个额外的标志或环境变量；稳定时删除门槛即可，名字已是最终形态。
+日常调用缩短为 `dsh meta --experimental` 和 `dsh upgrade --experimental`；在环境中设置了 `DSH_EXPERIMENTAL=1` 的开发者可以直接使用 `dsh meta`/`dsh upgrade`。`omd --help` 将这两个命令标注为 `(experimental)`。在命令稳定之前，门槛的代价是一个额外的标志或环境变量；稳定时删除门槛即可，名字已是最终形态。

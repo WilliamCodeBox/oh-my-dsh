@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Folded terminal transcript model and pi-tui-backed presentation layer for the `dsh --profile tui` surface. The transcript projects one session's durable `session/event` stream into display items; the presenter renders them on the alternate screen with a scroll viewport, status row, and input editor. Interaction adapters land in later milestones on top of the presenter seam.
+Folded terminal transcript model and pi-tui-backed presentation layer for the `omd --profile tui` surface. The transcript projects one session's durable `session/event` stream into display items; the presenter renders them on the alternate screen with a scroll viewport, status row, and input editor. Interaction adapters land in later milestones on top of the presenter seam.
 
 ## Transcript model
 

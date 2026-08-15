@@ -36,7 +36,7 @@ The local `release` command composes pack and publish. It first uses the pack co
 
 ## Current implementation boundary
 
-The checked-in pack command implements fixed-commit staging, exact internal dependency pins, static and tarball payload checks, the immutable manifest, and an isolated npm installation with every release tarball as a local top-level dependency. It runs the installed `dsh --version` and `dsh --dump-default-config` entries under plain Node, then starts the installed default TUI in a POSIX PTY, waits for its `main-session-` ready signal, and exits through `/exit` before printing the publish command. Publish supports integrity-based resumption, separates read-only registry verification from the authenticated identity check, and finishes with a complete remote integrity and dist-tag verification pass.
+The checked-in pack command implements fixed-commit staging, exact internal dependency pins, static and tarball payload checks, the immutable manifest, and an isolated npm installation with every release tarball as a local top-level dependency. It runs the installed `omd --version` and `omd --dump-default-config` entries under plain Node, then starts the installed default TUI in a POSIX PTY, waits for its `main-session-` ready signal, and exits through `/exit` before printing the publish command. Publish supports integrity-based resumption, separates read-only registry verification from the authenticated identity check, and finishes with a complete remote integrity and dist-tag verification pass.
 
 Pull-request CI does not invoke the pack command; the installed-entry probes are local release checks rather than merge gates. Credential-free CI execution, package-owned probes for every other bin and public runtime entry, workflow-artifact transfer, and the protected publication job remain proposal scope.
 
@@ -56,7 +56,7 @@ Installation uses the client behavior selected for this publication. Registry up
 
 The test covers at least these execution surfaces:
 
-- Installed `@deepseek-ai/dsh` runs `dsh --version` and `dsh --dump-default-config` successfully under plain Node, covering the static CLI entry and one dynamic mode entry.
+- Installed `@deepseek-ai/dsh` runs `omd --version` and `omd --dump-default-config` successfully under plain Node, covering the static CLI entry and one dynamic mode entry.
 - Installed default `dsh` completes one keyless TUI startup in a PTY and exits under test control after reaching a defined ready signal. This path must load the real TUI dynamic chunk, so a missing publication file such as `lib/tui-*.js` fails the gate.
 - Every other published `bin` defines a package-owned smoke command that neither reaches a real service nor modifies user state. Different CLIs are not forced to share `--help`; the test runs the actual installed entry and checks its agreed exit or ready signal.
 - Node-compatible public runtime entries load from the installation. Browser, worker, or host-protocol-only entries use matching isolated fixtures, but their inputs must still be the current tarballs exclusively.
@@ -85,7 +85,7 @@ The registry token is injected only into the publish job, which uses a protected
 
 **Test only built `lib/` in the working tree.** Rejected because that validates the build tree rather than the tarball selected by `package.json#files`. A dynamic chunk present in the working tree but omitted from the tarball is exactly the failure this proposal must catch.
 
-**Run only `dsh --help`.** Rejected because Commander can print help and exit before loading the TUI, Web, or headless dynamic entry. It does not prove the default production startup path is complete.
+**Run only `omd --help`.** Rejected because Commander can print help and exit before loading the TUI, Web, or headless dynamic entry. It does not prove the default production startup path is complete.
 
 **Publish `src` and declaration maps to reduce missing-file risk.** Rejected because the source plane is not a production-runtime fallback. Expanding the payload hides bundle-closure errors and turns local debugging outputs into accidental publication contracts.
 

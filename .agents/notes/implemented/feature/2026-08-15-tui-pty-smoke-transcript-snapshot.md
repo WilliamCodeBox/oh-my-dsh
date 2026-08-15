@@ -2,7 +2,7 @@
 
 ## Problem
 
-The `dsh --profile tui` journey — boot, render, input, quit, terminal restore — had no assembled-surface acceptance. `process.stdin` input never reached the presenter, and the process exited 1 silently on Ctrl+C; both were real bugs, not test-infrastructure gaps, and only a real PTY could have caught them.
+The `omd --profile tui` journey — boot, render, input, quit, terminal restore — had no assembled-surface acceptance. `process.stdin` input never reached the presenter, and the process exited 1 silently on Ctrl+C; both were real bugs, not test-infrastructure gaps, and only a real PTY could have caught them.
 
 ## Changes
 
@@ -10,7 +10,7 @@ The `dsh --profile tui` journey — boot, render, input, quit, terminal restore 
   - `apply()` unconditionally created `StdinInputSource`, which attaches `data` listeners to `process.stdin`. pi-tui's `ProcessTerminal.start()` calls `setEncoding('utf8')`, so the callback received strings and `TextDecoder.decode(string)` threw a `TypeError` inside the listener, which crashed the EventEmitter dispatch and ran the crash-restore hard-exit before any error text was printed. The input source is now created only for the non-TTY path (`internals.createInput()`); the presenter owns stdin in TTY mode.
   - the `apply()` catch wrote the error after `crash()` (synchronous hard exit), silently dropping it; the write now happens first.
 - `packages/boot/app-boot/src/profile.ts` — registered the `tui` profile template (`base` + `tui`) so a fresh `DSH_HOME` auto-initializes the profile; the PTY smoke and real users boot without pre-install.
-- `apps/cli/tests/tui-pty.snapshot.ts` — keyless PTY case in the snapshot gate: a POSIX python driver forks `dsh --profile tui` into a pty, waits for the editor border marker, types, submits a keyless follow-up turn, waits, sends Ctrl+C, and asserts exit 0, the rendered input, and the alternate-screen restore (`ESC[?1049l`). `describe.skipIf(win32)`; runs in src and built-lib modes.
+- `apps/cli/tests/tui-pty.snapshot.ts` — keyless PTY case in the snapshot gate: a POSIX python driver forks `omd --profile tui` into a pty, waits for the editor border marker, types, submits a keyless follow-up turn, waits, sends Ctrl+C, and asserts exit 0, the rendered input, and the alternate-screen restore (`ESC[?1049l`). `describe.skipIf(win32)`; runs in src and built-lib modes.
 - `examples/tui-agent/` — new example owning the transcript snapshot: a recorded `session.jsonl` (turn bracket, streamed chunks, tool call/result pairing, compaction replace, aborted turn) folds through `Transcript`/`TranscriptView` and compares against `terminal.expected.txt`. The compaction assertion pins the decision that a replace surface op never erases what the human saw. Deps declared in `examples/package.json`.
 
 ## Why this design

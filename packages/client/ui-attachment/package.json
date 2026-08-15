@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-attachment",
-  "description": "Pure React attachment atoms for the dsh web UI: draft-image rail, message image gallery, and original-image lightbox (zero cordis)",
+  "description": "Pure React attachment atoms for the omd web UI: draft-image rail, message image gallery, and original-image lightbox (zero cordis)",
   "version": "0.1.0-rc.5",
   "publishConfig": {
     "access": "public"

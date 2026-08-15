@@ -35,7 +35,7 @@ With the presenter owning raw mode on TTY and pipes never entering it, `Terminal
 
 ## Consequences
 
-- `dsh --profile tui` on a TTY shows the two-layer surface: scrollable transcript (user/assistant/tool/turn items), status row (model route, todo counts, compaction count), and the input editor. Enter submits follow-up turns or steering; Ctrl+C runs the same three-state machine (clear → cancel → quit → force-exit) through the presenter's raw-key listener.
+- `omd --profile tui` on a TTY shows the two-layer surface: scrollable transcript (user/assistant/tool/turn items), status row (model route, todo counts, compaction count), and the input editor. Enter submits follow-up turns or steering; Ctrl+C runs the same three-state machine (clear → cancel → quit → force-exit) through the presenter's raw-key listener.
 - The bundle's M0 pipe tests were re-based to the non-TTY path; new presenter tests drive the runner through an in-memory `Terminal` (editor submit, Ctrl+C cancel/force-exit, resume seed folding, crash restore). 84 tests pass across the bundle and renderer packages; typecheck, lint, build, workspace constraints, and the Model Experience doc gate pass.
 - `@earendil-works/pi-tui@0.84.2` (ESM, Node ≥ 22.19, deps: marked + get-east-asian-width) is a runtime dependency of the renderer package; the old dsh patch (editor prompt prefixes) is not upstreamed and is not re-applied yet.
 - Remaining in the milestone arc: keymap refinement (ESC sequences, Shift+Enter, graceful-130 Ctrl+C), interaction adapters (approval/questions/commands), theming/diff cards, and the PTY acceptance harness (M3a).

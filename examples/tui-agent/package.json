@@ -3,5 +3,5 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "description": "Runnable example: the dsh --profile tui surface — PTY smoke and transcript snapshot acceptance"
+  "description": "Runnable example: the omd --profile tui surface — PTY smoke and transcript snapshot acceptance"
 }

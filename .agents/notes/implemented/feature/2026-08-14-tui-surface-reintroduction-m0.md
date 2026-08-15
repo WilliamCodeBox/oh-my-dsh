@@ -4,15 +4,15 @@ Status: implemented
 
 ## Problem
 
-The terminal front door deleted by [remove-tui-package](../../implemented/simplification/2026-08-04-remove-tui-package.md) left dsh with Web as the only interactive human surface. Its reintroduction conditions — a named product or deployment, an explicit package boundary, a concrete interaction provider, and assembled lifecycle and transcript acceptance — were recorded but unaddressed. This note records the phased reintroduction of `dsh --profile tui` and how each condition is met or named as a milestone's exit criterion.
+The terminal front door deleted by [remove-tui-package](../../implemented/simplification/2026-08-04-remove-tui-package.md) left dsh with Web as the only interactive human surface. Its reintroduction conditions — a named product or deployment, an explicit package boundary, a concrete interaction provider, and assembled lifecycle and transcript acceptance — were recorded but unaddressed. This note records the phased reintroduction of `omd --profile tui` and how each condition is met or named as a milestone's exit criterion.
 
 ## Decision
 
-`@deepseek-ai/dsh-tui` returns as an installable profile bundle at `packages/bundle/tui` (patch + `tui-startup` cmdline provider + `tui-runner` glue plugin), booted as `dsh --profile tui`. The M0 surface is line-oriented event tracing over `dsh-base` — no Host, HTTP, Web runtime, or browser rows.
+`@deepseek-ai/dsh-tui` returns as an installable profile bundle at `packages/bundle/tui` (patch + `tui-startup` cmdline provider + `tui-runner` glue plugin), booted as `omd --profile tui`. The M0 surface is line-oriented event tracing over `dsh-base` — no Host, HTTP, Web runtime, or browser rows.
 
 Reintroduction conditions, in order:
 
-1. **Named product/deployment — met.** `dsh --profile tui` is the product entrypoint; the package README and this note define the deployment and its M0 contract.
+1. **Named product/deployment — met.** `omd --profile tui` is the product entrypoint; the package README and this note define the deployment and its M0 contract.
 2. **Explicit package boundary — met.** The glue bundle sits at `packages/bundle/tui`. The presentation layer stays out of the bundle; the renderer milestone picks its package home (the `ui/` group was dissolved by the [regrouping RFC](../../../docs/AGENTS.md) and is not resurrected by this change).
 3. **Concrete interaction provider — named, deferred.** The approval / user-questions / commands adapters are the interaction milestone's deliverable. Until then approvals fall through to the fail-closed `unavailable` outcome and questions to `NO_PROVIDER`; nothing degrades silently.
 4. **Assembled lifecycle and transcript acceptance — named, deferred.** The testing milestone adds the runnable-example keyless snapshot and PTY case the human-visible surface policy requires; the M0 package tests cover the runner seams.
@@ -40,7 +40,7 @@ The regrouping RFC dissolved `ui/` (tui joined the `interaction/` direction, app
 
 ## Consequences
 
-- `dsh --profile tui` is runnable again: installs through `dsh plugin --profile tui add <spec>`, prints its own `--help`, boots the base tree, and restores the terminal on every exit path (quit, EOF, crash).
+- `omd --profile tui` is runnable again: installs through `dsh plugin --profile tui add <spec>`, prints its own `--help`, boots the base tree, and restores the terminal on every exit path (quit, EOF, crash).
 - Approval and question tools remain fail-closed until the interaction milestone — an explicit, documented gap, not silent degradation.
 - The Ctrl+C semantics are the skeleton; the refined "cancel then graceful 130 quit" policy and full keymap land with the interaction milestone.
 - The launcher's SIGINT/SIGTERM chain remains a cooked-window and external-signal safety net only; raw mode owns user Ctrl+C.

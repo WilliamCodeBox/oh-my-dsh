@@ -12,7 +12,7 @@ Storage was the binding one. The shipped TUI composition defaulted its persisten
 
 The picker then filtered again. It dropped records whose `cwd` differed from the current session before display, and `summarizeResumeCandidate` independently marked a differing `cwd` as `disabledReason: 'different workspace'`, so a foreign session that did reach the store was both hidden and refused.
 
-Finally, resume never changed directory. The host re-execs `dsh --resume=<id>` through `process.execve`, which inherits the cwd. Session *header* cwd is restored from the log, but process cwd is what `dsh-fs-local`, the bash executor, and glob/grep resolve against, so resuming a foreign session would have replayed its transcript while acting on the wrong project.
+Finally, resume never changed directory. The host re-execs `omd --resume=<id>` through `process.execve`, which inherits the cwd. Session *header* cwd is restored from the log, but process cwd is what `dsh-fs-local`, the bash executor, and glob/grep resolve against, so resuming a foreign session would have replayed its transcript while acting on the wrong project.
 
 ## Decision
 
@@ -24,7 +24,7 @@ The shared CLI configuration supplies one session root under the Harness home, t
 
 `summarizeResumeCandidate` therefore drops `'different workspace'` and gains `'session has no recorded workspace'`. That is a real new refusal rather than a rename: a header without `cwd` names no directory for the host to enter, so it cannot be handed off even though its log is intact.
 
-**Handoff.** `TuiResumeHost.handoff` takes the target `cwd` beside the `SessionId`. `preflightResume` resolves both together and returns them, so the caller cannot re-derive a stale directory from the row it displayed — a record whose `cwd` moved between listing and preflight is resumed in the *re-read* directory, which is why the former "reject a moved cwd" behavior is now a handoff with the new path. The shipped host chdirs before disposing the app: an unreachable directory must reject while the caller can still restore the terminal, because after teardown no owner remains to report to. Resume always uses the default `dsh --resume` surface because `meta` rejects parent options; the handoff already enters the persisted target directory.
+**Handoff.** `TuiResumeHost.handoff` takes the target `cwd` beside the `SessionId`. `preflightResume` resolves both together and returns them, so the caller cannot re-derive a stale directory from the row it displayed — a record whose `cwd` moved between listing and preflight is resumed in the *re-read* directory, which is why the former "reject a moved cwd" behavior is now a handoff with the new path. The shipped host chdirs before disposing the app: an unreachable directory must reject while the caller can still restore the terminal, because after teardown no owner remains to report to. Resume always uses the default `omd --resume` surface because `meta` rejects parent options; the handoff already enters the persisted target directory.
 
 ## Alternatives considered
 
@@ -32,7 +32,7 @@ The shared CLI configuration supplies one session root under the Harness home, t
 
 **Keep `./.sessions` and additionally scan the Harness-home root.** Rejected: two roots means two SQLite indexes and a merged listing whose rows have different liveness and revision authorities, to preserve visibility of logs that the no-migration decision already gives up.
 
-**Migrate existing project-local logs into the shared root.** Rejected by the requester. Sessions under a project's `./.sessions` stay on disk and stay resumable by explicit `dsh --resume <id>` from that directory, but no longer appear in `/resume`.
+**Migrate existing project-local logs into the shared root.** Rejected by the requester. Sessions under a project's `./.sessions` stay on disk and stay resumable by explicit `omd --resume <id>` from that directory, but no longer appear in `/resume`.
 
 **One flat list of every workspace.** Rejected: it loses the "this project" default that the overwhelmingly common case wants, and in a busy home directory the current project's sessions would compete with unrelated ones.
 

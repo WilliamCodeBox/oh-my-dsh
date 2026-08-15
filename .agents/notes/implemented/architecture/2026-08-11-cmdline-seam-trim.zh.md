@@ -25,7 +25,7 @@ Status: implemented
 
 ## 后果
 
-- 用 SIGTERM 监督 `dsh --profile headless` 的部署现在观察到退出码 0 而非 143；信号是调用方自己发的，且 stdout 上没有答案。
+- 用 SIGTERM 监督 `omd --profile headless` 的部署现在观察到退出码 0 而非 143；信号是调用方自己发的，且 stdout 上没有答案。
 - 重载链在每个 `dsh web` 进程中运行；不得暴露 `/plugins/events` 的部署应在其 patch 层禁用 `client-hmr` 行。
 - 一次性运行会挂载之前跳过的配置监视行，启动多花几毫秒。
 - vendored Loader/Include 偏差减少一个协议符号和一台状态机，`rescope-vendor:check` 重新通过（修改日志的 rescope 条目回到其精确编辑锚点要求的位置）。

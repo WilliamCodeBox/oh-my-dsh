@@ -6,7 +6,7 @@ Status: implemented
 
 ## 问题
 
-profile 落地之后，组合可以安装，命令行却不能。`apps/cli` 仍然声明着 Web flag 家族（`--host`、`--port`、`--dev`、`--workspace-root`、`--trusted-host`）和一次性任务位置参数，再为自己硬编码的行 id（`webserver`、`api-gateway`、`connection`、`web-runtime`）派生 patch。像 [turtle-ui](https://github.com/deepseek-harness/turtle-ui) 这样的树外应用能贡献行，却无处接受一个 flag：`dsh --profile tui --resume <session>` 没有地方可供解析，而 `dsh --profile web --help` 打印的是启动器的 help，而不是 web 应用的 help。
+profile 落地之后，组合可以安装，命令行却不能。`apps/cli` 仍然声明着 Web flag 家族（`--host`、`--port`、`--dev`、`--workspace-root`、`--trusted-host`）和一次性任务位置参数，再为自己硬编码的行 id（`webserver`、`api-gateway`、`connection`、`web-runtime`）派生 patch。像 [turtle-ui](https://github.com/deepseek-harness/turtle-ui) 这样的树外应用能贡献行，却无处接受一个 flag：`omd --profile tui --resume <session>` 没有地方可供解析，而 `omd --profile web --help` 打印的是启动器的 help，而不是 web 应用的 help。
 
 ## 决策
 
@@ -18,7 +18,7 @@ boot 只挂载一次整套组合。Cordis 让每一行等待其注入激活；Lo
 
 已交付的各应用把自己的 flag 搬进了组合包：`dsh-web-app` 持有 Web 家族，`dsh-headless` 持有任务位置参数，缺少任务时按用法错误拒绝。`apps/cli/src/web.ts` 已删除；`runProfile` 不再知道任何 flag 目标行 id。在树外，turtle-ui 以同样的方式获得了 `--resume <session>` / `--session <id>`，这才是这套设计的真正验证：一个已安装的插件加上了一个 flag，启动器毫无改动。
 
-还有两条后果。Loader 会并发挂载兄弟行，因此一行可能已经激活，而另一行仍在挂载，或整次 boot 正在回滚；所以 Web 组合包只会在自身的 Loader 配置树结算后公布 URL。另外，Web 组合包的运行时插件也持有 harness 源码提示词段，因此 `dsh web` 与 `dsh --profile web` 无需 Web 专用启动器设置即可按完全相同的方式启动。
+还有两条后果。Loader 会并发挂载兄弟行，因此一行可能已经激活，而另一行仍在挂载，或整次 boot 正在回滚；所以 Web 组合包只会在自身的 Loader 配置树结算后公布 URL。另外，Web 组合包的运行时插件也持有 harness 源码提示词段，因此 `dsh web` 与 `omd --profile web` 无需 Web 专用启动器设置即可按完全相同的方式启动。
 
 ## 为什么由 Loader 持有顺序
 

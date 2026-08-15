@@ -17,7 +17,7 @@ Archived: 2026-08-03
 
 机制是 `runTui` 内的一次 `process.chdir(workspace)`，由一个可选第三参数把守，只有 `meta` 分派会传入。在已交付的配置树中，cwd *就是* workspace 的接缝：`examples/tui-agent/cordis.yml` 由它派生出会话 cwd（`!!js process.cwd()`）、`./.sessions` 持久化根目录以及 HMR 监视根目录（`root: ['.']`），因此一次 chdir 会让三者一并移动，meta 会话则落在检出目录中被 gitignore 的 `.sessions/` 内。它在两层 `.env` 都加载之后执行——bin 对调用目录的加载与个人层加载——因此“环境中已有的值 > 项目 > 个人”的优先级不受影响。`DEFAULT_CONFIG` 与 `SOURCE_ROOT` 都是绝对路径，且 TUI 模式不传 snapshot mode，所以配置解析与 chdir 无关。
 
-`meta` 始终启动新会话，且不接受任何默认界面选项；它唯一的选项是[实验性门槛](2026-07-31-experimental-subcommand-gate.md)的 `--experimental`。`--config` 会针对 harness workspace 启动其他配置树，那是默认界面的 `--config` 场景，而不是该命令的场景；`-p` 并非交互式，恢复则通过 `dsh --resume <id>` 重新进入已持久化会话自身的 workspace。任何泄漏的默认界面选项都会明确报错。
+`meta` 始终启动新会话，且不接受任何默认界面选项；它唯一的选项是[实验性门槛](2026-07-31-experimental-subcommand-gate.md)的 `--experimental`。`--config` 会针对 harness workspace 启动其他配置树，那是默认界面的 `--config` 场景，而不是该命令的场景；`-p` 并非交互式，恢复则通过 `omd --resume <id>` 重新进入已持久化会话自身的 workspace。任何泄漏的默认界面选项都会明确报错。
 
 ## Testing
 
@@ -37,6 +37,6 @@ Archived: 2026-08-03
 
 ## Consequences
 
-在 dsh 自身源码上开启会话变成了在任意位置执行 `dsh meta --experimental`（在 `DSH_EXPERIMENTAL=1` 下可直接执行 `dsh meta`），且该 workspace 必然就是告知模型的那个检出目录。该命令始终启动新会话；之后，普通的 `dsh --resume <id>` 会恢复该会话并进入其已持久化的 workspace。
+在 dsh 自身源码上开启会话变成了在任意位置执行 `dsh meta --experimental`（在 `DSH_EXPERIMENTAL=1` 下可直接执行 `dsh meta`），且该 workspace 必然就是告知模型的那个检出目录。该命令始终启动新会话；之后，普通的 `omd --resume <id>` 会恢复该会话并进入其已持久化的 workspace。
 
 `runTui` 新增一个可选第三参数，因此 workspace 覆盖是在拥有 TUI 组合逻辑的那唯一一个函数上可见的，而不是隐藏在它的第二份副本中。

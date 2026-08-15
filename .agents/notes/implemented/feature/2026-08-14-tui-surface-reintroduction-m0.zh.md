@@ -6,15 +6,15 @@ Status: implemented
 
 ## 问题
 
-[remove-tui-package](../../implemented/simplification/2026-08-04-remove-tui-package.md) 删除终端前端后，dsh 只剩 Web 一个交互式人类界面。该记录留下的重入条件——具名的产品/部署、显式的包边界、具体的交互 provider、装配级生命周期与转录验收——一直未被回应。本记录记下 `dsh --profile tui` 的分阶段重新引入，以及每条条件如何被满足或被命名为某个里程碑的出口标准。
+[remove-tui-package](../../implemented/simplification/2026-08-04-remove-tui-package.md) 删除终端前端后，dsh 只剩 Web 一个交互式人类界面。该记录留下的重入条件——具名的产品/部署、显式的包边界、具体的交互 provider、装配级生命周期与转录验收——一直未被回应。本记录记下 `omd --profile tui` 的分阶段重新引入，以及每条条件如何被满足或被命名为某个里程碑的出口标准。
 
 ## 决定
 
-`@deepseek-ai/dsh-tui` 以可安装的 profile bundle 回归，位于 `packages/bundle/tui`（补丁层 + `tui-startup` 命令行 provider + `tui-runner` glue 插件），以 `dsh --profile tui` 启动。M0 界面是骑在 `dsh-base` 上的逐行事件追踪——不挂 Host、HTTP、Web runtime 或浏览器行。
+`@deepseek-ai/dsh-tui` 以可安装的 profile bundle 回归，位于 `packages/bundle/tui`（补丁层 + `tui-startup` 命令行 provider + `tui-runner` glue 插件），以 `omd --profile tui` 启动。M0 界面是骑在 `dsh-base` 上的逐行事件追踪——不挂 Host、HTTP、Web runtime 或浏览器行。
 
 重入条件，逐条：
 
-1. **具名的产品/部署——已满足。** `dsh --profile tui` 是产品入口；包 README 与本记录定义该部署及其 M0 契约。
+1. **具名的产品/部署——已满足。** `omd --profile tui` 是产品入口；包 README 与本记录定义该部署及其 M0 契约。
 2. **显式的包边界——已满足。** glue bundle 位于 `packages/bundle/tui`。表现层不进 bundle；渲染里程碑再决定其包归属（`ui/` 组已被 [regrouping RFC](../../../docs/AGENTS.md) 解散，本次变更不复活它）。
 3. **具体的交互 provider——已命名、延后。** approval / user-questions / commands 适配器是交互里程碑的交付物。在那之前审批落入 fail-closed 的 `unavailable` 结局、提问落入 `NO_PROVIDER`；任何情况都不静默降级。
 4. **装配级生命周期与转录验收——已命名、延后。** 测试里程碑补齐人类可见界面策略要求的 runnable-example 无钥快照与 PTY case；M0 的包测试覆盖 runner 的各个 seam。
@@ -42,7 +42,7 @@ regrouping RFC 解散了 `ui/`（tui 并入 `interaction/` 方向、app-boot 并
 
 ## 后果
 
-- `dsh --profile tui` 重新可用：经 `dsh plugin --profile tui add <spec>` 安装、打印自己的 `--help`、启动 base 树，并在每条退出路径（退出、EOF、崩溃）恢复终端。
+- `omd --profile tui` 重新可用：经 `dsh plugin --profile tui add <spec>` 安装、打印自己的 `--help`、启动 base 树，并在每条退出路径（退出、EOF、崩溃）恢复终端。
 - 在交互里程碑之前，审批与提问工具保持 fail-closed——这是显式记录在案的缺口，不是静默降级。
 - Ctrl+C 语义是骨架；"取消后优雅 130 退出"的精化策略与完整 keymap 随交互里程碑落地。
 - launcher 的 SIGINT/SIGTERM 链只是 cooked 窗口与外部信号的安全网；raw mode 独占用户的 Ctrl+C。

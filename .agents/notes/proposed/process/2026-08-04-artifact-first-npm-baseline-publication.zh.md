@@ -36,7 +36,7 @@ pack 阶段按以下顺序执行：
 
 ## 当前实现边界
 
-已提交的 pack 命令实现了固定 commit 暂存、内部依赖精确固化、静态与 tarball payload 检查、不可变 manifest，以及把每个发布 tarball 都作为本地顶层依赖的隔离 npm 安装。它在输出 publish 命令前，用普通 Node 运行安装后的 `dsh --version` 与 `dsh --dump-default-config` 入口，再在 POSIX PTY 中启动安装后的默认 TUI，等待其 `main-session-` 就绪信号，并通过 `/exit` 退出。Publish 支持按 integrity 恢复，将只读注册表验证与认证身份检查分离，并以完整的远端 integrity 和 dist-tag 验证结束。
+已提交的 pack 命令实现了固定 commit 暂存、内部依赖精确固化、静态与 tarball payload 检查、不可变 manifest，以及把每个发布 tarball 都作为本地顶层依赖的隔离 npm 安装。它在输出 publish 命令前，用普通 Node 运行安装后的 `omd --version` 与 `omd --dump-default-config` 入口，再在 POSIX PTY 中启动安装后的默认 TUI，等待其 `main-session-` 就绪信号，并通过 `/exit` 退出。Publish 支持按 integrity 恢复，将只读注册表验证与认证身份检查分离，并以完整的远端 integrity 和 dist-tag 验证结束。
 
 PR（Pull Request） CI 不会调用 pack 命令；安装态入口探测属于本地发布检查，而不是合并门禁。免凭据 CI 执行、其他每个 bin 与公开运行时入口的包自有探测、workflow artifact 传递及受保护 publish job 仍属于提案范围。
 
@@ -56,7 +56,7 @@ PR（Pull Request） CI 不会调用 pack 命令；安装态入口探测属于�
 
 测试至少覆盖以下执行面：
 
-- `@deepseek-ai/dsh` 安装后的 `dsh --version` 与 `dsh --dump-default-config` 在普通 Node 下成功，分别覆盖静态 CLI 入口和一个动态模式入口。
+- `@deepseek-ai/dsh` 安装后的 `omd --version` 与 `omd --dump-default-config` 在普通 Node 下成功，分别覆盖静态 CLI 入口和一个动态模式入口。
 - 安装后的默认 `dsh` 在 PTY 中完成一次无密钥 TUI 启动，到达既定 ready 信号后由测试受控退出。这条路径必须加载真实 TUI 动态 chunk，因此缺少类似 `lib/tui-*.js` 的发布文件会使门禁失败。
 - 每个其他已发布 `bin` 都定义一个不会访问真实服务或修改用户状态的包级冒烟命令。不同 CLI 不强制共用 `--help`；测试必须运行其真实安装入口并检查约定的退出或 ready 信号。
 - Node 兼容的公开运行时入口从安装目录加载；浏览器、worker 或必须由宿主协议驱动的入口使用对应的隔离 fixture（测试前置数据），但输入仍只能是本次 tarball。
@@ -85,7 +85,7 @@ PR 与普通 push 可以运行无凭据的 pack-and-test 信号，从而在合�
 
 **只测试工作树中构建后的 `lib/`。** 不采用，因为这验证的是构建树，不是 `package.json#files` 选出的 tarball。工作树中存在而 tarball 中漏掉的动态 chunk 正是本提案必须捕获的失败。
 
-**只运行 `dsh --help`。** 不采用，因为 Commander 可以在加载 TUI、Web 或 headless 动态入口之前输出帮助并退出。它无法证明默认生产启动路径完整。
+**只运行 `omd --help`。** 不采用，因为 Commander 可以在加载 TUI、Web 或 headless 动态入口之前输出帮助并退出。它无法证明默认生产启动路径完整。
 
 **把 `src` 和声明映射一起发布以降低漏文件风险。** 不采用，因为源码平面不是生产运行时的后备路径；扩大 payload 会掩盖 bundle 闭包错误，并把本地调试产物变成无意的发布约定。
 

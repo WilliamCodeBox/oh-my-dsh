@@ -25,7 +25,7 @@ Stabilizing a command later means deleting its `--experimental` option and `requ
 
 **Keep the `experimental-` name prefix.** Rejected by the user's direction: the prefix taxes every invocation, and stabilization would be a breaking rename instead of deleting a gate.
 
-**A parent-level `--experimental` flag (`dsh --experimental meta`).** Rejected: the default surface is deliberately option-only with `enablePositionalOptions`, so parent options that leak across the subcommand boundary are treated as mistyped invocations. A parent flag consumed only by two subcommands would be exactly the leaked-option shape the adapter rejects everywhere else.
+**A parent-level `--experimental` flag (`omd --experimental meta`).** Rejected: the default surface is deliberately option-only with `enablePositionalOptions`, so parent options that leak across the subcommand boundary are treated as mistyped invocations. A parent flag consumed only by two subcommands would be exactly the leaked-option shape the adapter rejects everywhere else.
 
 **Read `process.env` inside `parseDshArgs`.** Rejected: the repo validates at the process boundary and keeps typed seams pure; tests would have to mutate and restore `process.env` around each case.
 
@@ -33,4 +33,4 @@ Stabilizing a command later means deleting its `--experimental` option and `requ
 
 ## Consequences
 
-Daily invocations shorten to `dsh meta --experimental` and `dsh upgrade --experimental`, and a developer who sets `DSH_EXPERIMENTAL=1` in their environment gets the bare `dsh meta`/`dsh upgrade`. `dsh --help` marks both commands `(experimental)`. The gate costs one extra flag or env var until a command stabilizes, at which point the gate is deleted and the name is already final.
+Daily invocations shorten to `dsh meta --experimental` and `dsh upgrade --experimental`, and a developer who sets `DSH_EXPERIMENTAL=1` in their environment gets the bare `dsh meta`/`dsh upgrade`. `omd --help` marks both commands `(experimental)`. The gate costs one extra flag or env var until a command stabilizes, at which point the gate is deleted and the name is already final.

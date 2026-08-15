@@ -1,5 +1,5 @@
 /**
- * The `dsh --profile tui` PTY case: boots the real profile composition (base +
+ * The `omd --profile tui` PTY case: boots the real profile composition (base +
  * tui bundle) under a POSIX pseudo-terminal, drives raw keys through the
  * presenter, and asserts the terminal journey — typed input rendered, a
  * keyless follow-up turn, clean Ctrl+C quit, and alternate-screen restore.
@@ -197,7 +197,7 @@ describe.skipIf(process.platform === 'win32')('tui profile PTY case (real Loader
       // The alternate screen was restored on quit.
       expect(output).toContain('\u001b[?1049l')
       // No fatal load or runner error text reached the terminal.
-      expect(output).not.toContain('dsh: ')
+      expect(output).not.toContain('omd: ')
     },
     LOADER_SMOKE_TEST_TIMEOUT_MS,
   )

@@ -26,7 +26,7 @@ round-trip (streaming chunks → transcript → render) without a key.
   - `formatItem` caps tool/command argument and result lines at 300 chars
     with an explicit `…(+N)` remainder.
 - `packages/bundle/tui` — EOF on the pipe path now awaits `agent.whenIdle()`
-  before quitting, so `echo task | dsh --profile tui` runs the piped task to
+  before quitting, so `echo task | omd --profile tui` runs the piped task to
   completion instead of aborting it at stream end.
 - `apps/cli/tests/tui-pty.snapshot.ts` — the PTY driver gains a `resize`
   action (TIOCSWINSZ + SIGWINCH); the case resizes mid-session and still
@@ -34,7 +34,7 @@ round-trip (streaming chunks → transcript → render) without a key.
 - `examples/tui-agent` — the interaction-journey snapshot
   (`tui-interaction.snapshot.ts`) pins the rendering of every adapter-produced
   item kind (approval-decided tool card, command card, aborted turn); the
-  assembled replay case (`tui-replay.snapshot.ts`) boots `dsh --profile tui
+  assembled replay case (`tui-replay.snapshot.ts`) boots `omd --profile tui
   --patch replay.cordis.yml` — real DeepSeek adapter disabled, `dsh-llm-replay`
   serving the fixture under the profile's default provider/model — pipes a
   line through the full agent loop, and asserts the trace stream (chunks,

@@ -13,9 +13,9 @@ Archived: 2026-08-08
 
 ## 决策
 
-raw 执行方式为 `dsh --config <path>`。指定文件必须是一份 Include 补丁列表，并在同一 include 层级直接应用到 `apps/cli/config/base.cordis.yml` 之上。启动时必须提供该文件；它不是完整的替换配置树，也不会继承 `apps/cli/config/web.cordis.yml` 或 `$DSH_HOME/config.yaml`。相对路径从调用目录解析。启动错误会明确报错；SIGINT 和 SIGTERM 会先对根上下文执行 dispose（资源释放），再退出。
+raw 执行方式为 `omd --config <path>`。指定文件必须是一份 Include 补丁列表，并在同一 include 层级直接应用到 `apps/cli/config/base.cordis.yml` 之上。启动时必须提供该文件；它不是完整的替换配置树，也不会继承 `apps/cli/config/web.cordis.yml` 或 `$DSH_HOME/config.yaml`。相对路径从调用目录解析。启动错误会明确报错；SIGINT 和 SIGTERM 会先对根上下文执行 dispose（资源释放），再退出。
 
-raw 诊断形式仍然无需启动：`dsh --dump-default-config` 打印 base，`dsh --config <path> --dump-config` 则打印 base 与必需 overlay 的合成结果。转储过程使用 Include 实现的补丁算法和 YAML 方言。
+raw 诊断形式仍然无需启动：`omd --dump-default-config` 打印 base，`omd --config <path> --dump-config` 则打印 base 与必需 overlay 的合成结果。转储过程使用 Include 实现的补丁算法和 YAML 方言。
 
 CLI 不再交付 TUI 应用。TUI overlay、启动器、首次运行 onboarding 资产、应用级 TUI fixture（测试前置数据）、PTY harness、终端流程和快照均已删除。`meta` 与 `upgrade` 子命令、对应的实验功能门禁、默认 surface 恢复入口，以及整棵配置树的 `--config-replace` 路径也随该应用一并删除。安装器不再提供界面选择器，只构建并启动 Web。
 
@@ -33,7 +33,7 @@ CLI 不再交付 TUI 应用。TUI overlay、启动器、首次运行 onboarding 
 
 **允许裸 `dsh` 启动中性 base。** 不予采纳，因为 base 不会创建 agent 或交互入口。进程成功结束启动但没有可用入口，会掩盖缺失的部署决策。
 
-**保留 `--config-replace` 以支持完整配置树。** 不予采纳，因为 raw 执行现在只有一份组合契约：在产品 base 之上施加一份必需的 overlay。完整配置树部署可以使用通用 Cordis loader 或专用应用二进制文件，无需为 `dsh --config` 增加第二种含义。
+**保留 `--config-replace` 以支持完整配置树。** 不予采纳，因为 raw 执行现在只有一份组合契约：在产品 base 之上施加一份必需的 overlay。完整配置树部署可以使用通用 Cordis loader 或专用应用二进制文件，无需为 `omd --config` 增加第二种含义。
 
 **随产品入口一并删除 TUI 包。** 最初不予采纳，因为仅移除一项已交付应用本身并不要求移除可复用 UI 实现。当已交付组合与独立消费方均不复存在后，[全包移除决策](2026-08-04-remove-tui-package.md)采纳了这一方案。
 

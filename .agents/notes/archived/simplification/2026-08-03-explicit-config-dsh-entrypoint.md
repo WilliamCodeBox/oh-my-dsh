@@ -13,9 +13,9 @@ The shared base is intentionally neutral: it provides capabilities but creates n
 
 ## Decision
 
-Raw executable use is `dsh --config <path>`. The named file must be an Include patch list and is applied directly over `apps/cli/config/base.cordis.yml` at the same include level. It is required for boot, is not a complete replacement tree, and does not inherit `apps/cli/config/web.cordis.yml` or `$DSH_HOME/config.yaml`. Relative paths resolve from the invoking directory. Boot errors fail loud; SIGINT and SIGTERM dispose the root before exit.
+Raw executable use is `omd --config <path>`. The named file must be an Include patch list and is applied directly over `apps/cli/config/base.cordis.yml` at the same include level. It is required for boot, is not a complete replacement tree, and does not inherit `apps/cli/config/web.cordis.yml` or `$DSH_HOME/config.yaml`. Relative paths resolve from the invoking directory. Boot errors fail loud; SIGINT and SIGTERM dispose the root before exit.
 
-The raw diagnostic forms remain boot-free: `dsh --dump-default-config` prints the base, while `dsh --config <path> --dump-config` prints base plus the required overlay. The dump uses the Include implementation's patch algorithm and YAML dialect.
+The raw diagnostic forms remain boot-free: `omd --dump-default-config` prints the base, while `omd --config <path> --dump-config` prints base plus the required overlay. The dump uses the Include implementation's patch algorithm and YAML dialect.
 
 The CLI no longer ships a TUI application. Its TUI overlay, launcher, first-run onboarding assets, app-level TUI fixtures, PTY harness, terminal journeys, and snapshots are deleted. The `meta` and `upgrade` subcommands, their experimental gate, default-surface resume, and full-tree `--config-replace` path are deleted with that application. The installer builds and launches Web without an interface selector.
 
@@ -33,7 +33,7 @@ Parser tests require `--config` for raw boot and reject the removed command name
 
 **Allow bare `dsh` to boot the neutral base.** Rejected because the base creates no agent or interaction front door. A process that settles successfully but has no usable entry point hides a missing deployment decision.
 
-**Keep `--config-replace` for complete trees.** Rejected because raw execution now has one composition contract: a required overlay over the product base. Complete-tree deployments can use the generic Cordis loader or a dedicated application bin without adding a second meaning to `dsh --config`.
+**Keep `--config-replace` for complete trees.** Rejected because raw execution now has one composition contract: a required overlay over the product base. Complete-tree deployments can use the generic Cordis loader or a dedicated application bin without adding a second meaning to `omd --config`.
 
 **Delete the TUI package with the product entrypoint.** Initially rejected because removing one shipped application did not by itself require removing a reusable UI implementation. Once no shipped composition or independent consumer remained, [the package-wide removal decision](2026-08-04-remove-tui-package.md) accepted this alternative.
 

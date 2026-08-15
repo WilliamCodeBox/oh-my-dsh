@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-`dsh --profile tui` 表面的折叠式终端转录模型与基于 pi-tui 的呈现层。转录模型将一个会话的持久 `session/event` 流投影为展示条目；presenter 在备用屏幕（alternate screen）上以滚动视口、状态行与输入编辑器渲染它们。交互适配器将在后续里程碑中建立在 presenter seam 之上。
+`omd --profile tui` 表面的折叠式终端转录模型与基于 pi-tui 的呈现层。转录模型将一个会话的持久 `session/event` 流投影为展示条目；presenter 在备用屏幕（alternate screen）上以滚动视口、状态行与输入编辑器渲染它们。交互适配器将在后续里程碑中建立在 presenter seam 之上。
 
 ## 转录模型
 

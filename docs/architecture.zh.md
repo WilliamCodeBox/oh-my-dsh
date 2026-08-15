@@ -29,7 +29,7 @@
 要查看你的机器实际启动的配置树：
 
 ```sh
-dsh --profile web --dump-config
+omd --profile web --dump-config
 ```
 
 它打印出的任何条目，都可以由你自己的 patch 替换。

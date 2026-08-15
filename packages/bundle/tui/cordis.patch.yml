@@ -1,7 +1,7 @@
 # The dsh-tui bundle patch: the interactive terminal surface over dsh-base.
 # It mounts no Host, HTTP server, Web runtime, or browser plugin. An ordinary
 # provider plugin injects `cmdlineArgs`, parses this app's flags
-# (`dsh --profile tui --resume <id> ...`) and this app's --help, then the
+# (`omd --profile tui --resume <id> ...`) and this app's --help, then the
 # runner creates or resumes one Agent through the core registry, traces its
 # durable events to the terminal, submits user input as follow-up turns, and
 # restores the terminal before requesting process exit.

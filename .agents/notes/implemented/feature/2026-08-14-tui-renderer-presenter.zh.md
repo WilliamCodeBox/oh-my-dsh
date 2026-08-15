@@ -35,7 +35,7 @@ presenter 在 TTY 独占 raw mode、pipe 从不进入 raw mode 后，`TerminalSe
 
 ## Consequences
 
-- TTY 上 `dsh --profile tui` 呈现双层表面：可滚动转录（user/assistant/tool/turn 条目）、状态行（模型路由、todo 计数、压缩计数）与输入编辑器。Enter 提交 follow-up 或 steering；Ctrl+C 经 presenter 原始按键监听运行同一三态机（清空 → 取消 → 退出 → 强退）。
+- TTY 上 `omd --profile tui` 呈现双层表面：可滚动转录（user/assistant/tool/turn 条目）、状态行（模型路由、todo 计数、压缩计数）与输入编辑器。Enter 提交 follow-up 或 steering；Ctrl+C 经 presenter 原始按键监听运行同一三态机（清空 → 取消 → 退出 → 强退）。
 - bundle 的 M0 pipe 测试重定基到非 TTY 路径；新增 presenter 测试经内存版 `Terminal` 驱动 runner（编辑器提交、Ctrl+C 取消/强退、resume seed 折叠、崩溃恢复）。bundle 与 renderer 两包共 84 个测试通过；typecheck、lint、构建、workspace 约束与 Model Experience 文档门禁全部通过。
 - `@earendil-works/pi-tui@0.84.2`（ESM，Node ≥ 22.19，依赖：marked + get-east-asian-width）成为 renderer 包的运行依赖；旧 dsh patch（编辑器提示前缀）未上游化，暂不重打。
 - 里程碑弧线剩余：keymap 精化（ESC 序列、Shift+Enter、Ctrl+C 优雅 130 退出）、交互适配器（审批/提问/命令）、主题与 diff 卡片、PTY 验收 harness（M3a）。

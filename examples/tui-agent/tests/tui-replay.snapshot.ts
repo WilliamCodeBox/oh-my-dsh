@@ -1,6 +1,6 @@
 /**
  * The tui-agent example's assembled replay case: boots the real
- * `dsh --profile tui` composition with the `--patch` replay overlay (real
+ * `omd --profile tui` composition with the `--patch` replay overlay (real
  * DeepSeek adapter disabled, `dsh-llm-replay` serving the recorded fixture
  * under the profile's default provider/model), drives a piped line through
  * the full agent loop, and asserts the trace stream — streamed chunks, the

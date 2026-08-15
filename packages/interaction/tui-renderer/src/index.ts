@@ -1,6 +1,6 @@
 /**
  * @deepseek-ai/dsh-tui-renderer — folded terminal transcript model and
- * pi-tui-backed presentation layer for the `dsh --profile tui` surface. The
+ * pi-tui-backed presentation layer for the `omd --profile tui` surface. The
  * transcript projects one session's durable events into display items; the
  * presenter renders them on the alternate screen with a scroll viewport,
  * status row, and input editor. Approval prompts mount as an overlay modal on
