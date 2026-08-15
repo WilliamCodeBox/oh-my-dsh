@@ -19,6 +19,9 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
 import { TuiPresenter, Transcript, formatStatus, processTerminal, sanitizeText } from '@deepseek-ai/dsh-tui-renderer'
 import type {} from '@deepseek-ai/dsh-permission-presets'
+// The approval/request waterfall declaration rides the ApprovalService merge;
+// the empty import registers the Context augmentation for ctx.on typing.
+import type {} from '@deepseek-ai/dsh-user-approval'
 // Empty type imports carry the Loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
 import type {} from '@deepseek-ai/cordis-plugin-loader'
@@ -242,6 +245,10 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
   return await new Promise<InputOutcome>((resolve) => {
     presenter.onKey((data) => {
       if (data !== '\x03') return false
+      // While an approval modal is asking, Ctrl+C resolves the modal's cancel
+      // binding instead of driving the quit machine: the modal owns the key
+      // until the user decides.
+      if (presenter.approvalPending) return false
       const action = ctrlC.press(agent.status === 'running', presenter.getInput() === '')
       switch (action) {
         case 'clear-input':
@@ -444,6 +451,15 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     activePresenter = presenter
   }
 
+  // The TUI answers every approval the composed surface asks (subagents
+  // included: the user is in front of this terminal). Without a presenter the
+  // pipe path has no answerer, so the waterfall falls through to its
+  // fail-closed `'unavailable'`.
+  const offApproval = ctx.on('approval/request', async (req, next) => {
+    if (activePresenter === undefined || !activePresenter.isStarted) return next()
+    return activePresenter.askApproval(req.toolName, req.reason)
+  })
+
   try {
     presenter?.start()
     const outcome = presenter !== undefined
@@ -453,6 +469,7 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     // Stop the presenter before the graceful flush so the shell is usable
     // while persistence drains; the pipe path has no presenter.
     offEvents()
+    offApproval()
     presenter?.stop()
     activePresenter = undefined
 
@@ -465,6 +482,7 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     io.exit(outcome.code)
   } catch (error) {
     offEvents()
+    offApproval()
     presenter?.stop()
     activePresenter = undefined
     throw error

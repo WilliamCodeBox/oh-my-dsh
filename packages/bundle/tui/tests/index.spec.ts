@@ -6,6 +6,7 @@ import { Context } from '@deepseek-ai/cordis'
 import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
 import type { Agent, AgentHandle, CreateAgentOptions, ResumeAgentOptions } from '@deepseek-ai/dsh-agent'
 import AgentDefaultModelConfig from '@deepseek-ai/dsh-agent-default-model'
+import ApprovalService from '@deepseek-ai/dsh-user-approval'
 import { CallId, createAssistantMessage, createToolResultMessage, MessageId } from '@deepseek-ai/dsh-llm'
 import SessionStore from '@deepseek-ai/dsh-session'
 import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
@@ -75,6 +76,13 @@ class FakeTerminal {
   setProgress(_active: boolean): void {}
 }
 
+/** Yield one macrotask so synchronous modal mounts settle before keys flow. */
+function tick(): Promise<void> {
+  const { promise, resolve } = Promise.withResolvers<undefined>()
+  setTimeout(resolve, 10)
+  return promise
+}
+
 /** What one run observed about the agent and the process. */
 interface Recorded {
   followup: UserMessage[]
@@ -84,6 +92,8 @@ interface Recorded {
   createdOptions: Array<{ sessionId: string; agentOptions: unknown }>
   hardExits: number[]
   permissions: Array<{ session: Session; name: string }>
+  /** The live agent created for the run, for direct seam calls in tests. */
+  agent?: Agent
 }
 
 /** The assembled result of one driven run. */
@@ -124,6 +134,7 @@ async function bench(
   await ctx.plugin(SessionStore)
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(AgentDefaultModelConfig, { provider: 'test-provider', model: 'test-model' })
+  await ctx.plugin(ApprovalService)
 
   async function createAgentImpl(ownerCtx: Context, options: CreateAgentOptions): Promise<AgentHandle> {
     const session = ctx.sessions.create(options.sessionId, { meta: options.meta ?? {} })
@@ -148,6 +159,7 @@ async function bench(
       whenIdle: () => Promise.resolve(),
       runMaintenance: () => Promise.reject(new Error('not used')),
     } as unknown as Agent
+    recorded.agent = agent
     await options.setup?.(agentCtx)
     ctx.agents.register(agent)
     return { agent, dispose: () => Promise.resolve() }
@@ -517,6 +529,84 @@ describe('tui runner', () => {
     const result = await runPromise
     expect(result.code).toBe(130)
     expect(test.recorded.hardExits).toEqual([130])
+    await test.ctx.fiber.dispose()
+  })
+
+  it('answers an approval prompt over the presenter modal: Enter allows', async () => {
+    const test = await bench([], {}, {
+      afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    const service = test.ctx.get('approval') as ApprovalService
+    const request = service.request({
+      agent: test.recorded.agent as Agent,
+      toolName: 'fs.write',
+      reason: 'write transcript.ts',
+    })
+    // The waterfall dispatch and overlay mount are synchronous; a microtask
+    // wait lets the modal grab focus before the Enter is delivered.
+    await tick()
+    terminal.send('\r')
+    expect(await request).toBe('allowed-once')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('rejects an approval prompt by selecting the second option', async () => {
+    const test = await bench([], {}, {
+      afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    const service = test.ctx.get('approval') as ApprovalService
+    const request = service.request({ agent: test.recorded.agent as Agent, toolName: 'fs.write' })
+    await tick()
+    terminal.send('\x1b[B') // down
+    terminal.send('\r') // enter on Reject
+    expect(await request).toBe('rejected')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('cancels a pending approval on Ctrl+C, then quits on the next press', async () => {
+    const test = await bench([], {}, {
+      afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    const service = test.ctx.get('approval') as ApprovalService
+    const request = service.request({ agent: test.recorded.agent as Agent, toolName: 'fs.write' })
+    await tick()
+    terminal.send('\x03')
+    expect(await request).toBe('cancelled')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('fails an approval closed on the pipe path without a presenter', async () => {
+    const test = await bench([{ kind: 'ctrl-c' }], {}, {
+      afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
+    })
+    const runPromise = test.run()
+    // The agent (and the approval listener) mounts inside run(); wait for it
+    // before asking, so the request exercises the mounted pipe path.
+    await vi.waitFor(() => { expect(test.recorded.agent).toBeDefined() })
+    const service = test.ctx.get('approval') as ApprovalService
+    const request = service.request({ agent: test.recorded.agent as Agent, toolName: 'fs.write' })
+    // The pipe path has no answerer: the waterfall falls through to the
+    // fail-closed 'unavailable'.
+    expect(await request).toBe('unavailable')
+    expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   })
 

@@ -3,8 +3,9 @@
  * pi-tui-backed presentation layer for the `dsh --profile tui` surface. The
  * transcript projects one session's durable events into display items; the
  * presenter renders them on the alternate screen with a scroll viewport,
- * status row, and input editor. Interaction adapters (approval, questions,
- * commands) land in later milestones on top of the presenter seam.
+ * status row, and input editor. Approval prompts mount as an overlay modal on
+ * the presenter seam; further interaction adapters (questions, commands)
+ * build on the same modal mechanism.
  *
  * @module @deepseek-ai/dsh-tui-renderer
  */

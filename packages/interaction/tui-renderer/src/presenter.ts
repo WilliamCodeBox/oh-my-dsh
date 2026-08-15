@@ -10,15 +10,21 @@
  */
 
 import {
+  Box,
   Editor,
   ProcessTerminal,
   ScrollView,
+  SelectList,
+  Text,
   TuiAltScreen,
   VStack,
   isViewportTUI,
+  type OverlayHandle,
+  type SelectItem,
   type Terminal,
   type ViewportTUI,
 } from '@earendil-works/pi-tui'
+import type { ApprovalOutcome } from '@deepseek-ai/dsh-user-approval/types'
 import type { Transcript } from './transcript.ts'
 import { StatusRow, TranscriptView } from './transcript-view.ts'
 
@@ -50,12 +56,21 @@ export interface PresenterOptions {
 /**
  * Full-screen terminal presenter over a folded {@link Transcript}.
  * {@link TuiPresenter.start} enters raw mode and the alternate screen;
- * {@link TuiPresenter.stop} restores the terminal synchronously.
+ * {@link TuiPresenter.stop} restores the terminal synchronously. Approval
+ * prompts mount as an overlay modal that steals focus to a {@link SelectList};
+ * while one is pending, the runner's Ctrl+C listener must let the modal's
+ * cancel binding (Escape/Ctrl+C) resolve it instead of driving the quit
+ * machine.
  */
 export class TuiPresenter {
   readonly tui: ViewportTUI
   /** The input editor — the pi-tui seam later interaction milestones mount on. */
   readonly editor: Editor
+  private started = false
+  /** The live approval modal, when one is asking. */
+  private approvalModal:
+    | { handle: OverlayHandle; resolve: (outcome: ApprovalOutcome) => void }
+    | undefined
 
   constructor(terminal: Terminal, transcript: Transcript, options: PresenterOptions) {
     this.tui = new TuiAltScreen(terminal)
@@ -97,11 +112,61 @@ export class TuiPresenter {
   start(): void {
     this.tui.start()
     this.tui.setFocus(this.editor)
+    this.started = true
   }
 
   /** Restore the terminal; safe to call once. */
   stop(): void {
     this.tui.stop()
+    this.started = false
+  }
+
+  /** True while the presenter owns the terminal. */
+  get isStarted(): boolean {
+    return this.started
+  }
+
+  /** True while an approval modal is asking. */
+  get approvalPending(): boolean {
+    return this.approvalModal !== undefined
+  }
+
+  /**
+   * Present one approval request as an overlay modal and resolve with the
+   * user's decision. Enter on the default (Allow) or arrow+Enter selection,
+   * Escape/Ctrl+C cancels.
+   * @param toolName - the tool whose call is being decided.
+   * @param reason - the asker's explanation, when provided.
+   * @returns the closed approval outcome.
+   */
+  async askApproval(toolName: string, reason?: string): Promise<ApprovalOutcome> {
+    const items: SelectItem[] = [
+      { value: 'allowed-once', label: `Allow ${toolName}` },
+      { value: 'rejected', label: 'Reject' },
+    ]
+    const card = new Box(1, 1)
+    card.addChild(new Text(`Approve tool call: ${toolName}`, 0, 0))
+    if (reason !== undefined && reason !== '') card.addChild(new Text(reason, 0, 0))
+    card.addChild(new Text('', 0, 0))
+    const list = new SelectList(items, 5, EDITOR_THEME.selectList)
+    card.addChild(list)
+
+    return await new Promise<ApprovalOutcome>((resolve) => {
+      const handle = this.tui.showOverlay(card)
+      const finish = (outcome: ApprovalOutcome): void => {
+        if (this.approvalModal === undefined) return
+        this.approvalModal = undefined
+        handle.hide()
+        this.tui.setFocus(this.editor)
+        this.tui.requestRender()
+        resolve(outcome)
+      }
+      this.approvalModal = { handle, resolve: finish }
+      list.onSelect = (item) => { finish(item.value as ApprovalOutcome) }
+      list.onCancel = () => { finish('cancelled') }
+      this.tui.setFocus(list)
+      this.tui.requestRender()
+    })
   }
 
   /** Replace the editor content (e.g. clear input on Ctrl+C). */

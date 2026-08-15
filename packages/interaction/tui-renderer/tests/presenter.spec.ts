@@ -142,4 +142,37 @@ describe('TuiPresenter', () => {
     expect(ctrlCSeen).toBe(1)
     expect(laterSawCtrlC).toBe(false)
   })
+
+  it('asks an approval over an overlay modal: Enter allows, arrow+Enter rejects, Escape cancels', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+
+    const allowed = presenter.askApproval('fs.write', 'write transcript.ts')
+    // The modal mounts synchronously; a macrotask lets focus settle on the list.
+    const { promise: mounted, resolve } = Promise.withResolvers<undefined>()
+    setTimeout(resolve, 10)
+    await mounted
+    expect(presenter.approvalPending).toBe(true)
+    terminal.send('\r')
+    expect(await allowed).toBe('allowed-once')
+    expect(presenter.approvalPending).toBe(false)
+
+    const rejected = presenter.askApproval('fs.write')
+    const { promise: mountedAgain, resolve: resolveAgain } = Promise.withResolvers<undefined>()
+    setTimeout(resolveAgain, 10)
+    await mountedAgain
+    terminal.send('\x1b[B') // down to Reject
+    terminal.send('\r')
+    expect(await rejected).toBe('rejected')
+
+    const cancelled = presenter.askApproval('fs.write')
+    const { promise: mountedThird, resolve: resolveThird } = Promise.withResolvers<undefined>()
+    setTimeout(resolveThird, 10)
+    await mountedThird
+    terminal.send('\x1b') // Escape cancels
+    expect(await cancelled).toBe('cancelled')
+    expect(presenter.approvalPending).toBe(false)
+    presenter.stop()
+  })
 })
