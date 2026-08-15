@@ -27,3 +27,7 @@
 ## acp-agent
 
 面向程序化客户端的 ACP（Agent Client Protocol）自动化服务器，支持会话、权限和取消操作。详见 [ACP 示例参考](acp-agent/README.md)。
+
+## tui-agent
+
+`dsh --profile tui` 表面的测试持有示例：keyless 转录快照把录制的会话事件日志经官方 `Transcript`/`TranscriptView` 呈现契约折叠，并将渲染行与预期终端输出比对。它没有自己的 cordis.yml——组装级 PTY case 位于 `apps/cli/tests/tui-pty.snapshot.ts`。

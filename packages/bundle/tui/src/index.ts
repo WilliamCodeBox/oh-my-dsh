@@ -315,7 +315,7 @@ async function driveInput(
  * drive the surface, and request exit. The presenter is stopped before the
  * graceful flush so the user's shell returns even while persistence drains.
  */
-async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource): Promise<void> {
+async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource | undefined): Promise<void> {
   await ctx.get('loader')?.await()
   const agents = ctx.get('agents')
   const defaultModel = ctx.get('agentDefaultModel')
@@ -373,7 +373,7 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource):
     presenter?.start()
     const outcome = presenter !== undefined
       ? await drivePresenter(presenter, agent)
-      : await driveInput(input, agent)
+      : await driveInput(input as InputSource, agent)
 
     // Stop the presenter before the graceful flush so the shell is usable
     // while persistence drains; the pipe path has no presenter.
@@ -412,10 +412,14 @@ export function apply(ctx: Context, config: Config): void {
     (code) => { internals.hardExit(code) },
     internals.crashEmitter,
   )
-  const input = internals.createInput()
+  // The pipe input source owns process.stdin's data listeners; on a TTY the
+  // presenter's terminal owns them, so a pipe source must never mount there
+  // (it would also mis-decode pi-tui's utf8-encoded data events).
+  const input = internals.isTTY ? undefined : internals.createInput()
   void run(ctx, config, io, input).catch((error: unknown) => {
-    crash()
+    // Report before the crash restore: the restore path hard-exits.
     io.stderr.write(`dsh: ${error instanceof Error ? error.message : String(error)}\n`)
+    crash()
     io.exit(1)
   })
 }

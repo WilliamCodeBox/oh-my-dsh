@@ -27,3 +27,7 @@ An opt-in Web overlay for durable, Session-local reminders. It supports positive
 ## acp-agent
 
 An Agent Client Protocol automation server for programmatic clients, with session, permission, and cancellation support. See the [ACP example reference](acp-agent/README.md).
+
+## tui-agent
+
+The `dsh --profile tui` surface's test-ownership example: the keyless transcript snapshot folds a recorded session event log through the shipped `Transcript`/`TranscriptView` presentation contract and compares the rendered lines against the expected terminal output. It has no cordis.yml of its own — the assembled PTY case lives at `apps/cli/tests/tui-pty.snapshot.ts`.

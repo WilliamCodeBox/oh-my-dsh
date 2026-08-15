@@ -1,0 +1,195 @@
+/**
+ * The `dsh --profile tui` PTY case: boots the real profile composition (base +
+ * tui bundle) under a POSIX pseudo-terminal, drives raw keys through the
+ * presenter, and asserts the terminal journey — typed input rendered, a
+ * keyless follow-up turn, clean Ctrl+C quit, and alternate-screen restore.
+ * Runs in the keyless snapshot gate; the POSIX python driver self-allocates
+ * the PTY (CI has no TTY of its own).
+ */
+
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { execa } from 'execa'
+import { describe, expect, it } from 'vitest'
+import { LOADER_SMOKE_TEST_TIMEOUT_MS, resolveExampleLaunch } from '@deepseek-ai/dsh-loader-smoke'
+
+const dshBinScript = fileURLToPath(new URL('../src/bin.ts', import.meta.url))
+const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta.url))
+
+/**
+ * POSIX PTY driver: forks the app into a pty, collects its output, sends each
+ * action's payload after its marker renders (or its delay elapses), and
+ * reports the collected output plus the app's exit code. Exit-code and
+ * marker-completion mismatches fail the driver so the test asserts on real
+ * process behavior, not a timeout kill.
+ */
+const POSIX_TUI_PTY_DRIVER = String.raw`
+import errno, json, os, pty, select, signal, sys, time
+node, launch_args_json, launch_env_json, cwd, actions_json, expected_exit, timeout_seconds = sys.argv[1:]
+env = os.environ.copy()
+env.update(json.loads(launch_env_json))
+env.update({"COLUMNS": "100", "LINES": "30"})
+# A developer shell's COLORTERM=truecolor changes pi-tui rendering (truecolor
+# SGR vs palette fallback); pin the palette for stable assertions.
+env.pop("COLORTERM", None)
+actions = json.loads(actions_json)
+pid, fd = pty.fork()
+if pid == 0:
+    os.chdir(cwd)
+    os.execvpe(node, [node, *json.loads(launch_args_json)], env)
+
+output = bytearray()
+deadline = time.monotonic() + float(timeout_seconds)
+status = None
+for action in actions:
+    if "waitFor" in action:
+        while time.monotonic() < deadline and action["waitFor"].encode() not in output:
+            ready, _, _ = select.select([fd], [], [], 0.05)
+            if ready:
+                try:
+                    chunk = os.read(fd, 65536)
+                except OSError as error:
+                    if error.errno != errno.EIO:
+                        raise
+                    chunk = b""
+                if chunk:
+                    output.extend(chunk)
+            waited, candidate = os.waitpid(pid, os.WNOHANG)
+            if waited == pid:
+                status = candidate
+                break
+        if action["waitFor"].encode() not in output:
+            sys.stderr.write(f"marker {action['waitFor']!r} never appeared\n")
+            sys.exit(124)
+    if "delayMs" in action:
+        deadline_slice = time.monotonic() + action["delayMs"] / 1000
+        while time.monotonic() < deadline_slice:
+            ready, _, _ = select.select([fd], [], [], 0.05)
+            if ready:
+                try:
+                    chunk = os.read(fd, 65536)
+                except OSError as error:
+                    if error.errno != errno.EIO:
+                        raise
+                    chunk = b""
+                if chunk:
+                    output.extend(chunk)
+            waited, candidate = os.waitpid(pid, os.WNOHANG)
+            if waited == pid:
+                status = candidate
+                break
+        if status is not None:
+            break
+    if status is None:
+        os.write(fd, action["send"].encode())
+
+while status is None and time.monotonic() < deadline:
+    ready, _, _ = select.select([fd], [], [], 0.05)
+    if ready:
+        try:
+            chunk = os.read(fd, 65536)
+        except OSError as error:
+            if error.errno != errno.EIO:
+                raise
+            chunk = b""
+        if chunk:
+            output.extend(chunk)
+    waited, candidate = os.waitpid(pid, os.WNOHANG)
+    if waited == pid:
+        status = candidate
+
+if status is None:
+    os.kill(pid, signal.SIGKILL)
+    _, status = os.waitpid(pid, 0)
+    sys.stderr.write("app did not exit before the deadline\n")
+    sys.exit(126)
+sys.stdout.buffer.write(output)
+actual_exit = os.waitstatus_to_exitcode(status)
+if actual_exit != int(expected_exit):
+    sys.stderr.write(f"expected exit {expected_exit}, got {actual_exit}\n")
+    sys.exit(125)
+`
+
+interface TuiPtyAction {
+  /** Send `send` after this text renders. */
+  readonly waitFor?: string
+  /** Send `send` after this many milliseconds instead of a marker. */
+  readonly delayMs?: number
+  readonly send: string
+}
+
+/** Run the tui profile under a PTY and return its collected output. */
+async function runTuiPtySmoke(
+  actions: readonly TuiPtyAction[],
+  expectedExitCode: number,
+  timeoutMs = LOADER_SMOKE_TEST_TIMEOUT_MS,
+): Promise<string> {
+  const cwd = await mkdtemp(join(tmpdir(), 'tui-pty-smoke-'))
+  try {
+    const launch = resolveExampleLaunch({
+      srcBin: dshBinScript,
+      configArgs: ['--profile', 'tui'],
+      tsconfigPath,
+      env: {
+        // The boot never calls the model: the smoke types, submits a keyless
+        // follow-up whose turn fails fast, then quits. The key satisfies any
+        // provider config that insists on its presence.
+        DEEPSEEK_API_KEY: 'keyless-tui-smoke',
+        DSH_HOME: join(cwd, '.dsh'),
+        DSH_TELEMETRY_DISABLED: '1',
+      },
+    })
+    const result = await execa('python3', [
+      '-c',
+      POSIX_TUI_PTY_DRIVER,
+      launch.command,
+      JSON.stringify(launch.args),
+      JSON.stringify(launch.env),
+      cwd,
+      JSON.stringify(actions),
+      String(expectedExitCode),
+      String(timeoutMs / 1000),
+    ], {
+      stdin: 'ignore',
+      timeout: timeoutMs + 10_000,
+      killSignal: 'SIGKILL',
+      reject: false,
+      stripFinalNewline: false,
+    })
+    if (result.timedOut) {
+      throw new Error(`tui PTY driver did not exit. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+    }
+    if (result.failed) {
+      throw new Error(`tui PTY driver exited ${String(result.exitCode)}. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+    }
+    return result.stdout
+  } finally {
+    await rm(cwd, { recursive: true, force: true })
+  }
+}
+
+describe.skipIf(process.platform === 'win32')('tui profile PTY case (real Loader tree in a PTY)', () => {
+  it(
+    'boots the presenter, renders typed input, survives a keyless turn, and quits with the terminal restored',
+    async () => {
+      const output = await runTuiPtySmoke([
+        // The editor's top border renders once the presenter owns the screen.
+        { waitFor: '──', send: 'hello' },
+        // The editor renders the typed line; Enter submits the follow-up.
+        { waitFor: 'hello', send: '\r' },
+        // Give the keyless turn time to fail fast and settle, then quit on an
+        // empty, idle prompt.
+        { delayMs: 9000, send: '\x03' },
+      ], 0)
+      // The typed line was rendered by the editor (not just echoed).
+      expect(output).toContain('hello')
+      // The alternate screen was restored on quit.
+      expect(output).toContain('\u001b[?1049l')
+      // No fatal load or runner error text reached the terminal.
+      expect(output).not.toContain('dsh: ')
+    },
+    LOADER_SMOKE_TEST_TIMEOUT_MS,
+  )
+})
