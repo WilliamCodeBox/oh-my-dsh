@@ -22,6 +22,12 @@
     },
     {
       "path": "../user-approval"
+    },
+    {
+      "path": "../user-questions"
+    },
+    {
+      "path": "../commands"
     }
   ]
 }

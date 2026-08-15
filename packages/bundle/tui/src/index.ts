@@ -22,6 +22,11 @@ import type {} from '@deepseek-ai/dsh-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
 import type {} from '@deepseek-ai/dsh-user-approval'
+// The userQuestions provider service and the command/run + command/done
+// session event shapes ride their packages' merges.
+import type {} from '@deepseek-ai/dsh-user-questions'
+import type {} from '@deepseek-ai/dsh-commands'
+import { parseCommand } from '@deepseek-ai/dsh-commands'
 // Empty type imports carry the Loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
 import type {} from '@deepseek-ai/cordis-plugin-loader'
@@ -35,7 +40,7 @@ import { Keymap } from './keymap.ts'
 export const name = 'tui-runner'
 
 /** Core services required before the interactive session can start. */
-export const inject = ['agentDefaultModel', 'agents', 'sessions']
+export const inject = ['agentDefaultModel', 'agents', 'sessions', 'userQuestions', 'commands']
 
 /** Plugin config: startup values resolved from the injected provider service. */
 export interface Config {
@@ -206,6 +211,14 @@ function traceLine(event: SessionEvent): string {
       return `[step/end] ${event.data.turn}.${event.data.step}`
     case 'todo/write':
       return `[todo] ${event.data.todos.length} items`
+    case 'command/run': {
+      const args = (event.data.args ?? '').trim()
+      return `[command] /${event.data.name}${args === '' ? '' : ` ${args}`}`
+    }
+    case 'command/done':
+      return event.data.text !== undefined
+        ? `[command] ${event.data.kind === 'error' ? 'error ' : ''}${event.data.text}`
+        : `[command] ${event.data.kind}`
     default:
       return `[${event.type}]`
   }
@@ -245,10 +258,10 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
   return await new Promise<InputOutcome>((resolve) => {
     presenter.onKey((data) => {
       if (data !== '\x03') return false
-      // While an approval modal is asking, Ctrl+C resolves the modal's cancel
-      // binding instead of driving the quit machine: the modal owns the key
-      // until the user decides.
-      if (presenter.approvalPending) return false
+      // While an interaction modal is asking, Ctrl+C resolves the modal's
+      // cancel binding instead of driving the quit machine: the modal owns
+      // the key until the user decides.
+      if (presenter.interactionPending) return false
       const action = ctrlC.press(agent.status === 'running', presenter.getInput() === '')
       switch (action) {
         case 'clear-input':
@@ -273,17 +286,19 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
 }
 
 /**
- * Drive the pipe path until EOF or a Ctrl+C quit. User lines are submitted as
- * follow-up turns while idle and steering while a turn runs; cancellation
+ * Drive the pipe path until EOF or a Ctrl+C quit. Lines dispatch through the
+ * shared line handler (slash commands vs follow-up turns); cancellation
  * preserves queued inbox work. The line editor supports cursor movement
  * (arrows/Home/End), Delete, Escape to clear, and up/down history recall.
  * @param input - the key source.
  * @param agent - the live agent being driven.
+ * @param dispatch - the shared submitted-line dispatcher.
  * @returns the input-loop outcome.
  */
 async function driveInput(
   input: InputSource,
   agent: Agent,
+  dispatch: (line: string) => void,
 ): Promise<InputOutcome> {
   let line = ''
   let cursor = 0
@@ -361,7 +376,7 @@ async function driveInput(
         break
       case 'submit': {
         if (line === '') break
-        submitLine(agent, line)
+        dispatch(line)
         history.push(line)
         historyIndex = -1
         draft = ''
@@ -442,11 +457,48 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
   })
 
   const interactive = internals.isTTY
+  const commands = ctx.get('commands')
+  const commandAbort = new AbortController()
+  // Transient user-facing notice shown in the presenter status row (and the
+  // pipe line stream): unknown slash commands report here instead of leaking
+  // into the model or vanishing.
+  const notice = { text: '' }
+  const statusLine = (): string => {
+    const base = formatStatus(transcript.state)
+    return notice.text === '' ? base : base === '' ? notice.text : `${base} | ${notice.text}`
+  }
+
+  /**
+   * Dispatch one submitted line: slash commands run through the command
+   * runtime (never the model); everything else submits as a follow-up turn or
+   * steering. The command's settled error card renders from the transcript's
+   * command/run + command/done fold; an unknown command reports via notice.
+   */
+  const dispatchLine = (line: string): void => {
+    if (parseCommand(line) !== undefined && commands !== undefined) {
+      notice.text = ''
+      void commands.execute(agent, line, commandAbort.signal).then(
+        (execution) => {
+          if (execution !== undefined) return
+          if (interactive) notice.text = `unknown command: ${line}`
+          else io.stdout.write(sanitizeText(`[command] unknown: ${line}`) + '\n')
+        },
+        () => {
+          // The handler's failure already settled as a command/done error
+          // card in the transcript; the rejection is contained here.
+        },
+      )
+      return
+    }
+    notice.text = ''
+    submitLine(agent, line)
+  }
+
   let presenter: TuiPresenter | undefined
   if (interactive) {
     presenter = new TuiPresenter(internals.createTerminal(), transcript, {
-      onSubmit: (line) => { submitLine(agent, line) },
-      statusLine: () => formatStatus(transcript.state),
+      onSubmit: dispatchLine,
+      statusLine,
     })
     activePresenter = presenter
   }
@@ -460,16 +512,32 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     return activePresenter.askApproval(req.toolName, req.reason)
   })
 
+  // One active question provider: the presenter answers tool-asked questions
+  // while it runs; the pipe path registers none, so `ask()` keeps its
+  // documented NO_PROVIDER failure.
+  const offQuestions = presenter === undefined
+    ? undefined
+    : ctx.userQuestions.registerProvider({
+      ask: async (request) => {
+        if (activePresenter === undefined || !activePresenter.isStarted) {
+          throw new Error('tui: no presenter to answer user questions')
+        }
+        return activePresenter.askQuestions(request.questions)
+      },
+    })
+
   try {
     presenter?.start()
     const outcome = presenter !== undefined
       ? await drivePresenter(presenter, agent)
-      : await driveInput(input as InputSource, agent)
+      : await driveInput(input as InputSource, agent, dispatchLine)
 
     // Stop the presenter before the graceful flush so the shell is usable
     // while persistence drains; the pipe path has no presenter.
+    commandAbort.abort()
     offEvents()
     offApproval()
+    offQuestions?.()
     presenter?.stop()
     activePresenter = undefined
 
@@ -481,8 +549,10 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     await handle.dispose()
     io.exit(outcome.code)
   } catch (error) {
+    commandAbort.abort()
     offEvents()
     offApproval()
+    offQuestions?.()
     presenter?.stop()
     activePresenter = undefined
     throw error

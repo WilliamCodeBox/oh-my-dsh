@@ -7,6 +7,8 @@ import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
 import type { Agent, AgentHandle, CreateAgentOptions, ResumeAgentOptions } from '@deepseek-ai/dsh-agent'
 import AgentDefaultModelConfig from '@deepseek-ai/dsh-agent-default-model'
 import ApprovalService from '@deepseek-ai/dsh-user-approval'
+import UserQuestionService from '@deepseek-ai/dsh-user-questions'
+import CommandRuntime from '@deepseek-ai/dsh-commands'
 import { CallId, createAssistantMessage, createToolResultMessage, MessageId } from '@deepseek-ai/dsh-llm'
 import SessionStore from '@deepseek-ai/dsh-session'
 import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
@@ -135,6 +137,8 @@ async function bench(
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(AgentDefaultModelConfig, { provider: 'test-provider', model: 'test-model' })
   await ctx.plugin(ApprovalService)
+  await ctx.plugin(UserQuestionService)
+  await ctx.plugin(CommandRuntime)
 
   async function createAgentImpl(ownerCtx: Context, options: CreateAgentOptions): Promise<AgentHandle> {
     const session = ctx.sessions.create(options.sessionId, { meta: options.meta ?? {} })
@@ -610,6 +614,77 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('dispatches a known slash command through the command runtime on the pipe path', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: '/' }, { kind: 'char', char: 'p' }, { kind: 'char', char: 'i' }, { kind: 'char', char: 'n' },
+        { kind: 'char', char: 'g' }, { kind: 'submit' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      {},
+    )
+    test.ctx.get('commands')?.register({
+      name: 'ping',
+      description: 'reply pong',
+      handler: () => ({ kind: 'success', text: 'pong' }),
+    })
+    const result = await test.run()
+    // The command ran without a model turn and its card rendered from the
+    // command/run + command/done fold.
+    expect(test.recorded.followup).toHaveLength(0)
+    expect(result.out).toContain('[command] /ping')
+    expect(result.out).toContain('pong')
+    expect(result.code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('reports an unknown slash command without submitting it to the model', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: '/' }, { kind: 'char', char: 'n' }, { kind: 'char', char: 'o' }, { kind: 'char', char: 'p' },
+        { kind: 'char', char: 'e' }, { kind: 'submit' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      {},
+    )
+    const result = await test.run()
+    expect(test.recorded.followup).toHaveLength(0)
+    expect(result.out).toContain('[command] unknown: /nope')
+    expect(result.code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('answers user questions over the presenter modal on a TTY', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    const service = test.ctx.get('userQuestions') as UserQuestionService
+    const answer = service.ask({
+      questions: [{ id: 'q1', question: 'Mode?', options: [{ label: 'read-only' }] }],
+    })
+    await tick()
+    terminal.send('\r')
+    expect(await answer).toEqual({ answers: [{ id: 'q1', selected: ['read-only'] }] })
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('keeps questions at NO_PROVIDER on the pipe path', async () => {
+    const test = await bench([{ kind: 'ctrl-c' }], {}, {})
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(test.recorded.agent).toBeDefined() })
+    const service = test.ctx.get('userQuestions') as UserQuestionService
+    await expect(service.ask({ questions: [{ id: 'q1', question: 'Mode?', options: [{ label: 'x' }] }] }))
+      .rejects.toMatchObject({ code: 'NO_PROVIDER' })
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
   it('folds stored seed events into the presenter transcript on resume', async () => {
     const test = await bench([], { resume: 'session-persisted' }, {
       afterCreate: (session) => {
@@ -652,6 +727,9 @@ describe('tui runner', () => {
     ctx.provide('agentDefaultModel', { currentSelection: () => ({ provider: 'p', model: 'm' }) } as never)
     ctx.provide('sessions', { flush: () => Promise.resolve(true) } as never)
     ctx.provide('agents', minimalAgents() as never)
+    // The real composition (base) always mounts the question service; the
+    // presenter registers its provider against it.
+    await ctx.plugin(UserQuestionService)
     apply(ctx, new Config({}))
     await vi.waitFor(() => { expect(terminal.started).toBe(true) })
     emitter.emit('uncaughtException', new Error('boom'))

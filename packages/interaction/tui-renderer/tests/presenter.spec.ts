@@ -153,10 +153,10 @@ describe('TuiPresenter', () => {
     const { promise: mounted, resolve } = Promise.withResolvers<undefined>()
     setTimeout(resolve, 10)
     await mounted
-    expect(presenter.approvalPending).toBe(true)
+    expect(presenter.interactionPending).toBe(true)
     terminal.send('\r')
     expect(await allowed).toBe('allowed-once')
-    expect(presenter.approvalPending).toBe(false)
+    expect(presenter.interactionPending).toBe(false)
 
     const rejected = presenter.askApproval('fs.write')
     const { promise: mountedAgain, resolve: resolveAgain } = Promise.withResolvers<undefined>()
@@ -172,7 +172,86 @@ describe('TuiPresenter', () => {
     await mountedThird
     terminal.send('\x1b') // Escape cancels
     expect(await cancelled).toBe('cancelled')
-    expect(presenter.approvalPending).toBe(false)
+    expect(presenter.interactionPending).toBe(false)
+    presenter.stop()
+  })
+
+  it('asks option questions: single select returns one label, Escape answers none', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+
+    const pending = presenter.askQuestions([{
+      id: 'q1',
+      question: 'Which mode?',
+      options: [{ label: 'read-only' }, { label: 'full', description: 'full access' }],
+    }])
+    const { promise: mounted, resolve } = Promise.withResolvers<undefined>()
+    setTimeout(resolve, 10)
+    await mounted
+    expect(presenter.interactionPending).toBe(true)
+    terminal.send('\x1b[B') // down to 'full'
+    terminal.send('\r')
+    expect(await pending).toEqual({ answers: [{ id: 'q1', selected: ['full'] }] })
+
+    const cancelled = presenter.askQuestions([{ id: 'q2', question: 'Confirm?', options: [{ label: 'yes' }] }])
+    const { promise: mountedAgain, resolve: resolveAgain } = Promise.withResolvers<undefined>()
+    setTimeout(resolveAgain, 10)
+    await mountedAgain
+    terminal.send('\x1b')
+    expect(await cancelled).toEqual({ answers: [{ id: 'q2', selected: [] }] })
+    presenter.stop()
+  })
+
+  it('asks multi-select questions by looping the remaining options until Escape', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+
+    const pending = presenter.askQuestions([{
+      id: 'q1',
+      question: 'Pick tags',
+      multiSelect: true,
+      options: [{ label: 'a' }, { label: 'b' }, { label: 'c' }],
+    }])
+    const settle = async (): Promise<void> => {
+      const { promise, resolve } = Promise.withResolvers<undefined>()
+      setTimeout(resolve, 10)
+      await promise
+    }
+    await settle()
+    terminal.send('\r') // a
+    await settle()
+    // b is now the default selection of the remaining [b, c] list.
+    terminal.send('\r') // b
+    await settle()
+    terminal.send('\x1b') // done: c never picked
+    expect(await pending).toEqual({ answers: [{ id: 'q1', selected: ['a', 'b'] }] })
+    presenter.stop()
+  })
+
+  it('answers option-less questions with free text; Escape cancels to no answer', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+
+    const pending = presenter.askQuestions([{ id: 'q1', question: 'Where is the repo?' }])
+    const { promise: mounted, resolve } = Promise.withResolvers<undefined>()
+    setTimeout(resolve, 10)
+    await mounted
+    terminal.send('h')
+    terminal.send('e')
+    terminal.send('r')
+    terminal.send('e')
+    terminal.send('\r')
+    expect(await pending).toEqual({ answers: [{ id: 'q1', selected: [], custom: 'here' }] })
+
+    const cancelled = presenter.askQuestions([{ id: 'q2', question: 'Type something' }])
+    const { promise: mountedAgain, resolve: resolveAgain } = Promise.withResolvers<undefined>()
+    setTimeout(resolveAgain, 10)
+    await mountedAgain
+    terminal.send('\x1b')
+    expect(await cancelled).toEqual({ answers: [{ id: 'q2', selected: [] }] })
     presenter.stop()
   })
 })

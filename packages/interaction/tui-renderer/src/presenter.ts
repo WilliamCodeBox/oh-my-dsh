@@ -12,6 +12,7 @@
 import {
   Box,
   Editor,
+  Input,
   ProcessTerminal,
   ScrollView,
   SelectList,
@@ -25,6 +26,12 @@ import {
   type ViewportTUI,
 } from '@earendil-works/pi-tui'
 import type { ApprovalOutcome } from '@deepseek-ai/dsh-user-approval/types'
+import type {
+  AskUserQuestionAnswer,
+  AskUserQuestionAnswerItem,
+  AskUserQuestionItem,
+} from '@deepseek-ai/dsh-user-questions/types'
+import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
 import { StatusRow, TranscriptView } from './transcript-view.ts'
 
@@ -56,21 +63,19 @@ export interface PresenterOptions {
 /**
  * Full-screen terminal presenter over a folded {@link Transcript}.
  * {@link TuiPresenter.start} enters raw mode and the alternate screen;
- * {@link TuiPresenter.stop} restores the terminal synchronously. Approval
- * prompts mount as an overlay modal that steals focus to a {@link SelectList};
- * while one is pending, the runner's Ctrl+C listener must let the modal's
- * cancel binding (Escape/Ctrl+C) resolve it instead of driving the quit
- * machine.
+ * {@link TuiPresenter.stop} restores the terminal synchronously. Interaction
+ * prompts (approvals, user questions) mount as overlay modals that steal
+ * focus to a {@link SelectList} or {@link Input}; while one is pending, the
+ * runner's Ctrl+C listener must let the modal's cancel binding
+ * (Escape/Ctrl+C) resolve it instead of driving the quit machine.
  */
 export class TuiPresenter {
   readonly tui: ViewportTUI
   /** The input editor — the pi-tui seam later interaction milestones mount on. */
   readonly editor: Editor
   private started = false
-  /** The live approval modal, when one is asking. */
-  private approvalModal:
-    | { handle: OverlayHandle; resolve: (outcome: ApprovalOutcome) => void }
-    | undefined
+  /** The live interaction overlay, when one is asking. */
+  private overlay: { handle: OverlayHandle } | undefined
 
   constructor(terminal: Terminal, transcript: Transcript, options: PresenterOptions) {
     this.tui = new TuiAltScreen(terminal)
@@ -126,9 +131,9 @@ export class TuiPresenter {
     return this.started
   }
 
-  /** True while an approval modal is asking. */
-  get approvalPending(): boolean {
-    return this.approvalModal !== undefined
+  /** True while an interaction overlay modal is asking. */
+  get interactionPending(): boolean {
+    return this.overlay !== undefined
   }
 
   /**
@@ -140,33 +145,127 @@ export class TuiPresenter {
    * @returns the closed approval outcome.
    */
   async askApproval(toolName: string, reason?: string): Promise<ApprovalOutcome> {
-    const items: SelectItem[] = [
-      { value: 'allowed-once', label: `Allow ${toolName}` },
-      { value: 'rejected', label: 'Reject' },
-    ]
+    const picked = await this.promptSelect(
+      `Approve tool call: ${toolName}`,
+      reason,
+      [
+        { value: 'allowed-once', label: `Allow ${toolName}` },
+        { value: 'rejected', label: 'Reject' },
+      ],
+    )
+    return picked === undefined ? 'cancelled' : picked as ApprovalOutcome
+  }
+
+  /**
+   * Present one user-questions request: each question renders as its own
+   * modal — a SelectList for option questions (multi-select loops over the
+   * remaining options until Escape), a free-text Input for option-less
+   * questions. Escape answers nothing for that question.
+   * @param questions - the questions to ask, in order.
+   * @returns the answers in question order.
+   */
+  async askQuestions(questions: AskUserQuestionItem[]): Promise<AskUserQuestionAnswer> {
+    const answers: AskUserQuestionAnswerItem[] = []
+    for (const item of questions) answers.push(await this.askOne(item))
+    return { answers }
+  }
+
+  /** Ask one question by its shape: options list or free text. */
+  private async askOne(item: AskUserQuestionItem): Promise<AskUserQuestionAnswerItem> {
+    const options = item.options ?? []
+    if (options.length === 0) {
+      const value = await this.promptText(item.question, item.detail)
+      return value === undefined
+        ? { id: item.id, selected: [] }
+        : { id: item.id, selected: [], custom: value }
+    }
+    const select = options.map(option => ({
+      value: option.label,
+      label: option.label,
+      ...(option.description !== undefined ? { description: option.description } : {}),
+    }))
+    if (item.multiSelect !== true) {
+      const picked = await this.promptSelect(item.question, item.detail, select)
+      return { id: item.id, selected: picked === undefined ? [] : [picked] }
+    }
+    const selected: string[] = []
+    const remaining = [...options]
+    while (remaining.length > 0) {
+      const picked = await this.promptSelect(
+        selected.length === 0 ? item.question : `${item.question} (${selected.length} selected)`,
+        item.detail,
+        remaining.map(option => ({
+          value: option.label,
+          label: option.label,
+          ...(option.description !== undefined ? { description: option.description } : {}),
+        })),
+      )
+      if (picked === undefined) break
+      selected.push(picked)
+      const index = remaining.findIndex(option => option.label === picked)
+      if (index !== -1) remaining.splice(index, 1)
+    }
+    return { id: item.id, selected }
+  }
+
+  /**
+   * Mount one interaction overlay as the single interaction slot and return
+   * its close callback. Closing restores editor focus, hides the overlay,
+   * and clears the slot; the caller resolves its pending promise.
+   */
+  private mountOverlay(component: Component): () => void {
+    const handle = this.tui.showOverlay(component)
+    this.overlay = { handle }
+    return () => {
+      if (this.overlay === undefined) return
+      this.overlay = undefined
+      handle.hide()
+      this.tui.setFocus(this.editor)
+      this.tui.requestRender()
+    }
+  }
+
+  /**
+   * Show one SelectList modal and resolve with the chosen value, or
+   * `undefined` when the user cancels.
+   */
+  private promptSelect(
+    title: string,
+    detail: string | undefined,
+    items: SelectItem[],
+  ): Promise<string | undefined> {
+    const { promise, resolve } = Promise.withResolvers<string | undefined>()
     const card = new Box(1, 1)
-    card.addChild(new Text(`Approve tool call: ${toolName}`, 0, 0))
-    if (reason !== undefined && reason !== '') card.addChild(new Text(reason, 0, 0))
+    card.addChild(new Text(title, 0, 0))
+    if (detail !== undefined && detail !== '') card.addChild(new Text(detail, 0, 0))
     card.addChild(new Text('', 0, 0))
     const list = new SelectList(items, 5, EDITOR_THEME.selectList)
     card.addChild(list)
+    const close = this.mountOverlay(card)
+    list.onSelect = (item) => { close(); resolve(item.value) }
+    list.onCancel = () => { close(); resolve(undefined) }
+    this.tui.setFocus(list)
+    this.tui.requestRender()
+    return promise
+  }
 
-    return await new Promise<ApprovalOutcome>((resolve) => {
-      const handle = this.tui.showOverlay(card)
-      const finish = (outcome: ApprovalOutcome): void => {
-        if (this.approvalModal === undefined) return
-        this.approvalModal = undefined
-        handle.hide()
-        this.tui.setFocus(this.editor)
-        this.tui.requestRender()
-        resolve(outcome)
-      }
-      this.approvalModal = { handle, resolve: finish }
-      list.onSelect = (item) => { finish(item.value as ApprovalOutcome) }
-      list.onCancel = () => { finish('cancelled') }
-      this.tui.setFocus(list)
-      this.tui.requestRender()
-    })
+  /**
+   * Show one free-text modal and resolve with the entered value, or
+   * `undefined` when the user cancels. Enter submits, Escape/Ctrl+C cancels.
+   */
+  private promptText(title: string, detail: string | undefined): Promise<string | undefined> {
+    const { promise, resolve } = Promise.withResolvers<string | undefined>()
+    const input = new Input()
+    const card = new Box(1, 1)
+    card.addChild(new Text(title, 0, 0))
+    if (detail !== undefined && detail !== '') card.addChild(new Text(detail, 0, 0))
+    card.addChild(input)
+    const close = this.mountOverlay(card)
+    input.onSubmit = (value) => { close(); resolve(value) }
+    input.onEscape = () => { close(); resolve(undefined) }
+    this.tui.setFocus(input)
+    this.tui.requestRender()
+    return promise
   }
 
   /** Replace the editor content (e.g. clear input on Ctrl+C). */

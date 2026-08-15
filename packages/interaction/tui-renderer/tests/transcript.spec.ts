@@ -11,6 +11,7 @@ import { Transcript, textOf } from '../src/transcript.ts'
 import type { AssistantItem, ToolItem, TurnItem, UserItem } from '../src/transcript.ts'
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import { CallId, MessageId } from '@deepseek-ai/dsh-llm'
+import { CommandId } from '@deepseek-ai/dsh-commands'
 
 /** Build one event; surface events pass `surfaceOp: 'append'` explicitly. */
 function ev<T extends SessionEvent['type']>(
@@ -229,6 +230,41 @@ describe('Transcript', () => {
     transcript.fold(ev('step/start', { turn: 1, step: 0 }, 1))
     transcript.fold({ type: 'plugin/novel-event', seq: 2, time: 2000, data: {}, ignorable: true } as unknown as SessionEvent)
     expect(transcript.state.items).toHaveLength(0)
+  })
+
+  it('folds a slash command lifecycle into one card with its settled result', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('command/run', {
+      commandId: CommandId('c-1'), name: 'permission', args: ' read-only', source: { kind: 'user' },
+    }, 1))
+    transcript.fold(ev('command/done', {
+      commandId: CommandId('c-1'), kind: 'success', text: 'preset read-only', sourceEventSeq: 1,
+    }, 2))
+    const item = transcript.state.items[0]
+    expect(item).toMatchObject({
+      kind: 'command',
+      commandId: 'c-1',
+      name: 'permission',
+      args: ' read-only',
+      result: { kind: 'success', text: 'preset read-only' },
+    })
+  })
+
+  it('pairs command/done to its open card by id across interleaved commands', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('command/run', {
+      commandId: CommandId('c-1'), name: 'one', source: { kind: 'user' },
+    }, 1))
+    transcript.fold(ev('command/run', {
+      commandId: CommandId('c-2'), name: 'two', source: { kind: 'user' },
+    }, 2))
+    transcript.fold(ev('command/done', { commandId: CommandId('c-1'), kind: 'error', text: 'boom' }, 3))
+    transcript.fold(ev('command/done', { commandId: CommandId('c-2'), kind: 'success' }, 4))
+    const [first, second] = transcript.state.items
+    expect(first).toMatchObject({ kind: 'command', name: 'one', result: { kind: 'error', text: 'boom' } })
+    // A bare success carries no text field.
+    expect(second).toMatchObject({ kind: 'command', name: 'two', result: { kind: 'success' } })
+    expect('text' in (second as { result?: { text?: string } }).result!).toBe(false)
   })
 
   it('notifies listeners after each fold', () => {

@@ -24,6 +24,14 @@ export function formatItem(item: TranscriptItem): string[] {
       }
       return lines
     }
+    case 'command': {
+      const lines = [`command /${item.name}${item.args.trim() === '' ? '' : ` ${item.args.trim()}`}`]
+      if (item.result !== undefined) {
+        const text = item.result.text ?? (item.result.kind === 'success' ? 'ok' : 'error')
+        lines.push(item.result.kind === 'success' ? `  -> ${text}` : `  -> error ${text}`)
+      }
+      return lines
+    }
     case 'turn':
       return item.end === undefined
         ? [`-- turn ${item.turn} --`]

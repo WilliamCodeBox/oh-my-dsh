@@ -43,7 +43,7 @@ None; the runner adds nothing to the request prefix beyond the shared persona ro
 
 ## Known Limitations and Deferred Work
 
-- **Approval prompts are answered, questions and slash-commands are not** — approval/request waterfalls mount an overlay modal (Allow/Reject, Escape or Ctrl+C cancels) whenever the presenter runs; the pipe path fails closed to `unavailable`. `ask_user_question` pickers and the slash-command menu land with the remaining interaction-adapter work.
+- **Interaction adapters complete, cards stay plain** — approval waterfalls, `ask_user_question` pickers (option lists, multi-select loops, free-text), and slash commands (`/name args` through the command runtime, unknown commands reported in the status row / pipe line) all mount on the presenter modal or the line dispatcher. The transcript still renders as sanitized plain lines with no markdown, diff cards, or colors; the theme and card milestones land on the `TuiPresenter` seam.
 - **No strict TTY requirement yet** — a non-TTY stdin is driven as a pipe with the line tracer; the strict-TTY milestone makes the surface fail loud instead.
 - **Ctrl+C quits with exit 130** — the SIGINT convention code, delivered through the normal shutdown path (presenter stop, flush, terminal restore); the launcher's SIGINT/SIGTERM chain remains a cooked-window and external-signal safety net and is not reachable from raw mode.
 - **Presenter text is plain** — the transcript renders as sanitized plain lines with no markdown, diff cards, or colors; the theme and card milestones land on the `TuiPresenter` seam.

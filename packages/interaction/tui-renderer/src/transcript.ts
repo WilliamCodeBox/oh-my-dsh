@@ -21,6 +21,8 @@
 import type { JsonValue, SessionEvent, SurfaceEvent, SurfaceOp, TodoItem, TurnEndReason } from '@deepseek-ai/dsh-session'
 import { isAppendSurfaceEvent, isReplacementSurfaceEvent } from '@deepseek-ai/dsh-session'
 import type { AssistantMessage, MessageSource, TokenUsage } from '@deepseek-ai/dsh-llm'
+// The command/run + command/done event shapes ride the CommandRuntime merge.
+import type {} from '@deepseek-ai/dsh-commands/types'
 
 /** A replacement surface event narrowed by {@link isReplacementSurfaceEvent}. */
 type ReplacementSurfaceEvent = SurfaceEvent & { surfaceOp: Extract<SurfaceOp, { op: 'replace' }> }
@@ -122,8 +124,32 @@ export interface TurnItem extends TranscriptItemBase {
   readonly end?: { readonly time: number; readonly reason: TurnEndReason }
 }
 
+/** A settled slash-command outcome, merged into its lifecycle card. */
+export interface CommandResult extends TranscriptItemBase {
+  readonly kind: 'success' | 'error'
+  /** Handler text; absent for a bare success. */
+  readonly text?: string
+}
+
+/**
+ * A slash-command card: opened by `command/run`, settled by the paired
+ * `command/done`. Commands are turn-external log-only appends, so the card
+ * never opens or closes a turn bracket.
+ */
+export interface CommandItem extends TranscriptItemBase {
+  readonly kind: 'command'
+  /** Pairing id carried by the lifecycle events. */
+  readonly commandId: string
+  /** Command name without the leading slash. */
+  readonly name: string
+  /** Raw input after the name; empty when none. */
+  readonly args: string
+  /** Settled outcome, when `command/done` was folded. */
+  readonly result?: CommandResult
+}
+
 /** One item in the folded transcript surface. */
-export type TranscriptItem = UserItem | AssistantItem | ToolItem | TurnItem
+export type TranscriptItem = UserItem | AssistantItem | ToolItem | TurnItem | CommandItem
 
 /** Readonly projection of the folded transcript and its side state. */
 export interface TranscriptState {
@@ -276,6 +302,22 @@ export class Transcript {
       case 'todo/write':
         this.todos = event.data.todos
         break
+      case 'command/run':
+        this.items.push({
+          kind: 'command',
+          seq: event.seq,
+          time: event.time,
+          commandId: event.data.commandId,
+          name: event.data.name,
+          args: event.data.args ?? '',
+        })
+        break
+      case 'command/done': {
+        const { commandId, kind, text } = event.data
+        this.closePending()
+        this.mergeCommandResult(commandId, event.seq, event.time, kind, text)
+        break
+      }
       case 'request/header':
         this.header = event.data.header
         break
@@ -346,6 +388,30 @@ export class Transcript {
       }
     }
     this.items.push({ kind: 'tool', seq, time, turn, step, callId, name: '', args: '', result })
+  }
+
+  /**
+   * Merge a settled outcome into its open command card, creating the card
+   * from the result event when the pairing `command/run` was not folded
+   * (defensive; the run precedes its done in every real log).
+   */
+  private mergeCommandResult(
+    commandId: string,
+    seq: number,
+    time: number,
+    kind: 'success' | 'error',
+    text: string | undefined,
+  ): void {
+    const result: CommandResult = { seq, time, kind, ...(text !== undefined ? { text } : {}) }
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      const item = this.items[i]
+      if (item === undefined) continue
+      if (item.kind === 'command' && item.commandId === commandId && item.result === undefined) {
+        ;(item as { result?: CommandResult }).result = result
+        return
+      }
+    }
+    this.items.push({ kind: 'command', seq, time, commandId, name: '', args: '', result })
   }
 
   /** Record a compaction replacement; the folded transcript is untouched. */
