@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-settings-models",
+  "name": "@williamcodebox/omd-client-ui-settings-models",
   "description": "Models settings and shared product-onboarding dialogs over existing settings and credential joins",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,10 +32,10 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-ui-settings",
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-api-remotes"
+        "@williamcodebox/omd-client-runtime",
+        "@williamcodebox/omd-client-ui-settings",
+        "@williamcodebox/omd-client-locale",
+        "@williamcodebox/omd-api-remotes"
       ],
       "platform": "web"
     }
@@ -46,31 +46,31 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-api-remotes": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-schema-form": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-client-web-react": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^",
+    "@williamcodebox/omd-api-remotes": "workspace:^",
+    "@williamcodebox/omd-client-connection": "workspace:^",
+    "@williamcodebox/omd-client-runtime": "workspace:^",
+    "@williamcodebox/omd-client-schema-form": "workspace:^",
+    "@williamcodebox/omd-client-ui-primitives": "workspace:^",
+    "@williamcodebox/omd-client-ui-slots": "workspace:^",
+    "@williamcodebox/omd-client-web-react": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
     "react": "^18.2.0"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-api-remotes": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-schema-form": "workspace:^",
-    "@deepseek-ai/dsh-client-test-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-settings": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-client-web-react": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@williamcodebox/omd-api-remotes": "workspace:^",
+    "@williamcodebox/omd-client-connection": "workspace:^",
+    "@williamcodebox/omd-client-locale": "workspace:^",
+    "@williamcodebox/omd-client-runtime": "workspace:^",
+    "@williamcodebox/omd-client-schema-form": "workspace:^",
+    "@williamcodebox/omd-client-test-runtime": "workspace:^",
+    "@williamcodebox/omd-client-ui-primitives": "workspace:^",
+    "@williamcodebox/omd-client-ui-settings": "workspace:^",
+    "@williamcodebox/omd-client-ui-slots": "workspace:^",
+    "@williamcodebox/omd-client-web-react": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
     "@types/react": "~18.3.1",
-    "@deepseek-ai/cordis": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^",
     "react": "^18.2.0"
   },
   "files": [

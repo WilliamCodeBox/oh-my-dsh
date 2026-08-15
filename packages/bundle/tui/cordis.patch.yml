@@ -18,11 +18,11 @@
 
 - insert:
     - id: tui-startup
-      name: '@deepseek-ai/dsh-tui/startup'
+      name: '@williamcodebox/omd-tui/startup'
 
     # Reads its startup values from the ordinary tuiStartup provider.
     - id: tui-runner
-      name: '@deepseek-ai/dsh-tui'
+      name: '@williamcodebox/omd-tui'
       inject: [tuiStartup]
       config:
         resume: !!js ctx.tuiStartup.resume

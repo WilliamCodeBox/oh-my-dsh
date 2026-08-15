@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-skill",
+  "name": "@williamcodebox/omd-tool-skill",
   "description": "Model-facing skill loading tool for the DeepSeek Harness",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,25 +32,25 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-skill": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-skill": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-skill": "workspace:^",
-    "@deepseek-ai/dsh-skill-filesystem": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-scope": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-skill": "workspace:^",
+    "@williamcodebox/omd-skill-filesystem": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

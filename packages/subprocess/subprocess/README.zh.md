@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-subprocess
+# @williamcodebox/omd-subprocess
 
 [English](README.md) | 中文
 

@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-shell-env`.
- * @module @deepseek-ai/dsh-shell-env/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-shell-env`.
+ * @module @williamcodebox/omd-shell-env/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-shell-env'
+const PACKAGE_NAME = '@williamcodebox/omd-shell-env'
 
 /** Cordis companion plugin name. */
 export const name = 'shell-env-invariant'

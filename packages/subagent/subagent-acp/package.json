@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-subagent-acp",
+  "name": "@williamcodebox/omd-subagent-acp",
   "description": "Out-of-process ACP subagent backend: drives a child agent in a spawned subprocess over the Agent Client Protocol",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,30 +32,30 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
+    "@williamcodebox/omd-subprocess": "workspace:^",
+    "@williamcodebox/omd-timeout": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "0.25.1",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-loader-smoke": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis-plugin-loader": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-loader-smoke": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
+    "@williamcodebox/omd-subprocess": "workspace:^",
+    "@williamcodebox/omd-subprocess-local": "workspace:^",
+    "@williamcodebox/omd-timeout": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

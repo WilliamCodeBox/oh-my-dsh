@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-reference",
+  "name": "@williamcodebox/omd-session-reference",
   "description": "Cross-session snapshot references and durable untrusted model context (ctx.sessionReferenceResolver)",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,26 +32,26 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-compaction": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-output-retention": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-query": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-compaction": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-output-retention": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-session-query": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-compaction": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-output-retention": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-query": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-compaction": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-output-retention": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-session-query": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

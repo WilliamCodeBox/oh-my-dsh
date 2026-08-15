@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-subagent-report",
+  "name": "@williamcodebox/omd-tool-subagent-report",
   "description": "Child-scoped report tool over ctx.subagents continuations",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,30 +32,30 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subagent-spawn-in-process": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tool-subagent-control": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-loop": "workspace:^",
+    "@williamcodebox/omd-agent-loop-testkit": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-session-persistence": "workspace:^",
+    "@williamcodebox/omd-session-persistence-jsonl": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
+    "@williamcodebox/omd-subagent-spawn-in-process": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-tool-subagent-control": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

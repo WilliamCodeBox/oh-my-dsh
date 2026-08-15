@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-headless",
+  "name": "@williamcodebox/omd-headless",
   "description": "The dsh one-shot bundle: a direct core Agent/Session runner over dsh-base with no Host, HTTP, or browser layer",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -44,27 +44,27 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/dsh-cmdline": "workspace:^",
-    "@deepseek-ai/dsh-code-runtime-worker-thread": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@williamcodebox/omd-cmdline": "workspace:^",
+    "@williamcodebox/omd-code-runtime-worker-thread": "workspace:^",
+    "@williamcodebox/schemastery": "workspace:^",
     "commander": "^15.0.0"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-default-model": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis-plugin-loader": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-default-model": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-default-model": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis-plugin-loader": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-default-model": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

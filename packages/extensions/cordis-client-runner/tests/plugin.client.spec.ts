@@ -8,17 +8,17 @@
  */
 /* oxlint-disable typescript/no-unsafe-assignment -- Vitest asymmetric matchers are typed as any. */
 
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@williamcodebox/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import InvariantService from '@deepseek-ai/dsh-invariants'
+import InvariantService from '@williamcodebox/omd-invariants'
 import type {
   ApprovalRequestId, CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
-} from '@deepseek-ai/dsh-api-remotes/client'
-import type { SessionId } from '@deepseek-ai/dsh-client-connection/client'
-import type { DynamicCordisInvokeResult } from '@deepseek-ai/dsh-api-remotes/client'
+} from '@williamcodebox/omd-api-remotes/client'
+import type { SessionId } from '@williamcodebox/omd-client-connection/client'
+import type { DynamicCordisInvokeResult } from '@williamcodebox/omd-api-remotes/client'
 // Type-only: resolves `ctx.remote` and with it the `$on`/`$dispatch` surface.
-import type {} from '@deepseek-ai/dsh-api-gateway/client'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@williamcodebox/omd-api-gateway/client'
+import { SlotRegistry } from '@williamcodebox/omd-client-runtime/client'
 import * as NodeHalf from '../src/index.ts'
 import * as Invariant from '../src/invariant.ts'
 import * as ClientHalf from '../src/client/index.ts'

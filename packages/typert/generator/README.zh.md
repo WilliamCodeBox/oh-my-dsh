@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-typert-generator
+# @williamcodebox/omd-typert-generator
 
 [English](README.md) | 中文
 

@@ -1,20 +1,20 @@
 /**
  * Model-facing Cordis runtime/package inspection, define, run, stop, and remove tools.
- * @module @deepseek-ai/dsh-tool-cordis
+ * @module @williamcodebox/omd-tool-cordis
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
+import type { Context } from '@williamcodebox/cordis'
+import type { Agent, PreStepDecision } from '@williamcodebox/omd-agent'
 import {
   CordisDynamicPackageId, CordisDynamicPluginId,
-} from '@deepseek-ai/dsh-cordis-host-runner'
-import type { DynamicCordisReference } from '@deepseek-ai/dsh-cordis-host-runner'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { JsonValue } from '@deepseek-ai/dsh-session'
-import type { UserMessage } from '@deepseek-ai/dsh-session'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import type { ToolExecution } from '@deepseek-ai/dsh-tools'
-import type {} from '@deepseek-ai/dsh-system-prompt'
+} from '@williamcodebox/omd-cordis-host-runner'
+import type { DynamicCordisReference } from '@williamcodebox/omd-cordis-host-runner'
+import { createUserMessage } from '@williamcodebox/omd-llm'
+import type { JsonValue } from '@williamcodebox/omd-session'
+import type { UserMessage } from '@williamcodebox/omd-session'
+import { defineTool } from '@williamcodebox/omd-tools'
+import type { ToolExecution } from '@williamcodebox/omd-tools'
+import type {} from '@williamcodebox/omd-system-prompt'
 import { missingServices, providedServices } from './inspect.ts'
 import {
   presentDefineCall, presentInspectListCall, presentInspectQueryCall, presentInspectSelfCall, presentRunCall,

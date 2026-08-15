@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决定
 
-`@deepseek-ai/dsh-tui` 以可安装的 profile bundle 回归，位于 `packages/bundle/tui`（补丁层 + `tui-startup` 命令行 provider + `tui-runner` glue 插件），以 `omd --profile tui` 启动。M0 界面是骑在 `dsh-base` 上的逐行事件追踪——不挂 Host、HTTP、Web runtime 或浏览器行。
+`@williamcodebox/omd-tui` 以可安装的 profile bundle 回归，位于 `packages/bundle/tui`（补丁层 + `tui-startup` 命令行 provider + `tui-runner` glue 插件），以 `omd --profile tui` 启动。M0 界面是骑在 `dsh-base` 上的逐行事件追踪——不挂 Host、HTTP、Web runtime 或浏览器行。
 
 重入条件，逐条：
 

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-tool-jobs
+# @williamcodebox/omd-tool-jobs
 
 English | [中文](README.zh.md)
 

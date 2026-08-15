@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-connection
+# @williamcodebox/omd-client-connection
 
 English | [中文](README.zh.md)
 

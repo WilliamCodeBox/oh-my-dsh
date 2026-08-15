@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-time-context",
+  "name": "@williamcodebox/omd-time-context",
   "description": "Opt-in durable per-step context with the current time and elapsed time",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,24 +32,24 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-loader-smoke": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-loop": "workspace:^",
+    "@williamcodebox/omd-agent-loop-testkit": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-loader-smoke": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

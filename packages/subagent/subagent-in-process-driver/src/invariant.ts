@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-subagent-in-process-driver`.
- * @module @deepseek-ai/dsh-subagent-in-process-driver/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-subagent-in-process-driver`.
+ * @module @williamcodebox/omd-subagent-in-process-driver/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-subagent-in-process-driver'
+const PACKAGE_NAME = '@williamcodebox/omd-subagent-in-process-driver'
 
 /** Cordis companion plugin name. */
 export const name = 'subagent-in-process-driver-invariant'

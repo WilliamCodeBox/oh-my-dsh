@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-workspace
+# @williamcodebox/omd-workspace
 
 English | [中文](README.zh.md)
 

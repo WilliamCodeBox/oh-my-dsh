@@ -1,7 +1,7 @@
 /** Session-local ownership index for Package business views on `cordis_run` cards. */
 
-import type { SessionId } from '@deepseek-ai/dsh-client-connection/client'
-import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+import type { SessionId } from '@williamcodebox/omd-client-connection/client'
+import type { HostObservable } from '@williamcodebox/omd-client-ui-slots'
 import type {
   CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
 } from './events.ts'

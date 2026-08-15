@@ -1,10 +1,10 @@
-/** Package-owned invariant companion. @module @deepseek-ai/dsh-host-plugin-inventory/invariant */
+/** Package-owned invariant companion. @module @williamcodebox/omd-host-plugin-inventory/invariant */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-host-plugin-inventory'
+const PACKAGE_NAME = '@williamcodebox/omd-host-plugin-inventory'
 
 /** Cordis companion plugin name. */
 export const name = 'host-plugin-inventory-invariant'

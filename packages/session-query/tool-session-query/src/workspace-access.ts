@@ -1,22 +1,22 @@
 /**
  * Caller identity, workspace authorization, and visible lineage projection.
  *
- * @module @deepseek-ai/dsh-tool-session-query/workspace-access
+ * @module @williamcodebox/omd-tool-session-query/workspace-access
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { HarnessError } from '@deepseek-ai/dsh-llm'
+import type { Context } from '@williamcodebox/cordis'
+import { HarnessError } from '@williamcodebox/omd-llm'
 import {
   SessionId,
   type SessionEvent,
   type SessionHeader,
   type SessionId as SessionIdValue,
-} from '@deepseek-ai/dsh-session'
+} from '@williamcodebox/omd-session'
 import type {
   SessionLineageNode,
   SessionRecord,
-} from '@deepseek-ai/dsh-session-query'
-import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
+} from '@williamcodebox/omd-session-query'
+import type { ToolRunContext } from '@williamcodebox/omd-tools'
 import { serviceBoundary } from './service-boundary.ts'
 
 interface Caller {

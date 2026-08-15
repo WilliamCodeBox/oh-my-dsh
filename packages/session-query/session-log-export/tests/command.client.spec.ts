@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import type { CommandDefinition, CommandInvocation } from '@deepseek-ai/dsh-commands'
+import { Context } from '@williamcodebox/cordis'
+import type { CommandDefinition, CommandInvocation } from '@williamcodebox/omd-commands'
 import * as SessionLogDownload from '../src/index.ts'
 
 describe('/export Web download command', () => {

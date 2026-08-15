@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-agent-default-model
+# @williamcodebox/omd-agent-default-model
 
 English | [中文](README.zh.md)
 

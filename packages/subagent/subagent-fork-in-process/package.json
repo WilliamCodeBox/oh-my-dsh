@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-subagent-fork-in-process",
+  "name": "@williamcodebox/omd-subagent-fork-in-process",
   "description": "In-process fork subagent backend: runs a child agent seeded with a prefix of the parent's log",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,27 +32,27 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subagent-in-process-driver": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
+    "@williamcodebox/omd-subagent-in-process-driver": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subagent-in-process-driver": "workspace:^",
-    "@deepseek-ai/dsh-subagent-spawn-in-process": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis-plugin-loader": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-loop": "workspace:^",
+    "@williamcodebox/omd-agent-loop-testkit": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
+    "@williamcodebox/omd-subagent-in-process-driver": "workspace:^",
+    "@williamcodebox/omd-subagent-spawn-in-process": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-goal
+# @williamcodebox/omd-goal
 
 [English](README.md) | 中文
 
@@ -8,7 +8,7 @@
 
 ```yaml
 - id: goal
-  name: '@deepseek-ai/dsh-goal'
+  name: '@williamcodebox/omd-goal'
   config:
     defaultMaxGoalRounds: 256
 ```

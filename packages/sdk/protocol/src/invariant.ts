@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-sdk-protocol`.
- * @module @deepseek-ai/dsh-sdk-protocol/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-sdk-protocol`.
+ * @module @williamcodebox/omd-sdk-protocol/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-sdk-protocol'
+const PACKAGE_NAME = '@williamcodebox/omd-sdk-protocol'
 
 /** Cordis companion plugin name. */
 export const name = 'sdk-protocol-invariant'

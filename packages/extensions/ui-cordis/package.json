@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-cordis",
+  "name": "@williamcodebox/omd-client-ui-cordis",
   "description": "Cordis dynamic-plugin definition card: the keyed cordis_define tool row with its run/stop switch",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,14 +32,14 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-connection",
-        "@deepseek-ai/dsh-cordis-client-runner",
-        "@deepseek-ai/dsh-api-remotes",
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-ui-input-trigger",
-        "@deepseek-ai/dsh-client-ui-tool",
-        "@deepseek-ai/dsh-client-ui-sidebar"
+        "@williamcodebox/omd-client-runtime",
+        "@williamcodebox/omd-client-connection",
+        "@williamcodebox/omd-cordis-client-runner",
+        "@williamcodebox/omd-api-remotes",
+        "@williamcodebox/omd-client-locale",
+        "@williamcodebox/omd-client-ui-input-trigger",
+        "@williamcodebox/omd-client-ui-tool",
+        "@williamcodebox/omd-client-ui-sidebar"
       ],
       "platform": "web"
     }
@@ -50,34 +50,34 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-api-remotes": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-cordis-client-runner": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-input-trigger": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-tool": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
+    "@williamcodebox/omd-api-remotes": "workspace:^",
+    "@williamcodebox/omd-client-connection": "workspace:^",
+    "@williamcodebox/omd-cordis-client-runner": "workspace:^",
+    "@williamcodebox/omd-client-locale": "workspace:^",
+    "@williamcodebox/omd-client-runtime": "workspace:^",
+    "@williamcodebox/omd-client-ui-primitives": "workspace:^",
+    "@williamcodebox/omd-client-ui-sidebar": "workspace:^",
+    "@williamcodebox/omd-client-ui-input-trigger": "workspace:^",
+    "@williamcodebox/omd-client-ui-slots": "workspace:^",
+    "@williamcodebox/omd-client-ui-tool": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^",
     "react": "^18.2.0"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-api-remotes": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-cordis-client-runner": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-input-trigger": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-tool": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@williamcodebox/omd-api-remotes": "workspace:^",
+    "@williamcodebox/omd-client-connection": "workspace:^",
+    "@williamcodebox/omd-cordis-client-runner": "workspace:^",
+    "@williamcodebox/omd-client-locale": "workspace:^",
+    "@williamcodebox/omd-client-runtime": "workspace:^",
+    "@williamcodebox/omd-client-ui-primitives": "workspace:^",
+    "@williamcodebox/omd-client-ui-sidebar": "workspace:^",
+    "@williamcodebox/omd-client-ui-input-trigger": "workspace:^",
+    "@williamcodebox/omd-client-ui-slots": "workspace:^",
+    "@williamcodebox/omd-client-ui-tool": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
     "@types/react": "~18.3.1",
-    "@deepseek-ai/cordis": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^",
     "react": "^18.2.0"
   },
   "files": [

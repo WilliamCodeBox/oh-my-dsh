@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-fs-local`.
- * @module @deepseek-ai/dsh-fs-local/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-fs-local`.
+ * @module @williamcodebox/omd-fs-local/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-fs-local'
+const PACKAGE_NAME = '@williamcodebox/omd-fs-local'
 
 /** Cordis companion plugin name. */
 export const name = 'fs-local-invariant'

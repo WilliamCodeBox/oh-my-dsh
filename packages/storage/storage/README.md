@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-storage
+# @williamcodebox/omd-storage
 
 English | [中文](README.zh.md)
 

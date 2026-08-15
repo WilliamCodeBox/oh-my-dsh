@@ -1,24 +1,24 @@
 import { describe, expect, it, vi } from 'vitest'
 import { PassThrough } from 'node:stream'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
-import AgentRegistry, { Inbox, type Agent } from '@deepseek-ai/dsh-agent'
-import SandboxProvider from '@deepseek-ai/dsh-sandbox'
-import type { ConfinedArgv, SandboxPolicy } from '@deepseek-ai/dsh-sandbox'
-import SandboxPolicyService, { setSandboxMode } from '@deepseek-ai/dsh-sandbox-policy'
-import TerminalSessionService, { TerminalBackendCleanupError, TerminalSessionId } from '@deepseek-ai/dsh-terminal'
-import { BashTerminalBackend } from '@deepseek-ai/dsh-terminal-bash'
-import * as ptyLocal from '@deepseek-ai/dsh-terminal-bash'
-import type { ResolvedConfig } from '@deepseek-ai/dsh-terminal-bash/src/config.ts'
-import type { LocalPtySession } from '@deepseek-ai/dsh-terminal-bash/src/session.ts'
-import { SubprocessRuntime } from '@deepseek-ai/dsh-subprocess'
+import { Context } from '@williamcodebox/cordis'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import SessionStore, { Session, SessionId } from '@williamcodebox/omd-session'
+import AgentRegistry, { Inbox, type Agent } from '@williamcodebox/omd-agent'
+import SandboxProvider from '@williamcodebox/omd-sandbox'
+import type { ConfinedArgv, SandboxPolicy } from '@williamcodebox/omd-sandbox'
+import SandboxPolicyService, { setSandboxMode } from '@williamcodebox/omd-sandbox-policy'
+import TerminalSessionService, { TerminalBackendCleanupError, TerminalSessionId } from '@williamcodebox/omd-terminal'
+import { BashTerminalBackend } from '@williamcodebox/omd-terminal-bash'
+import * as ptyLocal from '@williamcodebox/omd-terminal-bash'
+import type { ResolvedConfig } from '@williamcodebox/omd-terminal-bash/src/config.ts'
+import type { LocalPtySession } from '@williamcodebox/omd-terminal-bash/src/session.ts'
+import { SubprocessRuntime } from '@williamcodebox/omd-subprocess'
 import type {
   SubprocessHandle,
   SubprocessSpawnSpec,
   SubprocessTerminalHandle,
   SubprocessTerminalSpawnSpec,
-} from '@deepseek-ai/dsh-subprocess'
+} from '@williamcodebox/omd-subprocess'
 
 class EmptySandbox extends SandboxProvider {
   confine(_argv: readonly string[], _policy: SandboxPolicy): ConfinedArgv {

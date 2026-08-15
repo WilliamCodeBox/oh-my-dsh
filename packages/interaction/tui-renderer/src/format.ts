@@ -4,7 +4,7 @@
  * layer; styling is a renderer concern), and every emitted line passes the
  * display sanitizer before it reaches the terminal.
  *
- * @module @deepseek-ai/dsh-tui-renderer
+ * @module @williamcodebox/omd-tui-renderer
  */
 
 import type { TranscriptItem, TranscriptState } from './transcript.ts'

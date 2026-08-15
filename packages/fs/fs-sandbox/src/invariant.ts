@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-fs-sandbox`.
- * @module @deepseek-ai/dsh-fs-sandbox/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-fs-sandbox`.
+ * @module @williamcodebox/omd-fs-sandbox/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-fs-sandbox'
+const PACKAGE_NAME = '@williamcodebox/omd-fs-sandbox'
 
 /** Cordis companion plugin name. */
 export const name = 'fs-sandbox-invariant'

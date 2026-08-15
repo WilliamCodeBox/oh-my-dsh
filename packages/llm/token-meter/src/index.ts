@@ -1,17 +1,17 @@
 /**
  * Single replay-aware token-meter service for request and surface pressure.
  *
- * @module @deepseek-ai/dsh-token-meter
+ * @module @williamcodebox/omd-token-meter
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { BlockAssembler, deepFreeze } from '@deepseek-ai/dsh-llm'
-import type { Message, TokenUsage } from '@deepseek-ai/dsh-llm'
-import type { EpochHeader, Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import { canonicalHeader, headerEquals, isSurfaceEvent } from '@deepseek-ai/dsh-session'
+import { Context, Service } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { BlockAssembler, deepFreeze } from '@williamcodebox/omd-llm'
+import type { Message, TokenUsage } from '@williamcodebox/omd-llm'
+import type { EpochHeader, Session, SessionEvent } from '@williamcodebox/omd-session'
+import { canonicalHeader, headerEquals, isSurfaceEvent } from '@williamcodebox/omd-session'
 // Type-only: resolves the optional projection registry Context declaration.
-import type {} from '@deepseek-ai/dsh-session-projection'
+import type {} from '@williamcodebox/omd-session-projection'
 import type {
   TokenMeasurement,
   TokenMeasurementBaseline,
@@ -64,7 +64,7 @@ function validateConfigKeys(config: TokenMeterConfig): void {
   }
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     tokenMeter: TokenMeter
   }

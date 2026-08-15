@@ -14,9 +14,9 @@ import type {
   InboxTarget,
   PreStepDecision,
   RequestErrorAction,
-} from '@deepseek-ai/dsh-agent'
-import { Inbox, agentEvents, assembleContextFor } from '@deepseek-ai/dsh-agent'
-import type { GenerateOptions, LlmCallConfig, Message, PreparedLlmCall } from '@deepseek-ai/dsh-llm'
+} from '@williamcodebox/omd-agent'
+import { Inbox, agentEvents, assembleContextFor } from '@williamcodebox/omd-agent'
+import type { GenerateOptions, LlmCallConfig, Message, PreparedLlmCall } from '@williamcodebox/omd-llm'
 import {
   BlockAssembler,
   LlmError,
@@ -24,14 +24,14 @@ import {
   deepFreeze,
   errorChain,
   markAgentLoopRequest,
-} from '@deepseek-ai/dsh-llm'
-import type { Scope } from '@deepseek-ai/dsh-scope'
-import { createScope } from '@deepseek-ai/dsh-scope'
-import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@deepseek-ai/dsh-session'
-import { canonicalHeader, headerEquals } from '@deepseek-ai/dsh-session'
-import { joinContextSections, renderContextSections, renderPrompt } from '@deepseek-ai/dsh-system-prompt'
-import type { PromptAssembly } from '@deepseek-ai/dsh-system-prompt'
-import type { Context } from '@deepseek-ai/cordis'
+} from '@williamcodebox/omd-llm'
+import type { Scope } from '@williamcodebox/omd-scope'
+import { createScope } from '@williamcodebox/omd-scope'
+import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@williamcodebox/omd-session'
+import { canonicalHeader, headerEquals } from '@williamcodebox/omd-session'
+import { joinContextSections, renderContextSections, renderPrompt } from '@williamcodebox/omd-system-prompt'
+import type { PromptAssembly } from '@williamcodebox/omd-system-prompt'
+import type { Context } from '@williamcodebox/cordis'
 import { RuntimeContextProjection } from './runtime-context.ts'
 import { executeToolCalls } from './tool-calls.ts'
 

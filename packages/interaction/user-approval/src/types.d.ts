@@ -2,9 +2,9 @@
  * Wire-safe approval identifiers and outcome vocabulary, free of
  * cordis/service imports so browser type chains (apiproxy api → client) can
  * consume them without loading this package's Context augmentation.
- * @module @deepseek-ai/dsh-user-approval/types
+ * @module @williamcodebox/omd-user-approval/types
  */
-import type { Branded } from '@deepseek-ai/dsh-brand';
+import type { Branded } from '@williamcodebox/omd-brand';
 /**
  * Pairs one `approval/asked` audit event with its `approval/decided`.
  * Service-issued (one fresh id per {@link ApprovalService.request} call).

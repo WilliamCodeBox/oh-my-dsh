@@ -1,14 +1,14 @@
 /**
  * Package-owned invariant companion for
- * `@deepseek-ai/dsh-subagent-claude-code`.
- * @module @deepseek-ai/dsh-subagent-claude-code/invariant
+ * `@williamcodebox/omd-subagent-claude-code`.
+ * @module @williamcodebox/omd-subagent-claude-code/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-subagent-claude-code'
+const PACKAGE_NAME = '@williamcodebox/omd-subagent-claude-code'
 
 /** Cordis companion plugin name. */
 export const name = 'subagent-claude-code-invariant'

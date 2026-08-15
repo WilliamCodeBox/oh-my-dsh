@@ -32,8 +32,8 @@ command runtime.
   keeping the documented `NO_PROVIDER` failure. The runner injects
   `userQuestions` and `commands` (both mounted by base). `traceLine` gains
   the command event summaries.
-- Deps: renderer + bundle add `@deepseek-ai/dsh-commands` and
-  `@deepseek-ai/dsh-user-questions` (peer+dev); renderer tsconfig gains both
+- Deps: renderer + bundle add `@williamcodebox/omd-commands` and
+  `@williamcodebox/omd-user-questions` (peer+dev); renderer tsconfig gains both
   project references; the `command/run`/`command/done` session shapes ride
   the CommandRuntime merge.
 

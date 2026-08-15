@@ -9,11 +9,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Hmr from '@deepseek-ai/cordis-plugin-hmr'
-import Include, { type PatchOptions } from '@deepseek-ai/cordis-plugin-include'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Timer from '@deepseek-ai/cordis-plugin-timer'
+import { Context } from '@williamcodebox/cordis'
+import Hmr from '@williamcodebox/cordis-plugin-hmr'
+import Include, { type PatchOptions } from '@williamcodebox/cordis-plugin-include'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import Timer from '@williamcodebox/cordis-plugin-timer'
 import {
   boot,
   loadOptionalPatches,
@@ -48,12 +48,12 @@ describe('loadOptionalPatches', () => {
     const dir = tmp()
     writeFileSync(join(dir, PROFILE_PATCH_FILENAME), [
       '- id: agent-loop',
-      "  name: '@deepseek-ai/dsh-agent-loop'",
+      "  name: '@williamcodebox/omd-agent-loop'",
       '  config:',
       '    model: !!js process.env.DSH_SPEC_MODEL',
       '- insert:',
       '    - id: llm',
-      "      name: '@deepseek-ai/dsh-llm-pi-ai'",
+      "      name: '@williamcodebox/omd-llm-pi-ai'",
       '',
     ].join('\n'))
     const patches = loadOptionalPatches(NAME, join(dir, PROFILE_PATCH_FILENAME))

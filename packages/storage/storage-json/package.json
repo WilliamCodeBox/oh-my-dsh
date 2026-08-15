@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-storage-json",
+  "name": "@williamcodebox/omd-storage-json",
   "description": "JSON file KV storage backend for the DeepSeek Harness storage hub",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,16 +32,16 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-storage": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-storage": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

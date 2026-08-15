@@ -8,17 +8,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import LocalJobRegistry from '@deepseek-ai/dsh-jobs-local'
-import type { JobOutcome } from '@deepseek-ai/dsh-jobs'
-import type { MuxFrame, RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import { Context } from '@williamcodebox/cordis'
+import AgentRegistry, { Inbox } from '@williamcodebox/omd-agent'
+import type { Agent } from '@williamcodebox/omd-agent'
+import SessionStore, { SessionId } from '@williamcodebox/omd-session'
+import type { Session } from '@williamcodebox/omd-session'
+import UserQuestionService from '@williamcodebox/omd-user-questions'
+import LocalJobRegistry from '@williamcodebox/omd-jobs-local'
+import type { JobOutcome } from '@williamcodebox/omd-jobs'
+import type { MuxFrame, RpcRequest } from '@williamcodebox/omd-host-apiproxy/api'
+import { RpcId } from '@williamcodebox/omd-host-apiproxy/api/rpc'
+import { createApiProxy } from '@williamcodebox/omd-host-apiproxy'
 
 type JobFrame = Extract<MuxFrame, { type: 'session/jobs' }>
 

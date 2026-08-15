@@ -22,7 +22,7 @@ work could never run interactively.
   The runner's Ctrl+C listener yields to the modal while `approvalPending`:
   the SelectList's own cancel binding (Escape/Ctrl+C) resolves the prompt
   instead of the quit machine.
-- Deps: `@deepseek-ai/dsh-user-approval` added as peer+dev to the renderer
+- Deps: `@williamcodebox/omd-user-approval` added as peer+dev to the renderer
   and bundle (its `./types` subpath is wire-safe); the renderer tsconfig
   gains the user-approval project reference.
 

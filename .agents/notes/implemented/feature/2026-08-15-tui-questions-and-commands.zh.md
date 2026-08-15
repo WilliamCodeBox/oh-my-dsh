@@ -9,7 +9,7 @@
 - `packages/interaction/tui-renderer/src/presenter.ts` — 模态机制从审批推广到问题：`askQuestions` 逐题渲染 overlay——选项问题用 SelectList，多选问题循环重显剩余选项直到 Escape，无选项问题用自由文本 `Input` 模态；Escape 表示该题不答。`promptSelect`/`promptText` 共享 `mountOverlay` 槽；`approvalPending` 更名 `interactionPending`，runner 的 Ctrl+C 监听对所有模态让位（SelectList/Input 的 cancel 绑定含 Escape 与 Ctrl+C）。
 - `packages/interaction/tui-renderer/src/transcript.ts` — 新增 `command` 条目：`command/run` 开卡片，配对的 `command/done`（按 `commandId` 从尾部匹配）合并 `success`/`error` 结果。命令是 turn 外 log-only 追加，卡片不开关 turn 括号。`format.ts` 渲染 `command /name args` + `  -> <text>`（error 带前缀）。
 - `packages/bundle/tui/src/index.ts` — `dispatchLine` 分流提交行：可解析的斜杠命令走 `ctx.commands.execute`（绝不进模型）；未知命令在 presenter 状态行或 pipe 的 `[command] unknown:` 行报告；handler 失败被包含（其 `command/done` error 卡片已渲染）。presenter 运行时注册唯一的 user-questions provider；pipe 路径不注册，保持文档化的 `NO_PROVIDER` 失败。runner 的 inject 增加 `userQuestions` 与 `commands`（base 均已挂载）。`traceLine` 增加命令事件摘要。
-- 依赖：renderer 与 bundle 加 `@deepseek-ai/dsh-commands` 与 `@deepseek-ai/dsh-user-questions`（peer+dev）；renderer tsconfig 加两个 project reference；`command/run`/`command/done` 事件形状随 CommandRuntime merge 生效。
+- 依赖：renderer 与 bundle 加 `@williamcodebox/omd-commands` 与 `@williamcodebox/omd-user-questions`（peer+dev）；renderer tsconfig 加两个 project reference；`command/run`/`command/done` 事件形状随 CommandRuntime merge 生效。
 
 ## 为何这样设计
 

@@ -6,16 +6,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import * as ToolTodo from '@deepseek-ai/dsh-tool-todo'
+import { Context } from '@williamcodebox/cordis'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import Include from '@williamcodebox/cordis-plugin-include'
+import { CallId } from '@williamcodebox/omd-llm'
+import { Session, SessionId } from '@williamcodebox/omd-session'
+import AgentRegistry, { Inbox } from '@williamcodebox/omd-agent'
+import type { Agent } from '@williamcodebox/omd-agent'
+import SystemPrompt from '@williamcodebox/omd-system-prompt'
+import ToolRuntime from '@williamcodebox/omd-tools'
+import * as ToolTodo from '@williamcodebox/omd-tool-todo'
 
 let root: string | undefined
 let context: Context | undefined
@@ -55,10 +55,10 @@ async function boot(configLines: readonly string[]): Promise<Context> {
   root = await mkdtemp(join(tmpdir(), 'dsh-todo-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
-    "- name: '@deepseek-ai/dsh-agent'",
-    "- name: '@deepseek-ai/dsh-system-prompt'",
-    "- name: '@deepseek-ai/dsh-tools'",
-    "- name: '@deepseek-ai/dsh-tool-todo'",
+    "- name: '@williamcodebox/omd-agent'",
+    "- name: '@williamcodebox/omd-system-prompt'",
+    "- name: '@williamcodebox/omd-tools'",
+    "- name: '@williamcodebox/omd-tool-todo'",
     ...configLines.length > 0 ? ['  config:', ...configLines] : [],
     '',
   ].join('\n'))
@@ -69,10 +69,10 @@ async function boot(configLines: readonly string[]): Promise<Context> {
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@deepseek-ai/dsh-agent', AgentRegistry],
-    ['@deepseek-ai/dsh-system-prompt', SystemPrompt],
-    ['@deepseek-ai/dsh-tools', ToolRuntime],
-    ['@deepseek-ai/dsh-tool-todo', ToolTodo],
+    ['@williamcodebox/omd-agent', AgentRegistry],
+    ['@williamcodebox/omd-system-prompt', SystemPrompt],
+    ['@williamcodebox/omd-tools', ToolRuntime],
+    ['@williamcodebox/omd-tool-todo', ToolTodo],
   ])
   ctx.loader.internal = {
     version: 'v2',

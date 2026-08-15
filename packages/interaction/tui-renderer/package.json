@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tui-renderer",
+  "name": "@williamcodebox/omd-tui-renderer",
   "description": "Folded terminal transcript model and presentation seam for the dsh TUI surface",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -37,22 +37,22 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/dsh-user-questions": "workspace:^"
+    "@williamcodebox/cordis": "workspace:^",
+    "@williamcodebox/omd-commands": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-user-approval": "workspace:^",
+    "@williamcodebox/omd-user-questions": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/dsh-user-questions": "workspace:^"
+    "@williamcodebox/cordis": "workspace:^",
+    "@williamcodebox/omd-commands": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-user-approval": "workspace:^",
+    "@williamcodebox/omd-user-questions": "workspace:^"
   },
   "dependencies": {
     "@earendil-works/pi-tui": "0.84.2"

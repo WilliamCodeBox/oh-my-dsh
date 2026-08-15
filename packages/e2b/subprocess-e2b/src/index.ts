@@ -1,22 +1,22 @@
 /**
  * E2B Service Provider for the subprocess capability seam. Each handle starts through the
  * shared sandbox and retains command output/status paths in that remote world.
- * @module @deepseek-ai/dsh-subprocess-e2b
+ * @module @williamcodebox/omd-subprocess-e2b
  */
 
 import { randomUUID } from 'node:crypto'
 import { posix } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { SubprocessRuntime } from '@deepseek-ai/dsh-subprocess'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { SubprocessRuntime } from '@williamcodebox/omd-subprocess'
+import { MAX_TIMER_DELAY_MS } from '@williamcodebox/omd-timeout'
 import type {
   SubprocessHandle,
   SubprocessSpawnSpec,
   SubprocessTerminalHandle,
   SubprocessTerminalSpawnSpec,
-} from '@deepseek-ai/dsh-subprocess'
-import { e2bControlEnvs, quoteE2BShellArg } from '@deepseek-ai/dsh-e2b'
+} from '@williamcodebox/omd-subprocess'
+import { e2bControlEnvs, quoteE2BShellArg } from '@williamcodebox/omd-e2b'
 import { E2BSubprocessHandle } from './process.ts'
 import { asError, signalOpts } from './remote.ts'
 import { spawnE2BTerminal } from './terminal.ts'

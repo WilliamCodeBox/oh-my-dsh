@@ -2,7 +2,7 @@
 
 ## Problem
 
-The official `@deepseek-ai/dsh` CLI is installed globally on this machine
+The official `@williamcodebox/dsh` CLI is installed globally on this machine
 (and published on npm), so a local `dsh` executable would shadow or collide
 with it. The oh-my-dsh fork's launcher needed its own command name.
 
@@ -17,7 +17,7 @@ with it. The oh-my-dsh fork's launcher needed its own command name.
 - Every `dsh` command-usage reference across repo docs, examples, tests, and
   comments (230+ files, including the bilingual `docs/user` tutorials)
   becomes `omd`. Archived Agent Notes are frozen and untouched.
-- Preserved technical identifiers: `@deepseek-ai/dsh-*` package names,
+- Preserved technical identifiers: `@williamcodebox/omd-*` package names,
   `DSH_HOME`/`DSH_*` environment variables, the `dsh.bundle`/`dsh.profile`
   manifest keys, `~/.dsh` home, and `dsh-`-prefixed plugin/feature names
   (e.g. the `dsh-badge` skill) — those are protocol or package identities,

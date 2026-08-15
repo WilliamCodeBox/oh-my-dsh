@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-tui-renderer`.
- * @module @deepseek-ai/dsh-tui-renderer/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-tui-renderer`.
+ * @module @williamcodebox/omd-tui-renderer/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-tui-renderer'
+const PACKAGE_NAME = '@williamcodebox/omd-tui-renderer'
 
 /** Cordis companion plugin name. */
 export const name = 'tui-renderer-invariant'

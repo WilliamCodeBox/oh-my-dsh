@@ -7,17 +7,17 @@
  * imports no provider.
  *
  * Namespace plugin (named exports, no default export).
- * @module @deepseek-ai/dsh-tool-lsp
+ * @module @williamcodebox/omd-tool-lsp
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import { assertNever } from '@deepseek-ai/dsh-llm'
-import { LspError } from '@deepseek-ai/dsh-lsp'
-import type {} from '@deepseek-ai/dsh-lsp'
-import type {} from '@deepseek-ai/dsh-system-prompt'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import type { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { defineTool } from '@williamcodebox/omd-tools'
+import { assertNever } from '@williamcodebox/omd-llm'
+import { LspError } from '@williamcodebox/omd-lsp'
+import type {} from '@williamcodebox/omd-lsp'
+import type {} from '@williamcodebox/omd-system-prompt'
+import { MAX_TIMER_DELAY_MS } from '@williamcodebox/omd-timeout'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-session-persistence
+# @williamcodebox/omd-session-persistence
 
 [English](README.md) | 中文
 

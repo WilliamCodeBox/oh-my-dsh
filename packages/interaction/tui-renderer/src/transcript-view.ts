@@ -4,7 +4,7 @@
  * scroll viewport. Styling is opt-in: the default theme is identity, so
  * snapshot fixtures compare plain text; the presenter passes a color theme.
  *
- * @module @deepseek-ai/dsh-tui-renderer
+ * @module @williamcodebox/omd-tui-renderer
  */
 
 import type { Component } from '@earendil-works/pi-tui'

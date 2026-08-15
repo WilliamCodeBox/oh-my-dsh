@@ -8,7 +8,7 @@ The renderer milestone of [the TUI reintroduction](2026-08-14-tui-surface-reintr
 
 ## Decision
 
-New package `packages/interaction/tui-renderer` (`@deepseek-ai/dsh-tui-renderer`) hosts the fold model; the interaction/ group is its confirmed home (the dissolved `ui/` group is not resurrected). `Transcript` folds one session's `session/event` stream in sequence order into display items:
+New package `packages/interaction/tui-renderer` (`@williamcodebox/omd-tui-renderer`) hosts the fold model; the interaction/ group is its confirmed home (the dissolved `ui/` group is not resurrected). `Transcript` folds one session's `session/event` stream in sequence order into display items:
 
 - **user** messages with producer source and the open turn;
 - **assistant** messages that stream `text-delta` chunks and finalize on the assembled message (carrying `usage` and the assembled message);

@@ -10,16 +10,16 @@
  * disposing the old instance and creating a new one; identical `serverName`
  * reproduces identical public tool names.
  *
- * @module @deepseek-ai/dsh-mcp-client
+ * @module @williamcodebox/omd-mcp-client
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import type { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@williamcodebox/omd-timeout'
 import { RECONNECT_DEFAULTS, resolveReconnectPolicy, startConnection } from './connection.ts'
 import type { ReconnectConfig } from './connection.ts'
 // Side-effect type import: declaration-merges `ctx.tools` onto Context.
-import type {} from '@deepseek-ai/dsh-tools'
+import type {} from '@williamcodebox/omd-tools'
 
 export type { McpResult } from './tools.ts'
 export type { ReconnectConfig, ResolvedReconnectPolicy } from './connection.ts'

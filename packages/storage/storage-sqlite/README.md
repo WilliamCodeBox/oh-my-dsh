@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-storage-sqlite
+# @williamcodebox/omd-storage-sqlite
 
 English | [中文](README.zh.md)
 

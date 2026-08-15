@@ -1,6 +1,6 @@
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@williamcodebox/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SessionId } from '@williamcodebox/omd-api-remotes/client'
 import { ConversationEventRegistry } from '../src/client/conversation/event-registry.ts'
 import { ConversationViewRegistry } from '../src/client/conversation/view-registry.ts'
 import type {

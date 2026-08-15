@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-session-projection
+# @williamcodebox/omd-session-projection
 
 [English](README.md) | 中文
 

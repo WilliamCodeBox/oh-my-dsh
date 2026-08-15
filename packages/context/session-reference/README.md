@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh-session-reference`
+# `@williamcodebox/omd-session-reference`
 
 English | [中文](README.zh.md)
 

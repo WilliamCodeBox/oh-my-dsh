@@ -12,8 +12,8 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { expect, it } from 'vitest'
-import { Transcript, TranscriptView } from '@deepseek-ai/dsh-tui-renderer'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import { Transcript, TranscriptView } from '@williamcodebox/omd-tui-renderer'
+import type { SessionEvent } from '@williamcodebox/omd-session'
 
 const FIXTURE = fileURLToPath(new URL('./fixtures/transcript/session.jsonl', import.meta.url))
 const EXPECTED = fileURLToPath(new URL('./snapshots/transcript/terminal.expected.txt', import.meta.url))

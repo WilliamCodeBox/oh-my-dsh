@@ -7,17 +7,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SessionStore from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import ApprovalService from '@deepseek-ai/dsh-user-approval'
-import type { ApprovalRequestId } from '@deepseek-ai/dsh-user-approval'
-import type { ApiProxy, MuxFrame, RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
-import type { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { RpcId as mintRpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
+import { Context } from '@williamcodebox/cordis'
+import AgentRegistry from '@williamcodebox/omd-agent'
+import type { Agent } from '@williamcodebox/omd-agent'
+import SessionStore from '@williamcodebox/omd-session'
+import SystemPrompt from '@williamcodebox/omd-system-prompt'
+import UserQuestionService from '@williamcodebox/omd-user-questions'
+import ApprovalService from '@williamcodebox/omd-user-approval'
+import type { ApprovalRequestId } from '@williamcodebox/omd-user-approval'
+import type { ApiProxy, MuxFrame, RpcRequest } from '@williamcodebox/omd-host-apiproxy/api'
+import type { RpcId } from '@williamcodebox/omd-host-apiproxy/api/rpc'
+import { RpcId as mintRpcId } from '@williamcodebox/omd-host-apiproxy/api/rpc'
 import { createApiProxy } from '../src/api-proxy.ts'
 
 async function harness(): Promise<{ ctx: Context; api: ApiProxy }> {

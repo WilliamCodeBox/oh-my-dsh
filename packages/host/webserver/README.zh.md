@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-host-webserver
+# @williamcodebox/omd-host-webserver
 
 [English](README.md) | 中文
 

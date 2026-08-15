@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-workflow-worker-thread
+# @williamcodebox/omd-workflow-worker-thread
 
 English | [中文](README.zh.md)
 

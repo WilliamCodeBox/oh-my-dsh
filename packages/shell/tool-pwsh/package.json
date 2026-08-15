@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-pwsh",
+  "name": "@williamcodebox/omd-tool-pwsh",
   "description": "Model-facing pwsh tool over the bash executor seam",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,39 +32,39 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-shell-env": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-jobs": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-shell": "workspace:^",
+    "@williamcodebox/omd-shell-env": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-sandbox": "workspace:^",
+    "@williamcodebox/omd-sandbox-policy": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-jobs": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/omd-user-approval": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@williamcodebox/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-shell-env": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-loader-smoke": "workspace:^",
-    "@deepseek-ai/dsh-pwsh-local": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-jobs": "workspace:^",
-    "@deepseek-ai/dsh-jobs-local": "workspace:^",
-    "@deepseek-ai/dsh-tool-jobs": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-shell": "workspace:^",
+    "@williamcodebox/omd-shell-env": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-loader-smoke": "workspace:^",
+    "@williamcodebox/omd-pwsh-local": "workspace:^",
+    "@williamcodebox/omd-sandbox": "workspace:^",
+    "@williamcodebox/omd-sandbox-policy": "workspace:^",
+    "@williamcodebox/omd-subprocess-local": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-jobs": "workspace:^",
+    "@williamcodebox/omd-jobs-local": "workspace:^",
+    "@williamcodebox/omd-tool-jobs": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/omd-user-approval": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

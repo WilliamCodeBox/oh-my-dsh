@@ -8,7 +8,7 @@ The terminal front door deleted by [remove-tui-package](../../implemented/simpli
 
 ## Decision
 
-`@deepseek-ai/dsh-tui` returns as an installable profile bundle at `packages/bundle/tui` (patch + `tui-startup` cmdline provider + `tui-runner` glue plugin), booted as `omd --profile tui`. The M0 surface is line-oriented event tracing over `dsh-base` — no Host, HTTP, Web runtime, or browser rows.
+`@williamcodebox/omd-tui` returns as an installable profile bundle at `packages/bundle/tui` (patch + `tui-startup` cmdline provider + `tui-runner` glue plugin), booted as `omd --profile tui`. The M0 surface is line-oriented event tracing over `dsh-base` — no Host, HTTP, Web runtime, or browser rows.
 
 Reintroduction conditions, in order:
 

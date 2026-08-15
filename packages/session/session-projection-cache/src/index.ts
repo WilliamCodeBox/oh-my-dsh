@@ -9,25 +9,25 @@
  * `ver` mismatch discards the row instead of migrating it. Design
  * authority: the session-projection RFC
  * (.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md).
- * @module @deepseek-ai/dsh-session-projection-cache
+ * @module @williamcodebox/omd-session-projection-cache
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { snapshotJsonValue } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@deepseek-ai/dsh-session'
+import { Context, Service } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { snapshotJsonValue } from '@williamcodebox/omd-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@williamcodebox/omd-session'
 // Empty type import: applies the package's cordis Context merge
 // (`ctx.sessionPersistence`), which this service reads on the cold path.
-import type {} from '@deepseek-ai/dsh-session-persistence'
-import type { ProjectionCheckpoint, ProjectionSnapshot } from '@deepseek-ai/dsh-session-projection'
-import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
+import type {} from '@williamcodebox/omd-session-persistence'
+import type { ProjectionCheckpoint, ProjectionSnapshot } from '@williamcodebox/omd-session-projection'
+import type { KvTable } from '@williamcodebox/omd-storage-domain'
 import { projectionCacheDomainSpec } from './spec.ts'
 import type { CheckpointIdentity, CheckpointRecord } from './spec.ts'
 
 export { checkpointIdentity, checkpointRecord, checkpointRow, projectionCacheDomainSpec } from './spec.ts'
 export type { CheckpointIdentity, CheckpointRecord } from './spec.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     sessionProjectionCache: SessionProjectionCache
   }

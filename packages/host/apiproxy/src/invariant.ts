@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-host-apiproxy`.
- * @module @deepseek-ai/dsh-host-apiproxy/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-host-apiproxy`.
+ * @module @williamcodebox/omd-host-apiproxy/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-host-apiproxy'
+const PACKAGE_NAME = '@williamcodebox/omd-host-apiproxy'
 
 /** Cordis companion plugin name. */
 export const name = 'host-apiproxy-invariant'

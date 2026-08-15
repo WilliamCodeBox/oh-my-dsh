@@ -1,7 +1,7 @@
 /**
  * Client-namespace projection of token-meter's browser-safe types.
  *
- * @module @deepseek-ai/dsh-token-meter/client
+ * @module @williamcodebox/omd-token-meter/client
  */
 
 export type * from './projection.ts'

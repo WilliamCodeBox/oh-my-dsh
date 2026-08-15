@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-tool-str-replace-editor
+# @williamcodebox/omd-tool-str-replace-editor
 
 [English](README.md) | 中文
 

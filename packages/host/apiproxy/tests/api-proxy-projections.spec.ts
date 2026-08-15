@@ -8,22 +8,22 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@williamcodebox/cordis'
 import { z } from 'zod'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import { AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import type { MuxFrame, RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import AgentRegistry, { Inbox } from '@williamcodebox/omd-agent'
+import { AttachmentStore } from '@williamcodebox/omd-attachment'
+import type { Agent } from '@williamcodebox/omd-agent'
+import { createUserMessage } from '@williamcodebox/omd-llm'
+import SessionStore, { SessionId } from '@williamcodebox/omd-session'
+import type { Session } from '@williamcodebox/omd-session'
+import SessionProjectionRegistry from '@williamcodebox/omd-session-projection'
+import type { ProjectionDefinition } from '@williamcodebox/omd-session-projection'
+import UserQuestionService from '@williamcodebox/omd-user-questions'
+import type { MuxFrame, RpcRequest } from '@williamcodebox/omd-host-apiproxy/api'
+import { RpcId } from '@williamcodebox/omd-host-apiproxy/api/rpc'
+import { createApiProxy } from '@williamcodebox/omd-host-apiproxy'
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@williamcodebox/omd-session-projection/types' {
   interface SessionProjectionMap {
     'test/last-user': { text: string } | null
   }

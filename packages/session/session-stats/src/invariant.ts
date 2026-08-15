@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-session-stats`.
- * @module @deepseek-ai/dsh-session-stats/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-session-stats`.
+ * @module @williamcodebox/omd-session-stats/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-session-stats'
+const PACKAGE_NAME = '@williamcodebox/omd-session-stats'
 
 /** Cordis companion plugin name. */
 export const name = 'session-stats-invariant'

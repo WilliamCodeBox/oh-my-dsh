@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-lsp-stdio
+# @williamcodebox/omd-lsp-stdio
 
 [English](README.md) | 中文
 

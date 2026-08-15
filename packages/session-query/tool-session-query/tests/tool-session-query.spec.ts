@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, type Fiber } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage, CallId, HarnessError , createMessage } from '@deepseek-ai/dsh-llm'
-import { MAX_TIMER_DELAY_MS, TimeoutReason } from '@deepseek-ai/dsh-timeout'
-import * as TimeoutPolicy from '@deepseek-ai/dsh-tool-call-timeout-policy'
+import { Context, type Fiber } from '@williamcodebox/cordis'
+import type { Agent } from '@williamcodebox/omd-agent'
+import { createUserMessage, CallId, HarnessError , createMessage } from '@williamcodebox/omd-llm'
+import { MAX_TIMER_DELAY_MS, TimeoutReason } from '@williamcodebox/omd-timeout'
+import * as TimeoutPolicy from '@williamcodebox/omd-tool-call-timeout-policy'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   SessionId,
   type Session,
   type SessionHeader,
   type SessionId as SessionIdValue,
-} from '@deepseek-ai/dsh-session'
+} from '@williamcodebox/omd-session'
 import SessionQueryEngine, {
   SessionQueryError,
   SessionSearchCursor,
@@ -23,10 +23,10 @@ import SessionQueryEngine, {
   type SessionSearchPage,
   type SessionSearchRequest,
   type SessionTitleObservationResult,
-} from '@deepseek-ai/dsh-session-query'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { type ToolExecutionResult } from '@deepseek-ai/dsh-tools'
-import * as ToolSessionQuery from '@deepseek-ai/dsh-tool-session-query'
+} from '@williamcodebox/omd-session-query'
+import SystemPrompt from '@williamcodebox/omd-system-prompt'
+import ToolRuntime, { type ToolExecutionResult } from '@williamcodebox/omd-tools'
+import * as ToolSessionQuery from '@williamcodebox/omd-tool-session-query'
 
 const activeContexts: Context[] = []
 

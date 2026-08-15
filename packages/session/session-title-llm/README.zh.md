@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-session-title-llm
+# @williamcodebox/omd-session-title-llm
 
 [English](README.md) | 中文
 

@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-command-goal`.
- * @module @deepseek-ai/dsh-command-goal/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-command-goal`.
+ * @module @williamcodebox/omd-command-goal/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-command-goal'
+const PACKAGE_NAME = '@williamcodebox/omd-command-goal'
 
 /** Cordis companion plugin name. */
 export const name = 'command-goal-invariant'

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-theme
+# @williamcodebox/omd-client-ui-theme
 
 [English](README.md) | 中文
 

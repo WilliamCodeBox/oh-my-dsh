@@ -5,18 +5,18 @@
  * the registry itself while plugins can register additional, enumerable facts
  * with effect-scoped disposal.
  *
- * @module @deepseek-ai/dsh-shell-env
+ * @module @williamcodebox/omd-shell-env
  */
 
-import { Service, type Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { DSH_ENV_PREFIX } from '@deepseek-ai/dsh-shell'
-import type { DshEnvironment, DshEnvironmentKey } from '@deepseek-ai/dsh-shell'
-import { DSH_HOME_ENV, resolveDshHome } from '@deepseek-ai/dsh-home-paths'
-import type { ToolExecution } from '@deepseek-ai/dsh-tools'
-import type {} from '@deepseek-ai/dsh-session-persistence'
+import { Service, type Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { DSH_ENV_PREFIX } from '@williamcodebox/omd-shell'
+import type { DshEnvironment, DshEnvironmentKey } from '@williamcodebox/omd-shell'
+import { DSH_HOME_ENV, resolveDshHome } from '@williamcodebox/omd-home-paths'
+import type { ToolExecution } from '@williamcodebox/omd-tools'
+import type {} from '@williamcodebox/omd-session-persistence'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     shellEnv: ShellEnvRegistry
   }

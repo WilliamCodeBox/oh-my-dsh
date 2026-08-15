@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-settings
+# @williamcodebox/omd-client-ui-settings
 
 English | [中文](README.zh.md)
 

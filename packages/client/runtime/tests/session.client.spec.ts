@@ -7,9 +7,9 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
-import type {} from '@deepseek-ai/dsh-commands/types'
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SessionEvent } from '@williamcodebox/omd-session/types'
+import type {} from '@williamcodebox/omd-commands/types'
+import type { SessionId } from '@williamcodebox/omd-api-remotes/client'
 import { Session } from '../src/client/sessions/session.ts'
 import type {
   ChatConversationViewNode, ChatLocationNodeIndex, ChatNodeStore, ChatSnapshot,

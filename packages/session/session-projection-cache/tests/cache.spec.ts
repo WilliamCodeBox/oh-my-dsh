@@ -7,24 +7,24 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@williamcodebox/cordis'
 import { z } from 'zod'
-import Storage from '@deepseek-ai/dsh-storage'
-import { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
+import Storage from '@williamcodebox/omd-storage'
+import { DomainFacility } from '@williamcodebox/omd-storage-domain'
+import SessionStore, { SessionId } from '@williamcodebox/omd-session'
+import type { Session, SessionEvent } from '@williamcodebox/omd-session'
+import SessionProjectionRegistry from '@williamcodebox/omd-session-projection'
+import type { ProjectionDefinition } from '@williamcodebox/omd-session-projection'
 import { MemoryMediaPool, MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
 import SessionProjectionCache from '../src/index.ts'
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@williamcodebox/omd-session-projection/types' {
   interface SessionProjectionMap {
     'cache-test/marks': { marks: string[] }
   }
 }
 
-declare module '@deepseek-ai/dsh-session/types' {
+declare module '@williamcodebox/omd-session/types' {
   interface SessionEventMap {
     'cache-test/mark': { marks: string[] }
   }

@@ -4,9 +4,9 @@
  * participates in method lookup, invocation, or type exposure.
  */
 
-import { Service } from '@deepseek-ai/cordis'
-import type { Context, Events } from '@deepseek-ai/cordis'
-import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
+import { Service } from '@williamcodebox/cordis'
+import type { Context, Events } from '@williamcodebox/cordis'
+import type { ConnectionHandle } from '@williamcodebox/omd-client-connection/client'
 import type {
   InvocationDescriptor,
   TypertClientRemote,
@@ -15,7 +15,7 @@ import type {
   TypertDisposer,
   TypertRemoteContribution,
   TypertRemoteEvent,
-} from '@deepseek-ai/dsh-typert-protocol'
+} from '@williamcodebox/omd-typert-protocol'
 
 interface MountToken {
   active: boolean
@@ -55,7 +55,7 @@ interface RemoteNamespaceHandle {
 /** Typed Remote service augmented by generated direct namespaces. */
 export type ClientRemote = TypertClientRemote
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     /** Generated Remote namespaces selected by the Client assembly. */
     remote: ClientRemote

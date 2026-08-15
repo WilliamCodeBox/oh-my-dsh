@@ -8,17 +8,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import SessionStore from '@deepseek-ai/dsh-session'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import type { Agent, AgentHandle, CreateAgentOptions } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import SessionTitleService from '@deepseek-ai/dsh-session-title'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import type { Session, SessionId } from '@deepseek-ai/dsh-session'
-import type { RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import { Context } from '@williamcodebox/cordis'
+import SessionStore from '@williamcodebox/omd-session'
+import AgentRegistry from '@williamcodebox/omd-agent'
+import type { Agent, AgentHandle, CreateAgentOptions } from '@williamcodebox/omd-agent'
+import { createUserMessage } from '@williamcodebox/omd-llm'
+import SessionTitleService from '@williamcodebox/omd-session-title'
+import UserQuestionService from '@williamcodebox/omd-user-questions'
+import type { Session, SessionId } from '@williamcodebox/omd-session'
+import type { RpcRequest } from '@williamcodebox/omd-host-apiproxy/api/rpc'
+import { RpcId } from '@williamcodebox/omd-host-apiproxy/api/rpc'
+import { createApiProxy } from '@williamcodebox/omd-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
 

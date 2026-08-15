@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { createMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { TokenUsage } from '@deepseek-ai/dsh-llm'
-import SessionStore from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import TokenMeter from '@deepseek-ai/dsh-token-meter'
-import type { ContextPressureProjection, TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
-import { CompactionId } from '@deepseek-ai/dsh-compaction'
+import { Context } from '@williamcodebox/cordis'
+import { createMessage, createUserMessage } from '@williamcodebox/omd-llm'
+import type { TokenUsage } from '@williamcodebox/omd-llm'
+import SessionStore from '@williamcodebox/omd-session'
+import type { Session } from '@williamcodebox/omd-session'
+import SessionProjectionRegistry from '@williamcodebox/omd-session-projection'
+import TokenMeter from '@williamcodebox/omd-token-meter'
+import type { ContextPressureProjection, TokenUsageProjection } from '@williamcodebox/omd-token-meter/client'
+import { CompactionId } from '@williamcodebox/omd-compaction'
 
 const ZERO: TokenUsageProjection = {
   uncachedInputTokens: 0,

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-subagent-codex
+# @williamcodebox/omd-subagent-codex
 
 English | [中文](README.zh.md)
 
@@ -31,13 +31,13 @@ Shipped profiles load this provider once on the host and start no Codex process 
 
 ```yaml
 - id: subagent-codex
-  name: '@deepseek-ai/dsh-subagent-codex'
+  name: '@williamcodebox/omd-subagent-codex'
   config:
     env:
       OPENAI_API_KEY: !!js process.env.OPENAI_API_KEY
 
 - id: tool-subagent-codex
-  name: '@deepseek-ai/dsh-tool-subagent'
+  name: '@williamcodebox/omd-tool-subagent'
   disabled: true
   config:
     provider: codex

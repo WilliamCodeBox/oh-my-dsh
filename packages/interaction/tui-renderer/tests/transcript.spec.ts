@@ -9,9 +9,9 @@
 import { describe, expect, it } from 'vitest'
 import { Transcript, textOf } from '../src/transcript.ts'
 import type { AssistantItem, ToolItem, TurnItem, UserItem } from '../src/transcript.ts'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
-import { CallId, MessageId } from '@deepseek-ai/dsh-llm'
-import { CommandId } from '@deepseek-ai/dsh-commands'
+import type { SessionEvent } from '@williamcodebox/omd-session'
+import { CallId, MessageId } from '@williamcodebox/omd-llm'
+import { CommandId } from '@williamcodebox/omd-commands'
 
 /** Build one event; surface events pass `surfaceOp: 'append'` explicitly. */
 function ev<T extends SessionEvent['type']>(

@@ -9,19 +9,19 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import { createUserMessage, CallId } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { defineContentToolFixture } from '@deepseek-ai/dsh-tools'
-import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
-import type { PostToolDecision, ToolExecution, ToolExecutionToken } from '@deepseek-ai/dsh-tools'
-import { SpillLocator, SpillStore } from '@deepseek-ai/dsh-spill'
-import type { SaveTextSpill, SpillRef } from '@deepseek-ai/dsh-spill'
-import * as SpillPolicy from '@deepseek-ai/dsh-spill-policy'
-import { WorkerThreadCodeRuntime } from '@deepseek-ai/dsh-code-runtime-worker-thread'
+import { Context } from '@williamcodebox/cordis'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import { createUserMessage, CallId } from '@williamcodebox/omd-llm'
+import type { ContentBlock } from '@williamcodebox/omd-llm'
+import { SessionId } from '@williamcodebox/omd-session'
+import SystemPrompt from '@williamcodebox/omd-system-prompt'
+import ToolRuntime, { defineContentToolFixture } from '@williamcodebox/omd-tools'
+import type { ToolDefinition } from '@williamcodebox/omd-tools'
+import type { PostToolDecision, ToolExecution, ToolExecutionToken } from '@williamcodebox/omd-tools'
+import { SpillLocator, SpillStore } from '@williamcodebox/omd-spill'
+import type { SaveTextSpill, SpillRef } from '@williamcodebox/omd-spill'
+import * as SpillPolicy from '@williamcodebox/omd-spill-policy'
+import { WorkerThreadCodeRuntime } from '@williamcodebox/omd-code-runtime-worker-thread'
 
 const testToolSignal = new AbortController().signal
 

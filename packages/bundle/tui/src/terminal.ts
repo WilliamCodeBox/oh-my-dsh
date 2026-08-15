@@ -3,7 +3,7 @@
  * the crash-restore handler. Raw-mode and alternate-screen ownership moved to
  * the pi-tui presenter with the renderer milestone; these helpers drive the
  * presenter's stop path and classify user Ctrl+C presses.
- * @module @deepseek-ai/dsh-tui/terminal
+ * @module @williamcodebox/omd-tui/terminal
  */
 
 /** Ctrl+C press outcomes from {@link CtrlCController.press}. */

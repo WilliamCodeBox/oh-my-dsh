@@ -3,22 +3,22 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import TerminalSessionService from '@deepseek-ai/dsh-terminal'
-import SandboxProvider from '@deepseek-ai/dsh-sandbox'
-import type { ConfinedArgv, SandboxPolicy } from '@deepseek-ai/dsh-sandbox'
-import SandboxPolicyService from '@deepseek-ai/dsh-sandbox-policy'
-import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
-import * as TerminalLocal from '@deepseek-ai/dsh-terminal-bash'
-import * as ToolPty from '@deepseek-ai/dsh-tool-terminal'
+import { Context } from '@williamcodebox/cordis'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import Include from '@williamcodebox/cordis-plugin-include'
+import { CallId } from '@williamcodebox/omd-llm'
+import { Session, SessionId } from '@williamcodebox/omd-session'
+import AgentRegistry, { Inbox } from '@williamcodebox/omd-agent'
+import type { Agent } from '@williamcodebox/omd-agent'
+import SystemPrompt from '@williamcodebox/omd-system-prompt'
+import ToolRuntime from '@williamcodebox/omd-tools'
+import TerminalSessionService from '@williamcodebox/omd-terminal'
+import SandboxProvider from '@williamcodebox/omd-sandbox'
+import type { ConfinedArgv, SandboxPolicy } from '@williamcodebox/omd-sandbox'
+import SandboxPolicyService from '@williamcodebox/omd-sandbox-policy'
+import LocalSubprocessRuntime from '@williamcodebox/omd-subprocess-local'
+import * as TerminalLocal from '@williamcodebox/omd-terminal-bash'
+import * as ToolPty from '@williamcodebox/omd-tool-terminal'
 
 let root: string | undefined
 let context: Context | undefined
@@ -64,17 +64,17 @@ suite('terminal real Loader composition through cordis.yml', () => {
     root = await mkdtemp(join(tmpdir(), 'dsh-pty-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@deepseek-ai/dsh-agent'",
-      "- name: '@deepseek-ai/dsh-system-prompt'",
-      "- name: '@deepseek-ai/dsh-tools'",
-      "- name: '@deepseek-ai/dsh-terminal'",
-      "- name: '@deepseek-ai/dsh-test-sandbox'",
-      "- name: '@deepseek-ai/dsh-sandbox-policy'",
+      "- name: '@williamcodebox/omd-agent'",
+      "- name: '@williamcodebox/omd-system-prompt'",
+      "- name: '@williamcodebox/omd-tools'",
+      "- name: '@williamcodebox/omd-terminal'",
+      "- name: '@williamcodebox/omd-test-sandbox'",
+      "- name: '@williamcodebox/omd-sandbox-policy'",
       '  config:',
       '    mode: danger-full-access',
       `    workspaceRoot: ${JSON.stringify(root)}`,
-      "- name: '@deepseek-ai/dsh-subprocess-local'",
-      "- name: '@deepseek-ai/dsh-terminal-bash'",
+      "- name: '@williamcodebox/omd-subprocess-local'",
+      "- name: '@williamcodebox/omd-terminal-bash'",
       '  config:',
       '    pollIntervalMs: 10',
       '    exactProbeAfterMs: 20',
@@ -82,7 +82,7 @@ suite('terminal real Loader composition through cordis.yml', () => {
       '    handoffGraceMs: 250',
       '    timeoutMs: 2000',
       '    disposeGraceMs: 500',
-      "- name: '@deepseek-ai/dsh-tool-terminal'",
+      "- name: '@williamcodebox/omd-tool-terminal'",
       '',
     ].join('\n'))
 
@@ -91,15 +91,15 @@ suite('terminal real Loader composition through cordis.yml', () => {
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@deepseek-ai/dsh-agent', AgentRegistry],
-      ['@deepseek-ai/dsh-system-prompt', SystemPrompt],
-      ['@deepseek-ai/dsh-tools', ToolRuntime],
-      ['@deepseek-ai/dsh-terminal', TerminalSessionService],
-      ['@deepseek-ai/dsh-test-sandbox', PassthroughSandbox],
-      ['@deepseek-ai/dsh-sandbox-policy', SandboxPolicyService],
-      ['@deepseek-ai/dsh-subprocess-local', LocalSubprocessRuntime],
-      ['@deepseek-ai/dsh-terminal-bash', TerminalLocal],
-      ['@deepseek-ai/dsh-tool-terminal', ToolPty],
+      ['@williamcodebox/omd-agent', AgentRegistry],
+      ['@williamcodebox/omd-system-prompt', SystemPrompt],
+      ['@williamcodebox/omd-tools', ToolRuntime],
+      ['@williamcodebox/omd-terminal', TerminalSessionService],
+      ['@williamcodebox/omd-test-sandbox', PassthroughSandbox],
+      ['@williamcodebox/omd-sandbox-policy', SandboxPolicyService],
+      ['@williamcodebox/omd-subprocess-local', LocalSubprocessRuntime],
+      ['@williamcodebox/omd-terminal-bash', TerminalLocal],
+      ['@williamcodebox/omd-tool-terminal', ToolPty],
     ])
     context.loader.internal = {
       version: 'v2',

@@ -1,5 +1,5 @@
 /**
- * @deepseek-ai/dsh-tui — the interactive terminal surface bundle. The patch
+ * @williamcodebox/omd-tui — the interactive terminal surface bundle. The patch
  * rides over `dsh-base`: the runner creates or resumes one Agent through
  * `ctx.agents`, folds its durable `session/event` stream into the renderer's
  * transcript, and drives the surface. On a TTY the pi-tui presenter owns the
@@ -9,28 +9,28 @@
 
 import { randomUUID } from 'node:crypto'
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { installModelSelection } from '@deepseek-ai/dsh-agent'
-import type { Agent, ModelSelectionRef } from '@deepseek-ai/dsh-agent'
-import type {} from '@deepseek-ai/dsh-agent-default-model'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import { TuiPresenter, Transcript, formatStatus, processTerminal, sanitizeText } from '@deepseek-ai/dsh-tui-renderer'
-import type {} from '@deepseek-ai/dsh-permission-presets'
+import type { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import { installModelSelection } from '@williamcodebox/omd-agent'
+import type { Agent, ModelSelectionRef } from '@williamcodebox/omd-agent'
+import type {} from '@williamcodebox/omd-agent-default-model'
+import { createUserMessage } from '@williamcodebox/omd-llm'
+import { SessionId } from '@williamcodebox/omd-session'
+import type { Session, SessionEvent } from '@williamcodebox/omd-session'
+import { TuiPresenter, Transcript, formatStatus, processTerminal, sanitizeText } from '@williamcodebox/omd-tui-renderer'
+import type {} from '@williamcodebox/omd-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
-import type {} from '@deepseek-ai/dsh-user-approval'
+import type {} from '@williamcodebox/omd-user-approval'
 // The userQuestions provider service and the command/run + command/done
 // session event shapes ride their packages' merges.
-import type {} from '@deepseek-ai/dsh-user-questions'
-import type {} from '@deepseek-ai/dsh-commands'
-import { parseCommand } from '@deepseek-ai/dsh-commands'
+import type {} from '@williamcodebox/omd-user-questions'
+import type {} from '@williamcodebox/omd-commands'
+import { parseCommand } from '@williamcodebox/omd-commands'
 // Empty type imports carry the Loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
-import type {} from '@deepseek-ai/cordis-plugin-loader'
-import type {} from '@deepseek-ai/dsh-cmdline'
+import type {} from '@williamcodebox/cordis-plugin-loader'
+import type {} from '@williamcodebox/omd-cmdline'
 
 import { CtrlCController, installCrashRestore } from './terminal.ts'
 import type { CrashEmitter } from './terminal.ts'

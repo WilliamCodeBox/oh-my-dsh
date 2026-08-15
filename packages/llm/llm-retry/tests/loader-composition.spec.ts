@@ -3,16 +3,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import LlmRuntime, { createUserMessage, LlmAdapter, LlmError, resolveRetryPolicy  } from '@deepseek-ai/dsh-llm'
-import type { GenerateOptions, ResolvedRetryPolicy, StreamChunk } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
+import { Context } from '@williamcodebox/cordis'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import Include from '@williamcodebox/cordis-plugin-include'
+import AgentRegistry from '@williamcodebox/omd-agent'
+import AgentLoop from '@williamcodebox/omd-agent-loop'
+import LlmRuntime, { createUserMessage, LlmAdapter, LlmError, resolveRetryPolicy  } from '@williamcodebox/omd-llm'
+import type { GenerateOptions, ResolvedRetryPolicy, StreamChunk } from '@williamcodebox/omd-llm'
+import SessionStore, { SessionId } from '@williamcodebox/omd-session'
+import SystemPrompt from '@williamcodebox/omd-system-prompt'
+import ToolRuntime from '@williamcodebox/omd-tools'
 import * as retry from '../src/index.ts'
 
 let root: string | undefined
@@ -58,13 +58,13 @@ async function loadYaml(lines: readonly string[]): Promise<Context> {
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@deepseek-ai/dsh-llm', LlmRuntime],
-    ['@deepseek-ai/dsh-session', SessionStore],
-    ['@deepseek-ai/dsh-system-prompt', SystemPrompt],
-    ['@deepseek-ai/dsh-tools', ToolRuntime],
-    ['@deepseek-ai/dsh-agent', AgentRegistry],
-    ['@deepseek-ai/dsh-llm-retry', retry],
-    ['@deepseek-ai/dsh-agent-loop', AgentLoop],
+    ['@williamcodebox/omd-llm', LlmRuntime],
+    ['@williamcodebox/omd-session', SessionStore],
+    ['@williamcodebox/omd-system-prompt', SystemPrompt],
+    ['@williamcodebox/omd-tools', ToolRuntime],
+    ['@williamcodebox/omd-agent', AgentRegistry],
+    ['@williamcodebox/omd-llm-retry', retry],
+    ['@williamcodebox/omd-agent-loop', AgentLoop],
   ])
   context.loader.internal = {
     version: 'v2',
@@ -87,13 +87,13 @@ describe('real Loader composition', () => {
   // to trip the default 5s budget on cold caches.
   it('loads provider-supplied policy and records recovery through the shipping loop', { timeout: 60_000 }, async () => {
     const loaded = await loadYaml([
-      "- name: '@deepseek-ai/dsh-llm'",
-      "- name: '@deepseek-ai/dsh-session'",
-      "- name: '@deepseek-ai/dsh-system-prompt'",
-      "- name: '@deepseek-ai/dsh-tools'",
-      "- name: '@deepseek-ai/dsh-agent'",
-      "- name: '@deepseek-ai/dsh-llm-retry'",
-      "- name: '@deepseek-ai/dsh-agent-loop'",
+      "- name: '@williamcodebox/omd-llm'",
+      "- name: '@williamcodebox/omd-session'",
+      "- name: '@williamcodebox/omd-system-prompt'",
+      "- name: '@williamcodebox/omd-tools'",
+      "- name: '@williamcodebox/omd-agent'",
+      "- name: '@williamcodebox/omd-llm-retry'",
+      "- name: '@williamcodebox/omd-agent-loop'",
     ])
 
     const unloaded = [...loaded.loader.entries()]

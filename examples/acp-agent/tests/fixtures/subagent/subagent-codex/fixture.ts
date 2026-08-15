@@ -1,8 +1,8 @@
 /** Parent adapter that fails if the composition-only Loader test starts a turn. */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { LlmAdapter } from '@deepseek-ai/dsh-llm'
+import type { Context } from '@williamcodebox/cordis'
+import type { GenerateOptions, StreamChunk } from '@williamcodebox/omd-llm'
+import { LlmAdapter } from '@williamcodebox/omd-llm'
 
 class CompositionOnlyAdapter extends LlmAdapter {
   async * stream(_options: GenerateOptions): AsyncIterable<StreamChunk> {

@@ -8,7 +8,7 @@
 
 - `packages/interaction/tui-renderer/src/presenter.ts` — presenter seam 上的 overlay 模态：`askApproval(toolName, reason)` 经 `showOverlay` 挂一张 pi-tui overlay 卡片（标题 + 理由 + Allow/Reject 的 `SelectList`），焦点抢到列表，按键后以所选 outcome 决议。Escape 或 Ctrl+C 取消（`'cancelled'`）；决议后模态恢复 editor 焦点并自行隐藏。`approvalPending` 与 `isStarted` getter 向 runner 暴露模态状态。
 - `packages/bundle/tui/src/index.ts` — 应答者：`ctx.on('approval/request', ...)` 把组合表面的每个审批路由到活动 presenter 的模态；无 presenter（pipe 路径）时调用 `next()`，waterfall 落入 fail-closed `'unavailable'`。runner 的 Ctrl+C 监听在 `approvalPending` 期间让位：SelectList 自己的 cancel 绑定（Escape/Ctrl+C）决议提示，而非驱动退出机器。
-- 依赖：renderer 与 bundle 各加 `@deepseek-ai/dsh-user-approval` peer+dev（其 `./types` 子路径 wire-safe）；renderer tsconfig 增加 user-approval project reference。
+- 依赖：renderer 与 bundle 各加 `@williamcodebox/omd-user-approval` peer+dev（其 `./types` 子路径 wire-safe）；renderer tsconfig 增加 user-approval project reference。
 
 ## 为何这样设计
 

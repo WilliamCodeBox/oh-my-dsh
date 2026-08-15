@@ -1,17 +1,17 @@
 /**
  * Persistent shell PTY backend over the subprocess terminal primitive, shared
  * sandbox policy, bounded output, and provider-owned session cleanup.
- * @module @deepseek-ai/dsh-terminal-bash
+ * @module @williamcodebox/omd-terminal-bash
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import { TerminalBackendCleanupError } from '@deepseek-ai/dsh-terminal'
-import type { TerminalBackend, TerminalBackendSpawnSpec } from '@deepseek-ai/dsh-terminal'
-import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from '@deepseek-ai/dsh-subprocess'
-import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
-import { effectiveSandboxMode } from '@deepseek-ai/dsh-sandbox-policy'
+import { Context } from '@williamcodebox/cordis'
+import type { Agent } from '@williamcodebox/omd-agent'
+import type { Session, SessionEvent } from '@williamcodebox/omd-session'
+import { TerminalBackendCleanupError } from '@williamcodebox/omd-terminal'
+import type { TerminalBackend, TerminalBackendSpawnSpec } from '@williamcodebox/omd-terminal'
+import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from '@williamcodebox/omd-subprocess'
+import type { SandboxExecutionPolicy } from '@williamcodebox/omd-sandbox'
+import { effectiveSandboxMode } from '@williamcodebox/omd-sandbox-policy'
 import { type Config, type ResolvedConfig, validateConfig } from './config.ts'
 import { LocalPtySession } from './session.ts'
 import { CONTROLLED_PROMPT } from './sanitize.ts'

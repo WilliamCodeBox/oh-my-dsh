@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-settings
+# @williamcodebox/omd-settings
 
 [English](README.md) | 中文
 

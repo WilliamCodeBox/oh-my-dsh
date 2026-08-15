@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-tui-renderer
+# @williamcodebox/omd-tui-renderer
 
 [English](README.md) | 中文
 

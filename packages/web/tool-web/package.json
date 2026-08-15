@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-web",
+  "name": "@williamcodebox/omd-tool-web",
   "description": "Model-facing web tools (web_search, web_fetch) over the DeepSeek Harness web capability seam (ctx.web)",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -32,32 +32,32 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-web": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/omd-web": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "dependencies": {
     "@joplin/turndown-plugin-gfm": "^1.0.67",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@williamcodebox/schemastery": "workspace:^",
     "turndown": "^7.2.4"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
     "@types/turndown": "^5.0.6",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-spill-local": "workspace:^",
-    "@deepseek-ai/dsh-spill-policy": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tool-call-timeout-policy": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-web": "workspace:^",
-    "@deepseek-ai/dsh-web-fetch-http": "workspace:^",
-    "@deepseek-ai/dsh-web-search-exa": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-spill-local": "workspace:^",
+    "@williamcodebox/omd-spill-policy": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-tool-call-timeout-policy": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/omd-web": "workspace:^",
+    "@williamcodebox/omd-web-fetch-http": "workspace:^",
+    "@williamcodebox/omd-web-search-exa": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

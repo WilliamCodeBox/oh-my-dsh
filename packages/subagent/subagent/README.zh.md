@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-subagent
+# @williamcodebox/omd-subagent
 
 [English](README.md) | 中文
 

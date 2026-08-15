@@ -6,7 +6,7 @@
  * drives it: submit lines via the editor, feed session events through the
  * {@link Transcript}, and handle raw keys through the TUI input listener.
  *
- * @module @deepseek-ai/dsh-tui-renderer
+ * @module @williamcodebox/omd-tui-renderer
  */
 
 import {
@@ -25,12 +25,12 @@ import {
   type Terminal,
   type ViewportTUI,
 } from '@earendil-works/pi-tui'
-import type { ApprovalOutcome } from '@deepseek-ai/dsh-user-approval/types'
+import type { ApprovalOutcome } from '@williamcodebox/omd-user-approval/types'
 import type {
   AskUserQuestionAnswer,
   AskUserQuestionAnswerItem,
   AskUserQuestionItem,
-} from '@deepseek-ai/dsh-user-questions/types'
+} from '@williamcodebox/omd-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
 import { StatusRow, TranscriptView, type TranscriptTheme } from './transcript-view.ts'

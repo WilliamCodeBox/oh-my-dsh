@@ -4,14 +4,14 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@williamcodebox/cordis'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve, sep } from 'node:path'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { type ToolResult } from '@deepseek-ai/dsh-tools'
-import { FileSystem, FsError, FsTargetKey, FsVersion } from '@deepseek-ai/dsh-fs'
+import { CallId } from '@williamcodebox/omd-llm'
+import SystemPrompt, { renderPrompt } from '@williamcodebox/omd-system-prompt'
+import ToolRuntime, { type ToolResult } from '@williamcodebox/omd-tools'
+import { FileSystem, FsError, FsTargetKey, FsVersion } from '@williamcodebox/omd-fs'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -21,16 +21,16 @@ import type {
   FsTarget,
   FsWriteIntent,
   FsWriteOutcome,
-} from '@deepseek-ai/dsh-fs'
-import * as FsPolicy from '@deepseek-ai/dsh-fs-observation-policy'
-import * as ToolFs from '@deepseek-ai/dsh-tool-fs'
+} from '@williamcodebox/omd-fs'
+import * as FsPolicy from '@williamcodebox/omd-fs-observation-policy'
+import * as ToolFs from '@williamcodebox/omd-tool-fs'
 import { STREAM_MIN_SIZE } from '../src/read.ts'
 import { formatReadOutput } from '../src/read-render.ts'
 import type { FileReadOutcome } from '../src/read-render.ts'
 import { sessionCwd } from '../src/session-cwd.ts'
-import ApprovalService from '@deepseek-ai/dsh-user-approval'
-import type { SandboxExecutionPolicy, SandboxMode } from '@deepseek-ai/dsh-sandbox'
-import SandboxPolicyService from '@deepseek-ai/dsh-sandbox-policy'
+import ApprovalService from '@williamcodebox/omd-user-approval'
+import type { SandboxExecutionPolicy, SandboxMode } from '@williamcodebox/omd-sandbox'
+import SandboxPolicyService from '@williamcodebox/omd-sandbox-policy'
 
 const testToolSignal = new AbortController().signal
 

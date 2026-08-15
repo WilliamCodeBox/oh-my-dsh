@@ -3,9 +3,9 @@
  */
 
 import { z } from 'zod'
-import type { TokenUsage } from '@deepseek-ai/dsh-llm'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
+import type { TokenUsage } from '@williamcodebox/omd-llm'
+import type { SessionEvent } from '@williamcodebox/omd-session'
+import type { ProjectionDefinition } from '@williamcodebox/omd-session-projection'
 import type { ContextPressureProjection, TokenUsageProjection } from './projection.ts'
 import { foldSurfaceProjection } from './surface-projection.ts'
 import type { ShadowPriceClaim } from './surface-projection.ts'

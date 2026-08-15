@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh-headless`
+# `@williamcodebox/omd-headless`
 
 [English](README.md) | 中文
 

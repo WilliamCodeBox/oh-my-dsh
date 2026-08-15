@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-tui`.
- * @module @deepseek-ai/dsh-tui/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-tui`.
+ * @module @williamcodebox/omd-tui/invariant
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-tui'
+const PACKAGE_NAME = '@williamcodebox/omd-tui'
 
 /** Cordis companion plugin name. */
 export const name = 'tui-invariant'

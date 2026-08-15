@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-attachment
+# @williamcodebox/omd-attachment
 
 English | [中文](README.zh.md)
 

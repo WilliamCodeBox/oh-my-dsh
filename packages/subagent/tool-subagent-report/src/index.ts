@@ -3,16 +3,16 @@
  * continuable in-process child's unpublished context. Roots, one-shot children,
  * remote providers, and agentless executions never see the registration.
  *
- * @module @deepseek-ai/dsh-tool-subagent-report
+ * @module @williamcodebox/omd-tool-subagent-report
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import type { SubagentReportDelivery } from '@deepseek-ai/dsh-subagent'
-import type {} from '@deepseek-ai/dsh-system-prompt'
-import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import type { Agent } from '@williamcodebox/omd-agent'
+import type { ContentBlock } from '@williamcodebox/omd-llm'
+import type { SubagentReportDelivery } from '@williamcodebox/omd-subagent'
+import type {} from '@williamcodebox/omd-system-prompt'
+import { defineTool } from '@williamcodebox/omd-tools'
 
 export const name = 'tool-subagent-report'
 // The contribution registers only through childCtx.tools and

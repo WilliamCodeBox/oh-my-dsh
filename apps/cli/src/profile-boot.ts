@@ -8,15 +8,15 @@
  * App flags are not the launcher's business: the invocation's inner arguments
  * are provided to the tree through `ctx.cmdlineArgs`, where any injected app
  * plugin may read the same immutable snapshot.
- * @module @deepseek-ai/dsh/profile-boot
+ * @module @williamcodebox/oh-my-dsh/profile-boot
  */
 
 import { writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { FiberState, type Context } from '@deepseek-ai/cordis'
-import type { PatchOptions } from '@deepseek-ai/cordis-plugin-include'
-import type { EntryOptions } from '@deepseek-ai/cordis-plugin-loader'
+import { FiberState, type Context } from '@williamcodebox/cordis'
+import type { PatchOptions } from '@williamcodebox/cordis-plugin-include'
+import type { EntryOptions } from '@williamcodebox/cordis-plugin-loader'
 import {
   boot,
   composeEntries,
@@ -28,14 +28,14 @@ import {
   PROFILE_PATCH_FILENAME,
   watchUserPatches,
   type Profile,
-} from '@deepseek-ai/dsh-app-boot'
-import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+} from '@williamcodebox/omd-app-boot'
+import { resolveDshHome } from '@williamcodebox/omd-home-paths'
 
 /** Shipped agent-preset root: beside this app's own config, in both source and built layouts. */
 const SHIPPED_PRESET_ROOT = fileURLToPath(new URL('../config/agent-presets/', import.meta.url))
 
-import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@deepseek-ai/dsh-launch-environment'
-import { provideCmdline } from '@deepseek-ai/dsh-cmdline'
+import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@williamcodebox/omd-launch-environment'
+import { provideCmdline } from '@williamcodebox/omd-cmdline'
 import { createProcessShutdown, type ProcessShutdown } from './process-shutdown.ts'
 
 const NAME = 'omd'
@@ -278,9 +278,9 @@ export async function runProfile(options: RunProfileOptions): Promise<{ ctx: Con
       // bare custom profile may not mount either.
       if (ctx.get('hmr') === undefined) {
         if (ctx.get('timer') === undefined) {
-          await ctx.loader.create({ name: '@deepseek-ai/cordis-plugin-timer' })
+          await ctx.loader.create({ name: '@williamcodebox/cordis-plugin-timer' })
         }
-        await ctx.loader.create({ name: '@deepseek-ai/cordis-plugin-hmr', config: { root: [] } })
+        await ctx.loader.create({ name: '@williamcodebox/cordis-plugin-hmr', config: { root: [] } })
       }
       await watchUserPatches(ctx, {
         binName: NAME,

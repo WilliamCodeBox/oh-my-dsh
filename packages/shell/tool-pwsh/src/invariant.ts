@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-tool-pwsh`.
- * @module @deepseek-ai/dsh-tool-pwsh/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-tool-pwsh`.
+ * @module @williamcodebox/omd-tool-pwsh/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-tool-pwsh'
+const PACKAGE_NAME = '@williamcodebox/omd-tool-pwsh'
 
 /** Cordis companion plugin name. */
 export const name = 'tool-pwsh-invariant'

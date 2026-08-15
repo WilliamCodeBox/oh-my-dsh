@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-compaction-basic`.
- * @module @deepseek-ai/dsh-compaction-basic/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-compaction-basic`.
+ * @module @williamcodebox/omd-compaction-basic/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-compaction-basic'
+const PACKAGE_NAME = '@williamcodebox/omd-compaction-basic'
 
 /** Cordis companion plugin name. */
 export const name = 'compaction-basic-invariant'

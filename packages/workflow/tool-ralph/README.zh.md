@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-tool-ralph
+# @williamcodebox/omd-tool-ralph
 
 [English](README.md) | 中文
 

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-runtime
+# @williamcodebox/omd-client-runtime
 
 [English](README.md) | 中文
 

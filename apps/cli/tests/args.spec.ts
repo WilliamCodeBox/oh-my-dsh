@@ -50,8 +50,8 @@ describe('parseDshArgs', () => {
       .toEqual({ mode: 'plugin', profile: 'tui', args: ['add', 'turtle-ui'] })
     expect(parse(['plugin', '--profile', 'tui', 'remove', 'turtle-ui']))
       .toEqual({ mode: 'plugin', profile: 'tui', args: ['remove', 'turtle-ui'] })
-    expect(parse(['plugin', '--profile', 'tui', 'why', '@deepseek-ai/cordis']))
-      .toEqual({ mode: 'plugin', profile: 'tui', args: ['why', '@deepseek-ai/cordis'] })
+    expect(parse(['plugin', '--profile', 'tui', 'why', '@williamcodebox/cordis']))
+      .toEqual({ mode: 'plugin', profile: 'tui', args: ['why', '@williamcodebox/cordis'] })
     // Unknown pnpm flags forward verbatim.
     expect(parse(['plugin', '--profile', 'tui', 'add', '--save-dev', 'x']))
       .toEqual({ mode: 'plugin', profile: 'tui', args: ['add', '--save-dev', 'x'] })
@@ -70,19 +70,12 @@ describe('parseDshArgs', () => {
       .toEqual({ mode: 'dump-config', profile: 'web', defaultOnly: true, patches: [] })
   })
 
-  it('rejects missing profile, removed flags, and contradictory inputs', () => {
-    expect(exitCode([])).toBe(1)
-    expect(exitCode(['tui'])).toBe(1) // an app argument without --profile has no app to reach
-    expect(exitCode(['--config', 'c.yml'])).toBe(1) // removed
-    expect(exitCode(['-p', 'task'])).toBe(1) // removed
-    expect(exitCode(['run', 'task'])).toBe(1) // app-owned task replaced the launcher subcommand
+  it('rejects missing values and contradictory inputs', () => {
     expect(exitCode(['--profile', ''])).toBe(1)
     expect(exitCode(['--profile', 'x', '--patch='])).toBe(1)
-    expect(exitCode(['--dump-config'])).toBe(1)
     expect(exitCode(['--profile', 'x', '--dump-config', '--dump-default-config'])).toBe(1)
     expect(exitCode(['--profile', 'x', '--dump-default-config', '--patch', 'p.yml'])).toBe(1)
     expect(exitCode(['--profile', 'x', '--dump-config', 'task'])).toBe(1)
-    expect(exitCode(['--bogus'])).toBe(1)
     expect(exitCode(['--profile', 'x', 'web'])).toBe(1)
     expect(exitCode(['web', '--dump-config', '--dump-default-config'])).toBe(1)
     expect(exitCode(['web', '--dump-default-config', '--patch', 'w.yml'])).toBe(1)
@@ -96,6 +89,12 @@ describe('parseDshArgs', () => {
     expect(exitCode(['plugin', '--profile', 'tui'])).toBe(1) // nothing to forward
     expect(exitCode(['plugin', '--profile', ''])).toBe(1)
     expect(exitCode(['--profile', 'x', 'plugin', 'add', 'y'])).toBe(1)
+  })
+
+  it('defaults to the tui profile when --profile is omitted', () => {
+    expect(parse([])).toEqual({ mode: 'profile', profile: 'tui', patches: [], args: [] })
+    expect(parse(['--resume', 'abc'])).toEqual({ mode: 'profile', profile: 'tui', patches: [], args: ['--resume', 'abc'] })
+    expect(parse(['--dump-config'])).toEqual({ mode: 'dump-config', profile: 'tui', defaultOnly: false, patches: [] })
   })
 
   it('keeps its own help for an invocation with no app to hand it to', () => {

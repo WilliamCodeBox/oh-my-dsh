@@ -1,16 +1,16 @@
 /**
  * Dynamic Cordis Plugin service: immutable package definitions, one active run
  * per Plugin, human-approved Client activation, and Host/Client invocation.
- * @module @deepseek-ai/dsh-cordis-host-runner
+ * @module @williamcodebox/omd-cordis-host-runner
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import type { Fiber } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { JsonValue } from '@deepseek-ai/dsh-session/types'
-import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
+import { Context } from '@williamcodebox/cordis'
+import type { Fiber } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import type { Agent } from '@williamcodebox/omd-agent'
+import { createUserMessage } from '@williamcodebox/omd-llm'
+import type { JsonValue } from '@williamcodebox/omd-session/types'
+import { TypertRemoteService, Remote } from '@williamcodebox/omd-typert-protocol'
 import { isPlugin, normalizeHandler } from './guard.ts'
 import { CordisInspectRegistryService } from './inspect-registry.ts'
 import { missingServices, startHostHalf } from './lifecycle.ts'
@@ -77,7 +77,7 @@ export function ApprovalRequestId(id: string): ApprovalRequestId {
   return id as ApprovalRequestId
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     /** Process-local dynamic Plugin registry and lifecycle service. */
     dynamicCordisRunner: DynamicCordisRunnerService

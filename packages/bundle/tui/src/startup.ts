@@ -3,12 +3,12 @@
  * `--workspace`, `--model`, and `--permission`, then publishes
  * {@link TUI_STARTUP_SERVICE}. The runner is an ordinary consumer whose lazy
  * config waits for that service.
- * @module @deepseek-ai/dsh-tui/startup
+ * @module @williamcodebox/omd-tui/startup
  */
 
 import { Command } from 'commander'
-import type { Context } from '@deepseek-ai/cordis'
-import { parseCmdline } from '@deepseek-ai/dsh-cmdline'
+import type { Context } from '@williamcodebox/cordis'
+import { parseCmdline } from '@williamcodebox/omd-cmdline'
 
 /** Stable Cordis plugin name. */
 export const name = 'tui-startup'

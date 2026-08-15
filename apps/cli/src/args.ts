@@ -5,14 +5,14 @@
  * patch overlays to apply, and the config dumps — and hands **everything after
  * its own flags** to the booted tree verbatim, where injected app plugins parse
  * their own flag families and print their own `--help` (see
- * `@deepseek-ai/dsh-cmdline`). Launcher flags therefore come first: the first
+ * `@williamcodebox/omd-cmdline`). Launcher flags therefore come first: the first
  * token this parser does not recognize starts the inner arguments, so
  * `omd --profile tui --resume abc` boots the tui profile with `--resume abc`,
  * and `omd --profile web -h` prints the web app's help, not this one's.
  *
  * `web` is a hardcoded alias for `--profile web`; `plugin` manages a profile's
  * plugin dependencies by forwarding to pnpm.
- * @module @deepseek-ai/dsh/args
+ * @module @williamcodebox/oh-my-dsh/args
  */
 
 import { Command, CommanderError } from 'commander'
@@ -134,10 +134,12 @@ export function parseDshArgs(argv: readonly string[], version: string): DshInvoc
     .option('--dump-default-config', 'print the profile tree without its user layer or --patch overlays and exit')
     .action((args: string[], options: BootOptions & { profile?: string }) => {
       // With the app owning -h, the launcher's own help is what a bare
-      // `dsh -h` (no profile to hand it to) must print.
+      // `omd -h` (no profile to hand it to) must print. The TUI is the
+      // default surface: a bare `omd` boots it; every other profile is
+      // explicit through --profile.
       if (options.profile === undefined) {
         if (args.some(argument => argument === '-h' || argument === '--help')) program.help()
-        program.error('error: --profile <name> is required')
+        options.profile = 'tui'
       }
       const profile = options.profile
       if (profile === '') program.error('error: --profile needs a name')

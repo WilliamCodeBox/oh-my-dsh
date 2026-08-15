@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh-llm-mock-server`
+# `@williamcodebox/omd-llm-mock-server`
 
 [English](README.md) | 中文
 

@@ -15,14 +15,14 @@
  * conversation the human already saw. A replacement therefore records a
  * {@link CompactionNote} on the state and leaves the folded items untouched.
  *
- * @module @deepseek-ai/dsh-tui-renderer
+ * @module @williamcodebox/omd-tui-renderer
  */
 
-import type { JsonValue, SessionEvent, SurfaceEvent, SurfaceOp, TodoItem, TurnEndReason } from '@deepseek-ai/dsh-session'
-import { isAppendSurfaceEvent, isReplacementSurfaceEvent } from '@deepseek-ai/dsh-session'
-import type { AssistantMessage, MessageSource, TokenUsage } from '@deepseek-ai/dsh-llm'
+import type { JsonValue, SessionEvent, SurfaceEvent, SurfaceOp, TodoItem, TurnEndReason } from '@williamcodebox/omd-session'
+import { isAppendSurfaceEvent, isReplacementSurfaceEvent } from '@williamcodebox/omd-session'
+import type { AssistantMessage, MessageSource, TokenUsage } from '@williamcodebox/omd-llm'
 // The command/run + command/done event shapes ride the CommandRuntime merge.
-import type {} from '@deepseek-ai/dsh-commands/types'
+import type {} from '@williamcodebox/omd-commands/types'
 
 /** A replacement surface event narrowed by {@link isReplacementSurfaceEvent}. */
 type ReplacementSurfaceEvent = SurfaceEvent & { surfaceOp: Extract<SurfaceOp, { op: 'replace' }> }

@@ -1,5 +1,5 @@
 /**
- * @deepseek-ai/dsh-tui-renderer — folded terminal transcript model and
+ * @williamcodebox/omd-tui-renderer — folded terminal transcript model and
  * pi-tui-backed presentation layer for the `omd --profile tui` surface. The
  * transcript projects one session's durable events into display items; the
  * presenter renders them on the alternate screen with a scroll viewport,
@@ -7,7 +7,7 @@
  * the presenter seam; further interaction adapters (questions, commands)
  * build on the same modal mechanism.
  *
- * @module @deepseek-ai/dsh-tui-renderer
+ * @module @williamcodebox/omd-tui-renderer
  */
 
 export { Transcript, textOf } from './transcript.ts'

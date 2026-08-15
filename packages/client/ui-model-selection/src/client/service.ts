@@ -12,13 +12,13 @@
  * strings, and it models global+shadow named registries — this is a
  * per-session singleton with no global layer to merge.
  */
-import { Service } from '@deepseek-ai/cordis'
-import type { Context } from '@deepseek-ai/cordis'
-import type { ConnectionHandle, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
-import type { SessionRuntime } from '@deepseek-ai/dsh-client-runtime/client'
+import { Service } from '@williamcodebox/cordis'
+import type { Context } from '@williamcodebox/cordis'
+import type { ConnectionHandle, SessionId } from '@williamcodebox/omd-api-remotes/client'
+import type { SessionRuntime } from '@williamcodebox/omd-client-runtime/client'
 import { ModelDirectory } from './directory.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     modelDirectories: ModelDirectoryResolver
   }

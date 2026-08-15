@@ -11,7 +11,7 @@
  * Unknown-but-well-formed sequences are consumed silently, matching the M0
  * contract that escape bytes never enter the input line.
  *
- * @module @deepseek-ai/dsh-tui/keymap
+ * @module @williamcodebox/omd-tui/keymap
  */
 
 import type { TuiKey } from './index.ts'

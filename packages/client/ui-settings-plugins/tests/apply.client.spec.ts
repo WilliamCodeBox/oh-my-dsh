@@ -1,16 +1,16 @@
 /** What the browser half registers, and that it all leaves with the fiber. */
 
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@williamcodebox/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { TestRemote, usePinnedBrowserLanguages } from '@deepseek-ai/dsh-client-test-runtime'
-import { SettingsScopeBinder } from '@deepseek-ai/dsh-client-ui-settings/client'
-import { apply, inject } from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
+import { resolveSlotLabel } from '@williamcodebox/omd-client-ui-slots'
+import { SlotRegistry } from '@williamcodebox/omd-client-runtime/client'
+import { LocaleRuntime } from '@williamcodebox/omd-client-locale/client'
+import { TestRemote, usePinnedBrowserLanguages } from '@williamcodebox/omd-client-test-runtime'
+import { SettingsScopeBinder } from '@williamcodebox/omd-client-ui-settings/client'
+import { apply, inject } from '@williamcodebox/omd-client-ui-settings-plugins/client'
 import type {
   ConfigurablePluginsTabInjected, PluginsSettingsSectionInjected,
-} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
+} from '@williamcodebox/omd-client-ui-settings-plugins/client'
 
 // The service reads its initial locale from the browser; these specs assert
 // the shipped Chinese copy, so they state the browser they assume.

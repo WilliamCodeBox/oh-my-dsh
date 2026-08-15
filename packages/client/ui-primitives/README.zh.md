@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-primitives
+# @williamcodebox/omd-client-ui-primitives
 
 [English](README.md) | 中文
 

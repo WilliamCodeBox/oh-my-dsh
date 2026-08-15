@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent, AgentCancelCause, InboxTarget } from '@deepseek-ai/dsh-agent'
-import type { UserMessage } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
+import { Context } from '@williamcodebox/cordis'
+import AgentRegistry, { Inbox } from '@williamcodebox/omd-agent'
+import type { Agent, AgentCancelCause, InboxTarget } from '@williamcodebox/omd-agent'
+import type { UserMessage } from '@williamcodebox/omd-llm'
+import SessionStore, { SessionId } from '@williamcodebox/omd-session'
 import {
   ScheduleId,
   createAfterScheduleRecord,

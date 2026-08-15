@@ -1,20 +1,20 @@
 /**
  * Same-session goal domain: event-sourced state, compare-and-set mutations,
  * and process-local continuation activation.
- * @module @deepseek-ai/dsh-goal
+ * @module @williamcodebox/omd-goal
  */
 
 import { randomUUID } from 'node:crypto'
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
+import { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
 import { z as zod } from 'zod'
 import type { ZodType } from 'zod'
-import { agentEvents } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
+import { agentEvents } from '@williamcodebox/omd-agent'
+import type { Agent } from '@williamcodebox/omd-agent'
+import type { Session, SessionEvent } from '@williamcodebox/omd-session'
+import { TypertRemoteService, Remote } from '@williamcodebox/omd-typert-protocol'
 // Type-only: resolves ctx.sessionProjections for the optional unit child.
-import type {} from '@deepseek-ai/dsh-session-projection'
+import type {} from '@williamcodebox/omd-session-projection'
 import {
   applyGoalEvent,
   decodeGoalChange,
@@ -56,7 +56,7 @@ export type * from './domain.ts'
 export { GOAL_CHANGE_VERSION, GoalError, GoalId } from './runtime.ts'
 export { decodeGoalChange, foldGoal, goalChangeRef } from './fold.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@williamcodebox/cordis' {
   interface Context {
     goals: GoalService
   }

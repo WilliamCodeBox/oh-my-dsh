@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-api-gateway`.
- * @module @deepseek-ai/dsh-api-gateway/invariant
+ * Package-owned invariant companion for `@williamcodebox/omd-api-gateway`.
+ * @module @williamcodebox/omd-api-gateway/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@williamcodebox/cordis'
+import type { InvariantInstaller } from '@williamcodebox/omd-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-api-gateway'
+const PACKAGE_NAME = '@williamcodebox/omd-api-gateway'
 
 /** Cordis companion plugin name. */
 export const name = 'api-gateway-invariant'

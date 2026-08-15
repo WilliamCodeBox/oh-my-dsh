@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-connection",
+  "name": "@williamcodebox/omd-client-connection",
   "description": "Wire consumer layer: HTTP-up/WebSocket-down client, ConnectionController dual streams with reconnect, and fixture api",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -38,13 +38,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-host-apiproxy": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@williamcodebox/omd-attachment": "workspace:^",
+    "@williamcodebox/omd-host-apiproxy": "workspace:^",
+    "@williamcodebox/omd-commands": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/schemastery": "workspace:^",
     "ws": "^8.21.0"
   },
   "files": [
@@ -54,14 +54,14 @@
     "lib/types/**/*.d.ts"
   ],
   "peerDependencies": {
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/omd-host-webserver": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@williamcodebox/omd-host-webserver": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
     "@types/ws": "^8.18.1",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

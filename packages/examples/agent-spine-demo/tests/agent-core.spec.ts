@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { join, sep } from 'node:path'
 import { tmpdir } from 'node:os'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import { renderPrompt, TOOL_ORDER_REST } from '@deepseek-ai/dsh-system-prompt'
+import { Context } from '@williamcodebox/cordis'
+import Loader from '@williamcodebox/cordis-plugin-loader'
+import { renderPrompt, TOOL_ORDER_REST } from '@williamcodebox/omd-system-prompt'
 import * as agentCore from '../src/index.ts'
-import { agentEvents, type Agent } from '@deepseek-ai/dsh-agent'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import LocalBashExecutor from '@deepseek-ai/dsh-bash-local'
-import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
-import * as ToolFs from '@deepseek-ai/dsh-tool-fs'
+import { agentEvents, type Agent } from '@williamcodebox/omd-agent'
+import { SessionId } from '@williamcodebox/omd-session'
+import LocalBashExecutor from '@williamcodebox/omd-bash-local'
+import LocalFileSystem from '@williamcodebox/omd-fs-local'
+import * as ToolFs from '@williamcodebox/omd-tool-fs'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import {
   createUserMessage,
@@ -22,16 +22,16 @@ import {
   type Message,
   type ResolvedRetryPolicy,
   type StreamChunk,
-} from '@deepseek-ai/dsh-llm'
-import type { ToolExecution } from '@deepseek-ai/dsh-tools'
-import * as sessionInvariant from '@deepseek-ai/dsh-session/invariant'
-import * as agentInvariant from '@deepseek-ai/dsh-agent/invariant'
-import * as scopeInvariant from '@deepseek-ai/dsh-scope/invariant'
-import * as agentLoopInvariant from '@deepseek-ai/dsh-agent-loop/invariant'
+} from '@williamcodebox/omd-llm'
+import type { ToolExecution } from '@williamcodebox/omd-tools'
+import * as sessionInvariant from '@williamcodebox/omd-session/invariant'
+import * as agentInvariant from '@williamcodebox/omd-agent/invariant'
+import * as scopeInvariant from '@williamcodebox/omd-scope/invariant'
+import * as agentLoopInvariant from '@williamcodebox/omd-agent-loop/invariant'
 
 const testToolSignal = new AbortController().signal
 
-declare module '@deepseek-ai/dsh-jobs' {
+declare module '@williamcodebox/omd-jobs' {
   interface JobKindMap {
     probe: 'probe'
   }
@@ -53,7 +53,7 @@ async function composePrefix(ctx: Context, cwd: string): Promise<Message[]> {
 }
 
 /**
- * Unit coverage for the @deepseek-ai/dsh-agent-spine-demo bundle: mounting it brings
+ * Unit coverage for the @williamcodebox/omd-agent-spine-demo bundle: mounting it brings
  * up the whole default spine in one `ctx.plugin`, and the forwarded
  * `agents` config reaches the loop (default `[]`, or a pre-created agent).
  *
@@ -227,8 +227,8 @@ describe('dsh-agent-spine-demo bundle', () => {
 
     for (const invariants of [
       { enabled: false },
-      { package_allowlist: ['^@deepseek-ai/dsh-agent$'] },
-      { package_blocklist: ['^@deepseek-ai/dsh-session$'] },
+      { package_allowlist: ['^@williamcodebox/omd-agent$'] },
+      { package_blocklist: ['^@williamcodebox/omd-session$'] },
     ]) {
       const filtered = await mount({ workspaceContext: false, invariants })
       expect(() => { nestedTurn(filtered) }).not.toThrow()

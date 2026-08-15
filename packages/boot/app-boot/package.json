@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-app-boot",
+  "name": "@williamcodebox/omd-app-boot",
   "description": "Shared boot glue for the app bins: .env loading, fail-loud Loader guards, snapshot-aware config resolution, and the Loader boot sequence",
   "version": "0.1.0-rc.5",
   "publishConfig": {
@@ -35,32 +35,32 @@
     "js-yaml": "^4.2.0"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis-plugin-group": "workspace:^",
-    "@deepseek-ai/cordis-plugin-hmr": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis-plugin-group": "workspace:^",
+    "@williamcodebox/cordis-plugin-hmr": "workspace:^",
+    "@williamcodebox/cordis-plugin-include": "workspace:^",
+    "@williamcodebox/cordis-plugin-loader": "workspace:^",
+    "@williamcodebox/omd-launch-environment": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-home-paths": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/cordis-plugin-hmr": {
+    "@williamcodebox/cordis-plugin-hmr": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-group": "workspace:^",
-    "@deepseek-ai/cordis-plugin-hmr": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/cordis-plugin-timer": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
+    "@williamcodebox/cordis-plugin-group": "workspace:^",
+    "@williamcodebox/cordis-plugin-hmr": "workspace:^",
+    "@williamcodebox/cordis-plugin-include": "workspace:^",
+    "@williamcodebox/cordis-plugin-loader": "workspace:^",
+    "@williamcodebox/cordis-plugin-timer": "workspace:^",
+    "@williamcodebox/omd-launch-environment": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-home-paths": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
     "@types/js-yaml": "^4.0.9",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@williamcodebox/cordis": "workspace:^"
   }
 }

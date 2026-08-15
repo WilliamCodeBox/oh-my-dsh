@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-permission-presets
+# @williamcodebox/omd-client-ui-permission-presets
 
 [English](README.md) | 中文
 

@@ -7,7 +7,7 @@
  * locator and retrieval guidance.
  *
  * It registers NO service and owns NO storage or preview mechanics: preview is
- * `@deepseek-ai/dsh-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
+ * `@williamcodebox/omd-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
  * The policy only decides WHEN to spill and composes the notice.
  *
  * A second arm applies the SAME cap to the durable log: the
@@ -40,18 +40,18 @@
  * replaced content still has its replacement bounded, and value replacements
  * and `block` decisions pass through unchanged.
  *
- * @module @deepseek-ai/dsh-spill-policy
+ * @module @williamcodebox/omd-spill-policy
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import { TextRetainer, describeOmitted } from '@deepseek-ai/dsh-output-retention'
-import type { Omitted } from '@deepseek-ai/dsh-output-retention'
-import type { SaveTextSpill, SpillRef } from '@deepseek-ai/dsh-spill'
-import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { CallId } from '@deepseek-ai/dsh-llm'
-import type { PostToolDecision, ToolExecution } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@williamcodebox/cordis'
+import z from '@williamcodebox/schemastery'
+import type { ContentBlock } from '@williamcodebox/omd-llm'
+import { TextRetainer, describeOmitted } from '@williamcodebox/omd-output-retention'
+import type { Omitted } from '@williamcodebox/omd-output-retention'
+import type { SaveTextSpill, SpillRef } from '@williamcodebox/omd-spill'
+import type { SessionId } from '@williamcodebox/omd-session'
+import type { CallId } from '@williamcodebox/omd-llm'
+import type { PostToolDecision, ToolExecution } from '@williamcodebox/omd-tools'
 import type { SpillPolicyExec } from './types.ts'
 
 export type { SpillPolicyExec } from './types.ts'

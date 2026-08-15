@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-新包 `packages/interaction/tui-renderer`（`@deepseek-ai/dsh-tui-renderer`）承载折叠模型；interaction/ 组为其确认归属（已解散的 `ui/` 组不复活）。`Transcript` 按序列顺序将一个会话的 `session/event` 流折叠为展示条目：
+新包 `packages/interaction/tui-renderer`（`@williamcodebox/omd-tui-renderer`）承载折叠模型；interaction/ 组为其确认归属（已解散的 `ui/` 组不复活）。`Transcript` 按序列顺序将一个会话的 `session/event` 流折叠为展示条目：
 
 - **user** 消息，携带生产者 source 与折叠时打开的 turn；
 - **assistant** 消息：`text-delta` chunk 流式累积，装配消息到达时定稿（携带 `usage` 与装配消息本身）；
