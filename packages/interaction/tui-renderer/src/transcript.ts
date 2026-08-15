@@ -161,6 +161,8 @@ export interface TranscriptState {
   readonly header?: SessionEvent<'request/header'>['data']['header']
   /** Latest provider route metadata, when one was logged. */
   readonly context?: SessionEvent<'request/context'>['data']
+  /** Token totals across all finalized assistant messages. */
+  readonly usage: TokenUsage
   /** Seq of the `session/end-seed` marker, when the log carries one; absent otherwise. */
   readonly seedEndSeq?: number
   /** Compaction replacements observed while folding, in event order. */
@@ -184,6 +186,7 @@ export class Transcript {
   private compactions: CompactionNote[] = []
   private currentTurn?: number
   private pending: MutableAssistantItem | undefined
+  private totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0 }
   private readonly listeners = new Set<() => void>()
 
   /** Subscribe to fold changes; returns the disposer. */
@@ -197,6 +200,7 @@ export class Transcript {
     return {
       items: this.items,
       todos: this.todos,
+      usage: this.totalUsage,
       compactions: this.compactions,
       ...(this.header !== undefined ? { header: this.header } : {}),
       ...(this.context !== undefined ? { context: this.context } : {}),
@@ -250,6 +254,7 @@ export class Transcript {
       }
       case 'assistant/message': {
         const { turn, step, message, usage } = event.data
+        if (usage !== undefined) this.accumulateUsage(usage)
         if (isAppendSurfaceEvent(event)) {
           if (this.pending !== undefined && this.pending.turn === turn && this.pending.step === step) {
             this.pending.text = textOf(message.content)
@@ -340,6 +345,14 @@ export class Transcript {
     if (this.pending === undefined) return
     this.pending.streaming = false
     this.pending = undefined
+  }
+
+  /** Accumulate one finalized message's token accounting into the total. */
+  private accumulateUsage(usage: TokenUsage): void {
+    this.totalUsage = {
+      inputTokens: this.totalUsage.inputTokens + usage.inputTokens,
+      outputTokens: this.totalUsage.outputTokens + usage.outputTokens,
+    }
   }
 
   /** Append one append-origin user message item. */

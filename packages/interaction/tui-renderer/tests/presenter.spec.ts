@@ -143,6 +143,16 @@ describe('TuiPresenter', () => {
     expect(laterSawCtrlC).toBe(false)
   })
 
+  it('scrolls the transcript viewport without leaving end-following when at the bottom', () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    // With no content the viewport cannot move; the call must be a no-op.
+    expect(() => { presenter.scrollTranscript(-10) }).not.toThrow()
+    expect(() => { presenter.scrollTranscript(10) }).not.toThrow()
+    presenter.stop()
+  })
+
   it('asks an approval over an overlay modal: Enter allows, arrow+Enter rejects, Escape cancels', async () => {
     const terminal = new FakeTerminal()
     const presenter = makePresenter(terminal, new Transcript())

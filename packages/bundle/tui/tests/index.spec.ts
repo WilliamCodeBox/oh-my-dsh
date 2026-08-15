@@ -536,6 +536,24 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('pages the transcript with PgUp/PgDn and keeps the keys out of the editor', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    // PgUp/PgDn sequences must scroll (not crash) and never type into the editor.
+    terminal.send('\x1b[5~')
+    terminal.send('\x1b[6~')
+    terminal.send('x')
+    terminal.send('\x7f') // backspace clears the line so Ctrl+C quits
+    terminal.send('\x03')
+    const result = await runPromise
+    expect(result.code).toBe(130)
+    expect(test.recorded.followup).toHaveLength(0)
+    await test.ctx.fiber.dispose()
+  })
+
   it('answers an approval prompt over the presenter modal: Enter allows', async () => {
     const test = await bench([], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },

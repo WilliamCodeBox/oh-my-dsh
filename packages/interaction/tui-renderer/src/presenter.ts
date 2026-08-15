@@ -33,7 +33,7 @@ import type {
 } from '@deepseek-ai/dsh-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
-import { StatusRow, TranscriptView } from './transcript-view.ts'
+import { StatusRow, TranscriptView, type TranscriptTheme } from './transcript-view.ts'
 
 /** The production terminal: real process stdin/stdout streams. */
 export function processTerminal(): Terminal {
@@ -51,6 +51,20 @@ const EDITOR_THEME = {
     noMatch: (text: string) => text,
   },
 } as const
+
+/**
+ * Basic transcript color layers (16-color ANSI, terminal-safe): the user's
+ * own lines and tool cards read differently from the assistant's stream.
+ * The transcript view's default theme is identity, so snapshot fixtures stay
+ * plain text; the presenter opts into color.
+ */
+const COLOR_THEME: TranscriptTheme = {
+  user: text => `\x1b[36m${text}\x1b[0m`,
+  assistant: text => text,
+  tool: text => `\x1b[33m${text}\x1b[0m`,
+  turn: text => `\x1b[90m${text}\x1b[0m`,
+  command: text => `\x1b[35m${text}\x1b[0m`,
+}
 
 /** Presenter callbacks the runner supplies. */
 export interface PresenterOptions {
@@ -73,6 +87,8 @@ export class TuiPresenter {
   readonly tui: ViewportTUI
   /** The input editor — the pi-tui seam later interaction milestones mount on. */
   readonly editor: Editor
+  /** The transcript scroll viewport, for runner-driven history paging. */
+  readonly transcriptScroll: ScrollView
   private started = false
   /** The live interaction overlay, when one is asking. */
   private overlay: { handle: OverlayHandle } | undefined
@@ -82,17 +98,18 @@ export class TuiPresenter {
     if (!isViewportTUI(this.tui)) {
       throw new Error('tui-renderer: the presenter requires a viewport TUI')
     }
-    const view = new TranscriptView(transcript)
+    const view = new TranscriptView(transcript, COLOR_THEME)
     const status = new StatusRow(options.statusLine)
     this.editor = new Editor(this.tui, EDITOR_THEME)
     this.editor.onSubmit = (line) => {
       options.onSubmit(line)
       this.editor.addToHistory(line)
     }
+    this.transcriptScroll = new ScrollView(view, { follow: 'end', primary: true, overscroll: 'chain' })
 
     this.tui.setLayoutRoot(new VStack([
       {
-        component: new ScrollView(view, { follow: 'end', primary: true, overscroll: 'chain' }),
+        component: this.transcriptScroll,
         basis: 0,
         grow: 1,
         minSize: 1,
@@ -271,6 +288,17 @@ export class TuiPresenter {
   /** Replace the editor content (e.g. clear input on Ctrl+C). */
   setInput(text: string): void {
     this.editor.setText(text)
+  }
+
+  /**
+   * Scroll the transcript viewport; positive scrolls toward the end. A
+   * manual scroll leaves end-following until the viewport returns to the
+   * bottom, so history stays readable while new content streams.
+   * @param lines - signed line delta (negative scrolls back in history).
+   */
+  scrollTranscript(lines: number): void {
+    this.transcriptScroll.scrollBy(lines)
+    this.tui.requestRender()
   }
 
   /** Current editor text, for the Ctrl+C empty-input decision. */

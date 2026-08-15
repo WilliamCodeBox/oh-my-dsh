@@ -257,6 +257,16 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
   const ctrlC = new CtrlCController()
   return await new Promise<InputOutcome>((resolve) => {
     presenter.onKey((data) => {
+      if (data === '\x1b[5~' || data === '\x1b[5;2~') {
+        // PgUp (and Shift+PgUp): page back through the transcript history.
+        presenter.scrollTranscript(-10)
+        return true
+      }
+      if (data === '\x1b[6~' || data === '\x1b[6;2~') {
+        // PgDn (and Shift+PgDn): page forward; end-following resumes at the bottom.
+        presenter.scrollTranscript(10)
+        return true
+      }
       if (data !== '\x03') return false
       // While an interaction modal is asking, Ctrl+C resolves the modal's
       // cancel binding instead of driving the quit machine: the modal owns
@@ -308,7 +318,12 @@ async function driveInput(
   const ctrlC = new CtrlCController()
   while (true) {
     const key = await input.next()
-    if (key === undefined) return { kind: 'quit', code: 0 }
+    if (key === undefined) {
+      // EOF: drain any in-flight follow-up turn before quitting, so piped
+      // input (`echo task | dsh --profile tui`) runs to completion.
+      await agent.whenIdle()
+      return { kind: 'quit', code: 0 }
+    }
     switch (key.kind) {
       case 'char':
         line = `${line.slice(0, cursor)}${key.char}${line.slice(cursor)}`

@@ -26,7 +26,7 @@ const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta
  * process behavior, not a timeout kill.
  */
 const POSIX_TUI_PTY_DRIVER = String.raw`
-import errno, json, os, pty, select, signal, sys, time
+import errno, fcntl, json, os, pty, select, signal, struct, sys, termios, time
 node, launch_args_json, launch_env_json, cwd, actions_json, expected_exit, timeout_seconds = sys.argv[1:]
 env = os.environ.copy()
 env.update(json.loads(launch_env_json))
@@ -63,6 +63,10 @@ for action in actions:
         if action["waitFor"].encode() not in output:
             sys.stderr.write(f"marker {action['waitFor']!r} never appeared\n")
             sys.exit(124)
+    if "resize" in action:
+        size = action["resize"]
+        fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", size["rows"], size["cols"], 0, 0))
+        os.kill(pid, signal.SIGWINCH)
     if "delayMs" in action:
         deadline_slice = time.monotonic() + action["delayMs"] / 1000
         while time.monotonic() < deadline_slice:
@@ -82,7 +86,7 @@ for action in actions:
                 break
         if status is not None:
             break
-    if status is None:
+    if "send" in action and status is None:
         os.write(fd, action["send"].encode())
 
 while status is None and time.monotonic() < deadline:
@@ -115,9 +119,11 @@ if actual_exit != int(expected_exit):
 interface TuiPtyAction {
   /** Send `send` after this text renders. */
   readonly waitFor?: string
+  /** Resize the pty and signal SIGWINCH. */
+  readonly resize?: { readonly cols: number; readonly rows: number }
   /** Send `send` after this many milliseconds instead of a marker. */
   readonly delayMs?: number
-  readonly send: string
+  readonly send?: string
 }
 
 /** Run the tui profile under a PTY and return its collected output. */
@@ -179,6 +185,8 @@ describe.skipIf(process.platform === 'win32')('tui profile PTY case (real Loader
         { waitFor: '──', send: 'hello' },
         // The editor renders the typed line; Enter submits the follow-up.
         { waitFor: 'hello', send: '\r' },
+        // A terminal resize must re-layout without corrupting the surface.
+        { resize: { cols: 120, rows: 40 } },
         // Give the keyless turn time to fail fast and settle, then quit on an
         // empty, idle prompt. Ctrl+C quits with the SIGINT convention code
         // through the normal shutdown path.

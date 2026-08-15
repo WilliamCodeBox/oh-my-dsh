@@ -30,4 +30,4 @@
 
 ## tui-agent
 
-`dsh --profile tui` 表面的测试持有示例：keyless 转录快照把录制的会话事件日志经官方 `Transcript`/`TranscriptView` 呈现契约折叠，并将渲染行与预期终端输出比对。它没有自己的 cordis.yml——组装级 PTY case 位于 `apps/cli/tests/tui-pty.snapshot.ts`。
+`dsh --profile tui` 表面的测试持有示例：keyless 转录快照把录制的会话事件日志（普通 turn，以及交互旅程——审批放行的工具调用、斜杠命令、aborted turn）经官方 `Transcript`/`TranscriptView` 呈现契约折叠，并将渲染行与预期终端输出比对。`replay.cordis.yml` 是 keyless 重放 overlay（`--patch`）：禁用真实 DeepSeek 适配器，在 profile 默认 provider/model 下挂 `dsh-llm-replay`，因此 `examples/tui-agent/tests/tui-replay.snapshot.ts` 无需密钥即可驱动组装后的 `dsh --profile tui` 完成一次完整模型往返。组装级 PTY case 位于 `apps/cli/tests/tui-pty.snapshot.ts`。

@@ -71,7 +71,7 @@ describe('sanitizedLines', () => {
 })
 
 describe('formatStatus', () => {
-  const base: TranscriptState = { items: [], todos: [], compactions: [] }
+  const base: TranscriptState = { items: [], todos: [], usage: { inputTokens: 0, outputTokens: 0 }, compactions: [] }
 
   it('is empty without side state', () => {
     expect(formatStatus(base)).toBe('')
@@ -97,5 +97,46 @@ describe('formatStatus', () => {
       todos: [{ content: 'a', status: 'in_progress' as const }],
       compactions: [{ seq: 9, start: 0, end: 1, shadowedSeqs: [1, 2] }],
     })).toBe('deepseek/deepseek-chat | todos 1/1 | compacted 1')
+  })
+
+  it('shows accumulated token totals', () => {
+    expect(formatStatus({
+      ...base,
+      usage: { inputTokens: 1234, outputTokens: 56 },
+    })).toBe('tokens 1234+56')
+  })
+
+  it('shows the most recent completed turn duration', () => {
+    const turnItem = {
+      kind: 'turn' as const,
+      seq: 1,
+      time: 1000,
+      turn: 1,
+      end: { time: 12_000, reason: { kind: 'completed' as const } },
+    }
+    expect(formatStatus({ ...base, items: [turnItem] })).toBe('11s')
+  })
+})
+
+describe('formatItem caps', () => {
+  it('truncates over-long tool arguments with a remainder note', () => {
+    const longArgs = JSON.stringify({ path: '/x'.repeat(500) })
+    const lines = formatItem({
+      kind: 'tool', seq: 1, time: 1000, turn: 1, step: 1, callId: 'c-1',
+      name: 'read', args: longArgs,
+    })
+    expect(lines[0]).toContain('…(+')
+    expect(lines[0]).not.toContain(longArgs)
+  })
+
+  it('truncates command args and results the same way', () => {
+    const lines = formatItem({
+      kind: 'command', seq: 1, time: 1000, commandId: 'c-1',
+      name: 'permission', args: ' x'.repeat(400),
+      result: { seq: 2, time: 2000, kind: 'error', text: 'e'.repeat(500) },
+    })
+    expect(lines[0]).toContain('…(+')
+    expect(lines[1]).toContain('error')
+    expect(lines[1]).toContain('…(+')
   })
 })

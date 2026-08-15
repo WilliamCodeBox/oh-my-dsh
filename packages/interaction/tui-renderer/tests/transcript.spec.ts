@@ -86,6 +86,17 @@ describe('Transcript', () => {
     expect(finalized.message).toBeDefined()
   })
 
+  it('accumulates token usage across finalized assistant messages', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 0, message: assistantText('one'), usage: { inputTokens: 10, outputTokens: 5 },
+    }, 1, { surfaceOp: 'append' }))
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 1, message: assistantText('two'), usage: { inputTokens: 100, outputTokens: 50 },
+    }, 2, { surfaceOp: 'append' }))
+    expect(transcript.state.usage).toEqual({ inputTokens: 110, outputTokens: 55 })
+  })
+
   it('keeps partial text of an aborted stream', () => {
     const transcript = new Transcript()
     transcript.fold(ev('turn/start', { turn: 1 }, 1))
