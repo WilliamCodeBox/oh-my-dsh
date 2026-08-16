@@ -54,7 +54,7 @@
     "@williamcodebox/omd-session-projection": "workspace:^",
     "@williamcodebox/omd-session-title": "workspace:^",
     "@williamcodebox/omd-tools": "workspace:^",
-    "immer": "^10.1.1",
+    "immer": "^11.1.15",
     "react": "^18.2.0",
     "zustand": "~4.4.7"
   },
