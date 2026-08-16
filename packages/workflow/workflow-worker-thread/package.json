@@ -64,6 +64,6 @@
     "@williamcodebox/omd-tools": "workspace:^",
     "@williamcodebox/omd-workflow": "workspace:^",
     "@williamcodebox/cordis": "workspace:^",
-    "tsx": "^4.19.2"
+    "tsx": "^4.23.1"
   }
 }
