@@ -48,6 +48,9 @@ URL="${PROXY}https://github.com/$REPO/releases/download/$VERSION/omd-dist-$ARCH.
 echo "omd: downloading $URL"
 curl -fsSL --retry 3 --retry-delay 2 "$URL" -o "$TMP/omd-dist.tar.gz"
 mkdir -p "$DEST"
+# Replace, don't merge: tar extraction over a previous install leaves
+# orphaned store entries behind (observed: 143M rc.7 + 150M rc.8 stacking).
+rm -rf "$DEST"/*
 tar xzf "$TMP/omd-dist.tar.gz" -C "$DEST"
 chmod +x "$DEST/omd"
 
