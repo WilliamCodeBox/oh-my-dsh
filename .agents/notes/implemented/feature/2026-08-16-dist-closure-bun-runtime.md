@@ -80,7 +80,7 @@ edits is the correct product behavior for the distributed runtime.
   run renders in ~2s, submits input, reaches the model step (status bar shows
   `deepseek-official/deepseek-v4-flash`), and surfaces the keyless error
   path.
-- Tarball size grew from 82 MB (`--prod`, broken closure) to ~166 MB: the
+- Tarball size grew from 82 MB (`--prod`, broken closure) to ~145 MB: the
   root devDependencies' transitive trees remain in the virtual store because
   their entries are still linked by each other. Size recovery is deferred;
   correctness first.

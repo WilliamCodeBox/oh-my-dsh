@@ -33,6 +33,6 @@ omd 分发 tarball（`build:dist`）的 `--version` 冒烟通过，但从未真�
 ## 影响
 
 - 组装树可启动：`build:dist` 冒烟通过；pty 驱动的 TUI 运行约 2 秒渲染，可提交输入、到达模型步骤（状态栏显示 `deepseek-official/deepseek-v4-flash`）、呈现无 key 错误路径。
-- tarball 从 82 MB（`--prod`、闭包破损）增至约 166 MB：根 devDependencies 的传递树仍留在虚拟 store（条目彼此互链）。体积回收延后；正确性优先。
+- tarball 从 82 MB（`--prod`、闭包破损）增至约 145 MB：根 devDependencies 的传递树仍留在虚拟 store（条目彼此互链）。体积回收延后；正确性优先。
 - `vendor/hmr` 新增一处文档化本地修改（bun 降级），记录于 `vendor/README.md` 第 13 条。
 - 无 key 模型路径是唯一未验证环节；真实端到端模型回复需要 `DEEPSEEK_API_KEY`。
