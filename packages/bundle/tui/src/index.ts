@@ -323,6 +323,19 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
       },
     })
     registry.register({
+      key: '\x1b',
+      display: 'Esc',
+      description: 'clear input / interrupt a running turn',
+      handler: () => {
+        // The status line promises "esc to interrupt" while a turn runs;
+        // modal keys stay with the modal (its cancel binding), same as Ctrl+C.
+        if (presenter.interactionPending) return false
+        if (agent.status === 'running') agent.cancel({ kind: 'user' }, { keepInbox: true })
+        presenter.setInput('')
+        return true
+      },
+    })
+    registry.register({
       key: '\x03',
       display: 'Ctrl+C',
       description: 'clear input / cancel / quit (three-step)',
@@ -455,6 +468,11 @@ async function driveInput(
         // A single-line buffer has nothing to page; consume without editing.
         break
       case 'escape':
+        // Idle: clear the draft. While a turn runs the status line hints
+        // "esc to interrupt" — honor it (same cancel as Ctrl+C's second step).
+        if (agent.status === 'running') {
+          agent.cancel({ kind: 'user' }, { keepInbox: true })
+        }
         line = ''
         cursor = 0
         break

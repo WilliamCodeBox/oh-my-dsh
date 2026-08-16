@@ -319,6 +319,25 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('interrupts a running turn on Escape (pipe path), preserving the inbox', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: 'x' },
+        { kind: 'submit' },
+        { kind: 'escape' },
+      ],
+      {},
+      { status: 'running' },
+    )
+    const result = await test.run()
+    expect(test.recorded.steer).toHaveLength(1)
+    expect(test.recorded.cancel).toHaveLength(1)
+    expect(test.recorded.cancel[0]).toEqual({ cause: { kind: 'user' }, options: { keepInbox: true } })
+    // EOF after the interrupt drains and quits cleanly.
+    expect(result.code).toBe(0)
+    await test.ctx.fiber.dispose()
+  })
+
   it('edits the line at the cursor: left/right/home/end, delete, escape-clear', async () => {
     const test = await bench(
       [
@@ -498,6 +517,26 @@ describe('tui runner', () => {
     const result = await test.run()
     expect(result.out).toContain('[assistant] main ok')
     expect(result.out).not.toContain('subagent noise')
+    await test.ctx.fiber.dispose()
+  })
+
+  it('interrupts a running turn on Escape over the presenter', async () => {
+    const test = await bench([], {}, { status: 'running' }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('hello')
+    terminal.send('\r')
+    // While the turn runs, Escape cancels it (inbox preserved).
+    terminal.send('\x1b')
+    await vi.waitFor(() => { expect(test.recorded.cancel).toHaveLength(1) })
+    expect(test.recorded.cancel[0]).toEqual({ cause: { kind: 'user' }, options: { keepInbox: true } })
+    // The mock stays 'running' after cancel, so the first Ctrl+C cancels
+    // again; the second press inside the window force-exits.
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   })
 
