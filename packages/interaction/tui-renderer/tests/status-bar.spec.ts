@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest'
 import { Transcript } from '../src/transcript.ts'
 import { TuiPresenter, workspaceAutocomplete } from '../src/presenter.ts'
-import { contextBar } from '../src/format.ts'
+import { contextBar, formatStatus } from '../src/format.ts'
 import { darkTheme } from '../src/theme.ts'
 import type { Terminal } from '@earendil-works/pi-tui'
 
@@ -76,7 +76,7 @@ describe('contextBar', () => {
 })
 
 describe('TuiPresenter status bar', () => {
-  it('composes left text, threshold-colored bar, and muted model', () => {
+  it('composes left text with the threshold-colored bar, without duplicating the model', () => {
     const transcript = new Transcript()
     transcript.fold(ev('request/context', { provider: 'deepseek-official', model: 'deepseek-v4-flash', contextWindow: 1000 }, 1))
     transcript.fold(ev('assistant/message', {
@@ -90,13 +90,17 @@ describe('TuiPresenter status bar', () => {
       },
       usage: { inputTokens: 450, outputTokens: 50 },
     }, 2, { surfaceOp: 'append' }))
-    const presenter = new TuiPresenter(new FakeTerminal(), transcript, { onSubmit: () => {}, statusLine: () => 'tokens 450+50' })
+    // The production statusLine already carries the model via formatStatus;
+    // the presenter must not append it a second time.
+    const presenter = new TuiPresenter(new FakeTerminal(), transcript, {
+      onSubmit: () => {},
+      statusLine: () => formatStatus(transcript.state),
+    })
     const line = (presenter as unknown as { renderStatus(width: number): string }).renderStatus(80)
-    expect(line).toContain('tokens 450+50')
-    expect(line).toContain('█████░░░░░ 50%')
-    // The 50% bar sits below both thresholds, so it uses the dim color.
-    expect(line).toContain(darkTheme.fg('dim', contextBar(0.5, 10)))
     expect(line).toContain('deepseek-official/deepseek-v4-flash')
+    expect(line).toContain(darkTheme.fg('dim', contextBar(0.5, 10)))
+    // The model appears exactly once.
+    expect(line.split('deepseek-official/deepseek-v4-flash')).toHaveLength(2)
   })
 
   it('colors the bar by the warning threshold', () => {

@@ -139,6 +139,32 @@ describe('TranscriptView themed path', () => {
     expect(lines.length).toBeGreaterThan(1)
   })
 
+  it('updates a tool card when its result arrives after the first render', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/call', { callId: 'c1', turn: 1, step: 1, name: 'fs.read', arguments: '{"path":"a"}' }, 1, { surfaceOp: 'append' }))
+    const view = new TranscriptView(transcript, darkTheme)
+    const pending = view.render(80).join('\n')
+    expect(pending).toContain('\x1b[48;5;236m') // toolPendingBg
+    transcript.fold(ev('tool/result', {
+      turn: 1,
+      step: 1,
+      message: {
+        content: [{ type: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'ok' }] }],
+      },
+    }, 2, { surfaceOp: 'append' }))
+    const settled = view.render(80).join('\n')
+    expect(settled).toContain('\x1b[48;5;235m') // toolSuccessBg
+    expect(settled).toContain('ok')
+  })
+
+  it('keeps the user background across inline markdown resets', () => {
+    const lines = themedLines(t => foldUser(t, '**bold** and `code`', 2))
+    const joined = lines.join('\n')
+    // Every inline reset re-applies the user background.
+    expect(joined).toContain('\x1b[0m\x1b[48;5;237m')
+    expect(joined).toContain('\x1b[1mbold')
+  })
+
   it('sanitizes control characters before Markdown rendering', () => {
     const lines = themedLines(t => foldAssistant(t, 'line\x1b[31mred\x07', 2))
     const joined = lines.join('\n')

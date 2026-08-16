@@ -90,7 +90,7 @@ const LIGHT_PALETTE: ThemePalette = {
   fg: {
     text: 0,
     muted: 8,
-    dim: 245,
+    dim: 240,
     border: 250,
     accent: 27,
     success: 28,

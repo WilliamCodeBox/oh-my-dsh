@@ -39,10 +39,32 @@ export const identityTheme: TranscriptTheme = {
   command: text => text,
 }
 
-/** One cached component plus the item it renders. */
+/** One cached component plus the fingerprint it was built for. */
 interface CachedRender {
-  readonly item: TranscriptItem
+  readonly fingerprint: string
   readonly render: (width: number) => string[]
+}
+
+/**
+ * Content fingerprint of an item: the fields the themed renderers read at
+ * build time. Tool/turn/command items mutate in place when results arrive,
+ * so reference identity is not a valid cache key.
+ */
+function fingerprintOf(item: TranscriptItem): string {
+  switch (item.kind) {
+    case 'user':
+      return `user:${item.text}`
+    case 'assistant':
+      // Streaming text updates via setText on the cached component; the
+      // fingerprint stays constant so the cache survives chunk deltas.
+      return 'assistant'
+    case 'tool':
+      return `tool:${item.name}:${item.args}:${item.result?.error?.name ?? ''}:${item.result?.text ?? ''}`
+    case 'turn':
+      return `turn:${item.end?.reason.kind ?? 'open'}`
+    case 'command':
+      return `command:${item.name}:${item.result?.kind ?? 'open'}:${item.result?.text ?? ''}`
+  }
 }
 
 /** Build the Markdown component for one message item's sanitized text. */
@@ -68,6 +90,16 @@ function toolCardFor(item: ToolItem, theme: SemanticTheme): Component {
     card.addChild(new Text(sanitizeText(outcome), 1, 0, bgFn))
   }
   return card
+}
+
+/**
+ * Background function that re-applies the fill after every inline SGR reset:
+ * Markdown's per-token `\x1b[0m` would otherwise drop the card background
+ * for the rest of the line.
+ */
+function persistentBg(bg: (text: string) => string): (text: string) => string {
+  const fill = bg('')
+  return text => bg(text.replace(/\x1b\[0m/g, `\x1b[0m${fill}`))
 }
 
 /** Render the folded transcript items as sanitized display lines. */
@@ -96,9 +128,10 @@ export class TranscriptView implements Component {
     const lines: string[] = []
     const theme = this.semantic
     for (const item of this.transcript.state.items) {
+      const fingerprint = fingerprintOf(item)
       let cached = this.cache.get(item)
-      if (cached === undefined || cached.item !== item) {
-        cached = { item, render: this.build(item, theme) }
+      if (cached === undefined || cached.fingerprint !== fingerprint) {
+        cached = { fingerprint, render: this.build(item, theme) }
         this.cache.set(item, cached)
       }
       lines.push(...cached.render(width))
@@ -110,10 +143,10 @@ export class TranscriptView implements Component {
   private build(item: TranscriptItem, theme: SemanticTheme): (width: number) => string[] {
     switch (item.kind) {
       case 'user': {
-        const card = new Box(1, 1, text => theme.bg('userBg', text))
+        const card = new Box(1, 1, persistentBg(text => theme.bg('userBg', text)))
         const md = markdownFor(item.text, theme)
         card.addChild(md)
-        return width => card.render(width)
+        return (width) => card.render(width)
       }
       case 'assistant': {
         const md = markdownFor(item.text, theme)

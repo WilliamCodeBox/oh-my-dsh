@@ -312,9 +312,9 @@ export class TuiPresenter {
   }
 
   /**
-   * Assemble the status row: the runner's left text (dim), a context-window
-   * progress bar (threshold-colored), and the resolved model (muted).
-   * Truncated to the viewport width.
+   * Assemble the status row: the runner's left text (dim, already includes
+   * the provider/model via formatStatus) plus a context-window progress bar
+   * (threshold-colored). Truncated to the viewport width.
    */
   private renderStatus(width: number): string {
     const left = this.options.statusLine()
@@ -326,9 +326,6 @@ export class TuiPresenter {
       const ratio = total / ctx.contextWindow
       const token = ratio > 0.9 ? 'error' : ratio > 0.7 ? 'warning' : 'dim'
       parts.push(this.theme.fg(token, contextBar(ratio, 10)))
-    }
-    if (ctx !== undefined) {
-      parts.push(this.theme.fg('muted', `${ctx.provider}/${ctx.model}`))
     }
     return truncateToWidth(parts.join('  '), width)
   }
