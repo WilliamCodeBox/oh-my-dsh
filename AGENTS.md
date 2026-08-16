@@ -130,6 +130,8 @@ Real-API tests and demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, 
 
 ## Defensive patterns
 
+- **When unsure, research — never guess.** If repo behavior, external tooling, API semantics, or a version contract is unclear, delegate a web-search or codebase-scout subagent to find the answer before acting; an educated guess that ships wrong is a bug.
+
 Read [docs/defensive-patterns.md](docs/defensive-patterns.md) before lifecycle, concurrency, subprocess, or teardown work.
 
 ## Type safety and documentation

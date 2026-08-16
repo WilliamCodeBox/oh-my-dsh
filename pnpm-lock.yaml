@@ -6977,6 +6977,46 @@ importers:
         specifier: workspace:^
         version: link:../../util/timeout
 
+  packages/subagent/subagent-cli:
+    dependencies:
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@williamcodebox/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@williamcodebox/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
+      '@williamcodebox/omd-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@williamcodebox/omd-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@williamcodebox/omd-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@williamcodebox/omd-loader-smoke':
+        specifier: workspace:^
+        version: link:../../test-support/loader-smoke
+      '@williamcodebox/omd-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@williamcodebox/omd-subagent':
+        specifier: workspace:^
+        version: link:../subagent
+      '@williamcodebox/omd-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+      '@williamcodebox/omd-subprocess-local':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess-local
+      '@williamcodebox/omd-timeout':
+        specifier: workspace:^
+        version: link:../../util/timeout
+
   packages/subagent/subagent-codex:
     dependencies:
       '@williamcodebox/schemastery':
