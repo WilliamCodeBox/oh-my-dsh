@@ -10,6 +10,7 @@
  */
 
 import type { EditorTheme, MarkdownTheme } from '@earendil-works/pi-tui'
+import { highlightCode } from './highlight.ts'
 
 /** Semantic color roles the TUI surface uses. */
 export type ColorToken =
@@ -24,6 +25,20 @@ export type ColorToken =
   | 'command'
   | 'toolTitle'
   | 'toolOutput'
+  // Syntax highlighting roles (mapped from token scopes by the highlighter).
+  | 'syntaxComment'
+  | 'syntaxKeyword'
+  | 'syntaxString'
+  | 'syntaxNumber'
+  | 'syntaxFunction'
+  | 'syntaxType'
+  | 'syntaxOperator'
+  | 'syntaxPunctuation'
+  // Diff roles for the tool-card diff viewer.
+  | 'diffAdded'
+  | 'diffRemoved'
+  | 'diffContext'
+  | 'diffHunk'
 
 /** Background roles: message layering and tool-card state. */
 export type BgToken = 'userBg' | 'toolPendingBg' | 'toolSuccessBg' | 'toolErrorBg'
@@ -76,6 +91,18 @@ const DARK_PALETTE: ThemePalette = {
     command: 177,
     toolTitle: 223,
     toolOutput: 249,
+    syntaxComment: 243,
+    syntaxKeyword: 177,
+    syntaxString: 114,
+    syntaxNumber: 179,
+    syntaxFunction: 117,
+    syntaxType: 81,
+    syntaxOperator: 251,
+    syntaxPunctuation: 244,
+    diffAdded: 114,
+    diffRemoved: 167,
+    diffContext: 249,
+    diffHunk: 179,
   },
   bg: {
     userBg: 237,
@@ -99,6 +126,18 @@ const LIGHT_PALETTE: ThemePalette = {
     command: 91,
     toolTitle: 94,
     toolOutput: 59,
+    syntaxComment: 102,
+    syntaxKeyword: 91,
+    syntaxString: 28,
+    syntaxNumber: 94,
+    syntaxFunction: 27,
+    syntaxType: 25,
+    syntaxOperator: 59,
+    syntaxPunctuation: 8,
+    diffAdded: 28,
+    diffRemoved: 124,
+    diffContext: 59,
+    diffHunk: 94,
   },
   bg: {
     userBg: 255,
@@ -111,6 +150,7 @@ const LIGHT_PALETTE: ThemePalette = {
 /** Build the Markdown component theme from a palette. */
 function markdownThemeFor(palette: ThemePalette): MarkdownTheme {
   const fg = fgWrap
+  const syntaxFg = (token: ColorToken, text: string): string => fg(palette.fg[token], text)
   return {
     heading: text => `\x1b[1m${fg(palette.fg.accent, text)}\x1b[0m`,
     link: text => `\x1b[4m${fg(palette.fg.accent, text)}\x1b[0m`,
@@ -126,6 +166,7 @@ function markdownThemeFor(palette: ThemePalette): MarkdownTheme {
     italic: text => `\x1b[3m${text}\x1b[0m`,
     strikethrough: text => `\x1b[9m${text}\x1b[0m`,
     underline: text => `\x1b[4m${text}\x1b[0m`,
+    highlightCode: (code, lang) => highlightCode(code, lang, syntaxFg),
   }
 }
 

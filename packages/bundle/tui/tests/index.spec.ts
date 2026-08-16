@@ -578,6 +578,31 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('shows the session cost on the TTY status row when prices are configured', async () => {
+    const test = await bench([], { costPerInputToken: 1e-6, costPerOutputToken: 2e-6 }, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    // A finalized turn with usage drives the cost display.
+    test.ctx.on('session/append', () => {})
+    test.recorded.agent?.session.append('assistant/message', {
+      turn: 1,
+      step: 1,
+      message: {
+        id: 'a1',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'hi' }],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+      usage: { inputTokens: 1000, outputTokens: 500 },
+    }, { surfaceOp: 'append' })
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('$') })
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
   it('reports /sessions as unavailable without a persistence service', async () => {
     // The built-in session switch needs ctx.sessionPersistence; without the
     // service the command fails soft via the status notice instead of

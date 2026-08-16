@@ -57,6 +57,10 @@ export interface Config {
   model?: string
   /** Permission preset applied at session creation. */
   permission?: string
+  /** USD per input token for the session cost display; absent hides the cost. */
+  costPerInputToken?: number
+  /** USD per output token for the session cost display; absent hides the cost. */
+  costPerOutputToken?: number
 }
 
 export const Config: z<Config> = z.object({
@@ -66,6 +70,8 @@ export const Config: z<Config> = z.object({
   workspace: z.string(),
   model: z.string(),
   permission: z.string(),
+  costPerInputToken: z.number(),
+  costPerOutputToken: z.number(),
 })
 
 /** Process-facing effects of one run: output streams plus the launcher's exit requests. */
@@ -102,6 +108,13 @@ export const internals: {
 
 /** Presenter active in the current run; the crash handler stops it. */
 let activePresenter: TuiPresenter | undefined
+
+/** Format a session cost in USD with a compact unit. */
+function formatCost(cost: number): string {
+  if (cost >= 1) return `$${cost.toFixed(2)}`
+  if (cost >= 0.01) return `$${cost.toFixed(4)}`
+  return `$${cost.toFixed(6)}`
+}
 
 /** One decoded key from the pipe input source. */
 export type TuiKey =
@@ -546,7 +559,16 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
   const statusLine = (): string => {
     const base = formatStatus(transcript.state)
-    return notice.text === '' ? base : base === '' ? notice.text : `${base} | ${notice.text}`
+    let text = notice.text === '' ? base : base === '' ? notice.text : `${base} | ${notice.text}`
+    // Session cost, only when the deployment configures per-token prices.
+    const inputPrice = config.costPerInputToken
+    const outputPrice = config.costPerOutputToken
+    if (inputPrice !== undefined || outputPrice !== undefined) {
+      const usage = transcript.state.usage
+      const cost = (usage.inputTokens * (inputPrice ?? 0)) + (usage.outputTokens * (outputPrice ?? 0))
+      if (cost > 0) text = text === '' ? formatCost(cost) : `${text} | ${formatCost(cost)}`
+    }
+    return text
   }
   // Transient right status: a spinner while a turn runs, plus the escape
   // hint so a long silent turn never looks hung.

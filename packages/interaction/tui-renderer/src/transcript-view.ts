@@ -20,6 +20,7 @@ import type { Transcript, TranscriptItem, ToolItem } from './transcript.ts'
 import { capped, formatItem, sanitizedLines } from './format.ts'
 import { sanitizeText } from './sanitize.ts'
 import type { SemanticTheme } from './theme.ts'
+import type { JsonValue } from '@williamcodebox/omd-session'
 
 /** Per-item-kind line stylers; each maps one sanitized display line. */
 export interface TranscriptTheme {
@@ -72,7 +73,53 @@ function markdownFor(text: string, theme: SemanticTheme): Markdown {
   return new Markdown(sanitizeText(text), 0, 0, theme.markdown)
 }
 
-/** One tool card: state-colored background, title + settled outcome. */
+/** One file diff embedded in a tool result's `meta`. */
+export interface DiffLike {
+  readonly path: string
+  readonly oldText: string | null
+  readonly newText: string
+}
+
+/** Parse the tool-fs `{ diffs: FileDiff[] }` meta payload shape. */
+function diffsFromMetaValue(meta: JsonValue | undefined): DiffLike[] | undefined {
+  if (typeof meta !== 'object' || meta === null || Array.isArray(meta)) return undefined
+  const diffs = (meta as Record<string, unknown>).diffs
+  if (!Array.isArray(diffs)) return undefined
+  const valid: DiffLike[] = []
+  for (const entry of diffs) {
+    if (typeof entry !== 'object' || entry === null) continue
+    const record = entry as Record<string, unknown>
+    if (typeof record.path !== 'string' || typeof record.newText !== 'string') continue
+    valid.push({
+      path: record.path,
+      oldText: typeof record.oldText === 'string' ? record.oldText : null,
+      newText: record.newText,
+    })
+  }
+  return valid.length === 0 ? undefined : valid
+}
+
+/** Minimal line-level unified diff: context/add/remove lines, no LCS. */
+function diffCardLines(diff: DiffLike, theme: SemanticTheme): string[] {
+  const lines = [theme.fg('diffHunk', `--- ${sanitizeText(diff.path)}`)]
+  const before = diff.oldText?.split('\n') ?? []
+  const after = diff.newText.split('\n')
+  const beforeSet = new Set(before.filter(line => line.trim() !== ''))
+  const afterSet = new Set(after.filter(line => line.trim() !== ''))
+  for (const line of after) {
+    if (line.trim() === '') continue
+    lines.push(beforeSet.has(line)
+      ? theme.fg('diffContext', `  ${sanitizeText(line)}`)
+      : theme.fg('diffAdded', `+ ${sanitizeText(line)}`))
+  }
+  for (const line of before) {
+    if (line.trim() === '') continue
+    if (!afterSet.has(line)) lines.push(theme.fg('diffRemoved', `- ${sanitizeText(line)}`))
+  }
+  return lines
+}
+
+/** One tool card: state-colored background, title + settled outcome + diffs. */
 function toolCardFor(item: ToolItem, theme: SemanticTheme): Component {
   const bgFn = item.result === undefined
     ? (text: string) => theme.bg('toolPendingBg', text)
@@ -88,6 +135,12 @@ function toolCardFor(item: ToolItem, theme: SemanticTheme): Component {
       ? '  ok'
       : `  error ${item.result.error.name}`
     card.addChild(new Text(sanitizeText(outcome), 1, 0, bgFn))
+    const diffs = diffsFromMetaValue(item.result.meta)
+    if (diffs !== undefined) {
+      const diffText: string[] = []
+      for (const diff of diffs) diffText.push(...diffCardLines(diff, theme))
+      if (diffText.length > 0) card.addChild(new Text(diffText.join('\n'), 1, 0, bgFn))
+    }
   }
   return card
 }

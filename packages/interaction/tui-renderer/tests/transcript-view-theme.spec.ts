@@ -157,6 +157,25 @@ describe('TranscriptView themed path', () => {
     expect(settled).toContain('ok')
   })
 
+  it('renders tool diffs with add/remove/hunk colors', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/call', { callId: 'c1', turn: 1, step: 1, name: 'fs.write', arguments: '{}' }, 1, { surfaceOp: 'append' }))
+    transcript.fold(ev('tool/result', {
+      turn: 1,
+      step: 1,
+      message: {
+        content: [{ type: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'ok' }] }],
+      },
+      meta: { diffs: [{ path: 'a.ts', oldText: 'old line', newText: 'new line\nkeep' }] },
+    }, 2, { surfaceOp: 'append' }))
+    const view = new TranscriptView(transcript, darkTheme)
+    const joined = view.render(80).join('\n')
+    expect(joined).toContain(darkTheme.fg('diffHunk', '--- a.ts'))
+    expect(joined).toContain(darkTheme.fg('diffAdded', '+ new line'))
+    expect(joined).toContain(darkTheme.fg('diffRemoved', '- old line'))
+    expect(joined).toContain(darkTheme.fg('diffAdded', '+ keep'))
+  })
+
   it('keeps the user background across inline markdown resets', () => {
     const lines = themedLines(t => foldUser(t, '**bold** and `code`', 2))
     const joined = lines.join('\n')
