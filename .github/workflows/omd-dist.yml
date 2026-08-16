@@ -51,6 +51,12 @@ jobs:
         run: |
           mkdir -p /tmp/verify && tar xzf omd-dist-${{ matrix.arch }}.tar.gz -C /tmp/verify
           DSH_HOME=/tmp/vhome /tmp/verify/omd --version
+          # Assert the launcher reports the tagged version: a bump that
+          # misses the version source (e.g. apps/cli) otherwise passes
+          # release silently.
+          VERSION="${GITHUB_REF_NAME#omd-v}"
+          ACTUAL="$(DSH_HOME=/tmp/vhome /tmp/verify/omd --version)"
+          [ "$ACTUAL" = "$VERSION" ] || { echo "version mismatch: expected $VERSION, got $ACTUAL" >&2; exit 1; }
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
