@@ -1,0 +1,61 @@
+# Build the omd distribution folder (bun runtime + deployed closure tree)
+# per Linux architecture and upload it as a build artifact. The tarball runs
+# on CentOS 7+ (bun links only GLIBC_2.17 symbols); arm64 is built on
+# GitHub's arm64 runner.
+name: Omd Distribution
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'omd-v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build library artifacts
+        run: pnpm run build:lib
+
+      - name: Assemble omd distribution
+        run: pnpm run build:dist -- --bun "$(which bun)" --out omd-dist-${{ matrix.arch }}.tar.gz
+
+      - name: Verify tarball
+        run: |
+          mkdir -p /tmp/verify && tar xzf omd-dist-${{ matrix.arch }}.tar.gz -C /tmp/verify
+          DSH_HOME=/tmp/vhome /tmp/verify/omd --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: omd-dist-${{ matrix.arch }}
+          path: omd-dist-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+          retention-days: 30
