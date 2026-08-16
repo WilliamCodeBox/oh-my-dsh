@@ -59,3 +59,26 @@ jobs:
           path: omd-dist-${{ matrix.arch }}.tar.gz
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/omd-v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: omd-dist-*
+          path: dist
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/omd-dist-*.tar.gz \
+            --title "$GITHUB_REF_NAME" \
+            --notes "omd distribution tarballs — CentOS 7+ (GLIBC_2.17). Install: curl -fsSL https://raw.githubusercontent.com/WilliamCodeBox/oh-my-dsh/main/install.sh | sh"
