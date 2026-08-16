@@ -14,7 +14,7 @@ import { sanitizeText } from './sanitize.ts'
 const TOOL_ARGS_CAP = 300
 
 /** Truncate one line to a cap with an explicit remainder note. */
-function capped(line: string, cap: number): string {
+export function capped(line: string, cap: number): string {
   return line.length <= cap ? line : `${line.slice(0, cap)} …(+${line.length - cap})`
 }
 

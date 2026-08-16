@@ -17,7 +17,7 @@ import type {} from '@williamcodebox/omd-agent-default-model'
 import { createUserMessage } from '@williamcodebox/omd-llm'
 import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, SessionEvent } from '@williamcodebox/omd-session'
-import { TuiPresenter, Transcript, formatStatus, processTerminal, sanitizeText } from '@williamcodebox/omd-tui-renderer'
+import { TuiPresenter, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme } from '@williamcodebox/omd-tui-renderer'
 import type {} from '@williamcodebox/omd-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
@@ -511,10 +511,13 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
 
   let presenter: TuiPresenter | undefined
   if (interactive) {
+    // Query the terminal's scheme before raw mode owns stdin; the dark
+    // theme is the fallback when the terminal reports nothing.
+    const scheme = await detectTerminalScheme(process.stdin, io.stdout)
     presenter = new TuiPresenter(internals.createTerminal(), transcript, {
       onSubmit: dispatchLine,
       statusLine,
-    })
+    }, themeForScheme(scheme))
     activePresenter = presenter
   }
 

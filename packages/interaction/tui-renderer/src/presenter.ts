@@ -33,37 +33,12 @@ import type {
 } from '@williamcodebox/omd-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
-import { StatusRow, TranscriptView, type TranscriptTheme } from './transcript-view.ts'
+import { StatusRow, TranscriptView } from './transcript-view.ts'
+import { darkTheme, type SemanticTheme } from './theme.ts'
 
 /** The production terminal: real process stdin/stdout streams. */
 export function processTerminal(): Terminal {
   return new ProcessTerminal()
-}
-
-/** Editor theme with identity styling; colors land with the theme milestone. */
-const EDITOR_THEME = {
-  borderColor: (text: string) => text,
-  selectList: {
-    selectedPrefix: (text: string) => text,
-    selectedText: (text: string) => text,
-    description: (text: string) => text,
-    scrollInfo: (text: string) => text,
-    noMatch: (text: string) => text,
-  },
-} as const
-
-/**
- * Basic transcript color layers (16-color ANSI, terminal-safe): the user's
- * own lines and tool cards read differently from the assistant's stream.
- * The transcript view's default theme is identity, so snapshot fixtures stay
- * plain text; the presenter opts into color.
- */
-const COLOR_THEME: TranscriptTheme = {
-  user: text => `\x1b[36m${text}\x1b[0m`,
-  assistant: text => text,
-  tool: text => `\x1b[33m${text}\x1b[0m`,
-  turn: text => `\x1b[90m${text}\x1b[0m`,
-  command: text => `\x1b[35m${text}\x1b[0m`,
 }
 
 /** Presenter callbacks the runner supplies. */
@@ -93,14 +68,19 @@ export class TuiPresenter {
   /** The live interaction overlay, when one is asking. */
   private overlay: { handle: OverlayHandle } | undefined
 
-  constructor(terminal: Terminal, transcript: Transcript, options: PresenterOptions) {
+  constructor(
+    terminal: Terminal,
+    transcript: Transcript,
+    options: PresenterOptions,
+    private readonly theme: SemanticTheme = darkTheme,
+  ) {
     this.tui = new TuiAltScreen(terminal)
     if (!isViewportTUI(this.tui)) {
       throw new Error('tui-renderer: the presenter requires a viewport TUI')
     }
-    const view = new TranscriptView(transcript, COLOR_THEME)
-    const status = new StatusRow(options.statusLine)
-    this.editor = new Editor(this.tui, EDITOR_THEME)
+    const view = new TranscriptView(transcript, this.theme)
+    const status = new StatusRow(options.statusLine, text => this.theme.fg('dim', text))
+    this.editor = new Editor(this.tui, this.theme.editor)
     this.editor.onSubmit = (line) => {
       options.onSubmit(line)
       this.editor.addToHistory(line)
@@ -256,7 +236,7 @@ export class TuiPresenter {
     card.addChild(new Text(title, 0, 0))
     if (detail !== undefined && detail !== '') card.addChild(new Text(detail, 0, 0))
     card.addChild(new Text('', 0, 0))
-    const list = new SelectList(items, 5, EDITOR_THEME.selectList)
+    const list = new SelectList(items, 5, this.theme.editor.selectList)
     card.addChild(list)
     const close = this.mountOverlay(card)
     list.onSelect = (item) => { close(); resolve(item.value) }
