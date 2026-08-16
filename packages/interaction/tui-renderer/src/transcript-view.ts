@@ -194,9 +194,9 @@ function toolCardFor(item: ToolItem, theme: SemanticTheme): Component {
   card.addChild(new Text(sanitizeText(title), 1, 0, bgFn))
   if (item.result !== undefined) {
     const outcome = item.result.error === undefined
-      ? '  ok'
-      : `  error ${item.result.error.name}`
-    card.addChild(new Text(sanitizeText(outcome), 1, 0, bgFn))
+      ? new Text('  ✓ ok', 1, 0, bgFn)
+      : new Text(theme.fg('error', `  ✗ error ${sanitizeText(item.result.error.name)}`), 1, 0)
+    card.addChild(outcome)
     const diffs = diffsFromMetaValue(item.result.meta)
     if (diffs !== undefined) {
       const diffText: string[] = []

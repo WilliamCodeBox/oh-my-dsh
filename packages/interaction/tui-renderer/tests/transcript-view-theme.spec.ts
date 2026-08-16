@@ -120,8 +120,9 @@ describe('TranscriptView themed path', () => {
     expect(success.join('\n')).toContain('ok')
 
     const error = themedLines(t => foldTool(t, 2, 'fs.read', '{"path":"a"}', { error: { name: 'ENOENT', code: 'ENOENT' } }))
-    expect(error.join('\n')).toContain('\x1b[48;5;52m')
-    expect(error.join('\n')).toContain('ENOENT')
+    expect(error.join('\n')).toContain('\x1b[48;5;234m')
+    expect(error.join('\n')).toContain('✗ error ENOENT')
+    expect(error.join('\n')).toContain('\x1b[38;5;167m')
   })
 
   it('dims turn brackets', () => {

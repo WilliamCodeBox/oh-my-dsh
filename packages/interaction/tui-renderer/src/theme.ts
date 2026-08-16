@@ -108,7 +108,7 @@ const DARK_PALETTE: ThemePalette = {
     userBg: 237,
     toolPendingBg: 236,
     toolSuccessBg: 235,
-    toolErrorBg: 52,
+    toolErrorBg: 234,
   },
 }
 
@@ -143,7 +143,7 @@ const LIGHT_PALETTE: ThemePalette = {
     userBg: 255,
     toolPendingBg: 254,
     toolSuccessBg: 194,
-    toolErrorBg: 224,
+    toolErrorBg: 253,
   },
 }
 
