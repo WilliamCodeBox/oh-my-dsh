@@ -18,6 +18,8 @@ export type {
 export { contextBar, formatItem, formatStatus } from './format.ts'
 export { needsSanitize, sanitizeText } from './sanitize.ts'
 export { StatusRow, TranscriptView } from './transcript-view.ts'
+export { MetaRow, renderMetaRow, contextTokenFor } from './meta-row.ts'
+export type { MetaGit, MetaRowData } from './meta-row.ts'
 export { TuiPresenter, processTerminal, workspaceAutocomplete } from './presenter.ts'
 export type { PresenterOptions } from './presenter.ts'
 export { darkTheme, lightTheme, themeForScheme } from './theme.ts'

@@ -54,12 +54,10 @@ export function formatItem(item: TranscriptItem): string[] {
   }
 }
 
-/** Format the presenter status row from folded state. */
+/** Format the presenter status row from folded state (running facts only;
+ * the model and context bar live on the input meta row). */
 export function formatStatus(state: TranscriptState): string {
   const parts: string[] = []
-  if (state.context !== undefined) {
-    parts.push(`${state.context.provider}/${state.context.model}`)
-  }
   if (state.usage.inputTokens > 0 || state.usage.outputTokens > 0) {
     parts.push(`tokens ${state.usage.inputTokens}+${state.usage.outputTokens}`)
   }

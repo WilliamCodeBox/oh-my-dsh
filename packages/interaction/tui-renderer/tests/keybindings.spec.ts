@@ -7,7 +7,6 @@ import { describe, expect, it } from 'vitest'
 import { KeybindingRegistry } from '../src/keybindings.ts'
 import { TuiPresenter } from '../src/presenter.ts'
 import { Transcript } from '../src/transcript.ts'
-import { contextBar } from '../src/format.ts'
 import { darkTheme } from '../src/theme.ts'
 import type { Terminal } from '@earendil-works/pi-tui'
 
@@ -112,24 +111,15 @@ describe('TuiPresenter status transient', () => {
     expect(line).toBe(darkTheme.fg('dim', 'x'))
   })
 
-  it('still renders the context bar alongside the transient', () => {
-    const transcript = new Transcript()
-    transcript.fold({ type: 'request/context', seq: 1, time: 1000, data: { provider: 'p', model: 'm', contextWindow: 100 } } as never)
-    transcript.fold({
-      type: 'assistant/message', seq: 2, time: 2000, data: {
-        turn: 1, step: 1,
-        message: { id: 'a1', role: 'assistant', content: [{ type: 'text', text: 'hi' }], source: { kind: 'model', provider: 'p', model: 'm' } },
-        usage: { inputTokens: 10, outputTokens: 5 },
-      }, surfaceOp: 'append',
-    } as never)
-    const presenter = new TuiPresenter(new FakeTerminal(), transcript, {
+  it('keeps the transient right segment when left text is short', () => {
+    const presenter = new TuiPresenter(new FakeTerminal(), new Transcript(), {
       onSubmit: () => {},
       statusLine: () => 'x',
       transient: () => 'running',
     })
     const line = (presenter as unknown as { renderStatus(width: number): string }).renderStatus(60)
-    expect(line).toContain(contextBar(0.15, 10))
     expect(line).toContain('running')
+    expect(line).toContain(darkTheme.fg('dim', 'x'))
   })
 })
 

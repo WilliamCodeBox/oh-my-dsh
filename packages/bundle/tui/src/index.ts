@@ -8,6 +8,7 @@
  */
 
 import { randomUUID } from 'node:crypto'
+import { homedir } from 'node:os'
 
 import type { Context } from '@williamcodebox/cordis'
 import z from '@williamcodebox/schemastery'
@@ -18,6 +19,9 @@ import { createUserMessage } from '@williamcodebox/omd-llm'
 import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, SessionEvent } from '@williamcodebox/omd-session'
 import { TuiPresenter, KeybindingRegistry, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme, workspaceAutocomplete } from '@williamcodebox/omd-tui-renderer'
+import type { MetaRowData } from '@williamcodebox/omd-tui-renderer'
+import type { ReasoningEffortId } from '@williamcodebox/omd-llm'
+import { watchGitStatus, type GitStatus } from './git.ts'
 import type {} from '@williamcodebox/omd-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
@@ -513,6 +517,27 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   const interactive = internals.isTTY
   const commands = ctx.get('commands')
   const commandAbort = new AbortController()
+  // Input-context row data: model/thinking from the selection ref, cwd,
+  // git worktree state (polled), context usage from the transcript.
+  const workspace = config.workspace ?? process.cwd()
+  const home = homedir()
+  const displayCwd = workspace === home ? '~' : workspace.startsWith(`${home}/`) ? `~${workspace.slice(home.length)}` : workspace
+  let gitState: GitStatus | undefined
+  const metaData = (): MetaRowData => {
+    const current = selectionRef.current
+    const ctxInfo = transcript.state.context
+    const usage = transcript.state.usage
+    const total = usage.inputTokens + usage.outputTokens
+    return {
+      ...(current !== undefined ? { model: { provider: current.provider, model: current.model } } : {}),
+      ...(current?.reasoningEffort !== undefined ? { thinking: current.reasoningEffort } : {}),
+      cwd: displayCwd,
+      ...(gitState !== undefined ? { git: gitState } : {}),
+      ...(ctxInfo?.contextWindow !== undefined && total > 0
+        ? { context: { ratio: total / ctxInfo.contextWindow, window: ctxInfo.contextWindow, used: total } }
+        : {}),
+    }
+  }
   // Transient user-facing notice shown in the presenter status row (and the
   // pipe line stream): unknown slash commands report here instead of leaking
   // into the model or vanishing.
@@ -550,6 +575,18 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
         const parsed = parseModel(pair)
         selectionRef.current = parsed
         notice.text = `model ${parsed.provider}/${parsed.model}`
+      }
+      return
+    }
+    const thinkingMatch = /^\/thinking(?:\s+(\S+))?$/.exec(line)
+    if (thinkingMatch !== null) {
+      const level = thinkingMatch[1]
+      if (level === undefined) {
+        const current = selectionRef.current
+        notice.text = current?.reasoningEffort === undefined ? 'no thinking level' : `thinking ${current.reasoningEffort}`
+      } else if (selectionRef.current !== undefined) {
+        selectionRef.current = { ...selectionRef.current, reasoningEffort: level as ReasoningEffortId }
+        notice.text = `thinking ${level}`
       }
       return
     }
@@ -599,6 +636,8 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   }
 
   let presenter: TuiPresenter | undefined
+  // Git watcher disposer; declared before the presenter branch assigns it.
+  let offGit = (): void => {}
   if (interactive) {
     // Query the terminal's scheme before raw mode owns stdin; the dark
     // theme is the fallback when the terminal reports nothing.
@@ -609,6 +648,8 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       [
         ...descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
         { name: 'model', description: 'switch provider/model' },
+        { name: 'thinking', description: 'set reasoning effort level' },
+        { name: 'sessions', description: 'list and resume a session' },
       ],
       config.workspace ?? process.cwd(),
     )
@@ -617,6 +658,11 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       statusLine,
       transient,
     }, themeForScheme(scheme), autocomplete)
+    presenter.setMetaData(metaData)
+    offGit = watchGitStatus(workspace, (status) => {
+      gitState = status
+      presenter?.requestRender()
+    })
     activePresenter = presenter
   }
 
@@ -656,6 +702,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     offApproval()
     offQuestions?.()
     presenter?.stop()
+    offGit()
     activePresenter = undefined
 
     if (outcome.kind === 'hard-exit') {
@@ -675,6 +722,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     offApproval()
     offQuestions?.()
     presenter?.stop()
+    offGit()
     activePresenter = undefined
     throw error
   }

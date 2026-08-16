@@ -7,8 +7,7 @@
 import { describe, expect, it } from 'vitest'
 import { Transcript } from '../src/transcript.ts'
 import { TuiPresenter, workspaceAutocomplete } from '../src/presenter.ts'
-import { contextBar, formatStatus } from '../src/format.ts'
-import { darkTheme } from '../src/theme.ts'
+import { contextBar } from '../src/format.ts'
 import type { Terminal } from '@earendil-works/pi-tui'
 
 /** Minimal in-memory Terminal for presenter construction. */
@@ -76,72 +75,22 @@ describe('contextBar', () => {
 })
 
 describe('TuiPresenter status bar', () => {
-  it('composes left text with the threshold-colored bar, without duplicating the model', () => {
+  it('composes left text without duplicating the model', () => {
     const transcript = new Transcript()
     transcript.fold(ev('request/context', { provider: 'deepseek-official', model: 'deepseek-v4-flash', contextWindow: 1000 }, 1))
-    transcript.fold(ev('assistant/message', {
-      turn: 1,
-      step: 1,
-      message: {
-        id: 'a1',
-        role: 'assistant',
-        content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'model', provider: 'deepseek', model: 'deepseek-chat' },
-      },
-      usage: { inputTokens: 450, outputTokens: 50 },
-    }, 2, { surfaceOp: 'append' }))
-    // The production statusLine already carries the model via formatStatus;
-    // the presenter must not append it a second time.
+    // The status row carries running facts only; the model and context bar
+    // live on the input meta row (tested in meta-row.spec).
     const presenter = new TuiPresenter(new FakeTerminal(), transcript, {
       onSubmit: () => {},
-      statusLine: () => formatStatus(transcript.state),
+      statusLine: () => 'tokens 450+50',
     })
     const line = (presenter as unknown as { renderStatus(width: number): string }).renderStatus(80)
-    expect(line).toContain('deepseek-official/deepseek-v4-flash')
-    expect(line).toContain(darkTheme.fg('dim', contextBar(0.5, 10)))
-    // The model appears exactly once.
-    expect(line.split('deepseek-official/deepseek-v4-flash')).toHaveLength(2)
+    expect(line).toContain('tokens 450+50')
+    expect(line).not.toContain('deepseek-official')
+    expect(line).not.toContain('█')
   })
 
-  it('colors the bar by the warning threshold', () => {
-    const transcript = new Transcript()
-    transcript.fold(ev('request/context', { provider: 'p', model: 'm', contextWindow: 100 }, 1))
-    transcript.fold(ev('assistant/message', {
-      turn: 1,
-      step: 1,
-      message: {
-        id: 'a1',
-        role: 'assistant',
-        content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'model', provider: 'deepseek', model: 'deepseek-chat' },
-      },
-      usage: { inputTokens: 75, outputTokens: 0 },
-    }, 2, { surfaceOp: 'append' }))
-    const presenter = new TuiPresenter(new FakeTerminal(), transcript, { onSubmit: () => {}, statusLine: () => 'x' })
-    const line = (presenter as unknown as { renderStatus(width: number): string }).renderStatus(80)
-    expect(line).toContain(darkTheme.fg('warning', contextBar(0.75, 10)))
-  })
-
-  it('colors the bar by the error threshold', () => {
-    const transcript = new Transcript()
-    transcript.fold(ev('request/context', { provider: 'p', model: 'm', contextWindow: 100 }, 1))
-    transcript.fold(ev('assistant/message', {
-      turn: 1,
-      step: 1,
-      message: {
-        id: 'a1',
-        role: 'assistant',
-        content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'model', provider: 'deepseek', model: 'deepseek-chat' },
-      },
-      usage: { inputTokens: 95, outputTokens: 0 },
-    }, 2, { surfaceOp: 'append' }))
-    const presenter = new TuiPresenter(new FakeTerminal(), transcript, { onSubmit: () => {}, statusLine: () => 'x' })
-    const line = (presenter as unknown as { renderStatus(width: number): string }).renderStatus(80)
-    expect(line).toContain(darkTheme.fg('error', contextBar(0.95, 10)))
-  })
-
-  it('omits the bar without a context window and returns empty for no left text', () => {
+  it('omits the bar and returns empty for no left text', () => {
     const transcript = new Transcript()
     const presenter = new TuiPresenter(new FakeTerminal(), transcript, { onSubmit: () => {}, statusLine: () => '' })
     const line = (presenter as unknown as { renderStatus(width: number): string }).renderStatus(80)

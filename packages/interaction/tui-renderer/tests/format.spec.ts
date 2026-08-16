@@ -77,8 +77,8 @@ describe('formatStatus', () => {
     expect(formatStatus(base)).toBe('')
   })
 
-  it('shows the provider route', () => {
-    expect(formatStatus({ ...base, context: { provider: 'deepseek', model: 'deepseek-chat' } })).toBe('deepseek/deepseek-chat')
+  it('omits the provider route (it moved to the input meta row)', () => {
+    expect(formatStatus({ ...base, context: { provider: 'deepseek', model: 'deepseek-chat' } })).toBe('')
   })
 
   it('shows active and total todos', () => {
@@ -93,10 +93,9 @@ describe('formatStatus', () => {
   it('joins parts with separators', () => {
     expect(formatStatus({
       ...base,
-      context: { provider: 'deepseek', model: 'deepseek-chat' },
       todos: [{ content: 'a', status: 'in_progress' as const }],
       compactions: [{ seq: 9, start: 0, end: 1, shadowedSeqs: [1, 2] }],
-    })).toBe('deepseek/deepseek-chat | todos 1/1 | compacted 1')
+    })).toBe('todos 1/1 | compacted 1')
   })
 
   it('shows accumulated token totals', () => {

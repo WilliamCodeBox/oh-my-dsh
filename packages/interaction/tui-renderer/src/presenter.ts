@@ -36,8 +36,8 @@ import type {
 } from '@williamcodebox/omd-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
-import { contextBar } from './format.ts'
 import { StatusRow, TranscriptView } from './transcript-view.ts'
+import { MetaRow, type MetaRowData } from './meta-row.ts'
 import { WorkspaceAutocomplete } from './autocomplete.ts'
 import { darkTheme, type SemanticTheme } from './theme.ts'
 
@@ -89,10 +89,14 @@ export class TuiPresenter {
   private overlay: { handle: OverlayHandle } | undefined
   /** External halt sink: the runner resolves its drive loop here. */
   private haltHandler: ((outcome: unknown) => void) | undefined
+  /** The input-context row (model/thinking | cwd/git | context bar). */
+  private readonly metaRow: MetaRow
+  /** Input-context data source; the runner replaces the getter per drive. */
+  private metaData: () => MetaRowData = () => ({})
 
   constructor(
     terminal: Terminal,
-    private readonly transcript: Transcript,
+    transcript: Transcript,
     private readonly options: PresenterOptions,
     private readonly theme: SemanticTheme = darkTheme,
     autocomplete?: AutocompleteProvider,
@@ -103,6 +107,7 @@ export class TuiPresenter {
     }
     const view = new TranscriptView(transcript, this.theme)
     const status = new StatusRow(width => this.renderStatus(width))
+    this.metaRow = new MetaRow(() => this.metaData(), this.theme)
     this.editor = new Editor(this.tui, this.theme.editor)
     if (autocomplete !== undefined) this.editor.setAutocompleteProvider(autocomplete)
     this.editor.onSubmit = (line) => {
@@ -120,6 +125,12 @@ export class TuiPresenter {
       },
       {
         component: status,
+        basis: 'auto',
+        shrink: 1,
+        minSize: 1,
+      },
+      {
+        component: this.metaRow,
         basis: 'auto',
         shrink: 1,
         minSize: 1,
@@ -356,12 +367,22 @@ export class TuiPresenter {
     this.tui.requestRender()
   }
 
+  /** Replace the input-context data source (model/thinking/cwd/git/context). */
+  setMetaData(read: () => MetaRowData): void {
+    this.metaData = read
+    if (this.started) this.tui.requestRender()
+  }
+
+  /** Ask the TUI to redraw (e.g. after the git watcher updated the meta row). */
+  requestRender(): void {
+    if (this.started) this.tui.requestRender()
+  }
+
   /**
-   * Assemble the status row in three segments: the runner's left text
-   * (dim, already includes the provider/model via formatStatus), a
-   * context-window progress bar (threshold-colored), and a transient
-   * right segment (spinner/retry/esc hints). Truncation drops from the
-   * left side first so the transient never disappears mid-task.
+   * Assemble the status row: the runner's left text (dim, running facts
+   * from formatStatus) plus a transient right segment (spinner/retry/esc
+   * hints). Truncation drops from the left side first so the transient
+   * never disappears mid-task.
    */
   private renderStatus(width: number): string {
     const left = this.options.statusLine()
@@ -370,15 +391,7 @@ export class TuiPresenter {
     const transientText = transient === '' ? '' : ` ${this.theme.fg('accent', transient)}`
     const transientWidth = transient === '' ? 0 : 1 + visibleWidth(transient)
     const budget = Math.max(1, width - transientWidth)
-    const parts = [this.theme.fg('dim', left)]
-    const ctx = this.transcript.state.context
-    const total = this.transcript.state.usage.inputTokens + this.transcript.state.usage.outputTokens
-    if (ctx?.contextWindow !== undefined && total > 0) {
-      const ratio = total / ctx.contextWindow
-      const token = ratio > 0.9 ? 'error' : ratio > 0.7 ? 'warning' : 'dim'
-      parts.push(this.theme.fg(token, contextBar(ratio, 10)))
-    }
-    return truncateToWidth(parts.join('  '), budget) + transientText
+    return truncateToWidth(this.theme.fg('dim', left), budget) + transientText
   }
 
   /** Current editor text, for the Ctrl+C empty-input decision. */
