@@ -5,7 +5,7 @@ import os, shutil, sys, json, fnmatch
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else "/tmp/omd-dist/node_modules"
 
-DROP_DIRS = {"src", "tests", "test", "testdata", "__tests__", "docs", "examples",
+DROP_DIRS = {"tests", "test", "testdata", "__tests__", "examples",
              ".github", "coverage", "dist-src", "benchmark", "bench"}
 DROP_FILES = {"tsconfig.json", "tsconfig.build.json", "biome.json", "eslint.config.js",
               ".npmignore", ".gitignore", "CHANGELOG.md", "LICENSE.md"}

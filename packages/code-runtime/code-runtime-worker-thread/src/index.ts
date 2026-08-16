@@ -7,7 +7,6 @@
  */
 
 import { Worker } from 'node:worker_threads'
-import { stripTypeScriptTypes } from 'node:module'
 import type { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { Context } from '@williamcodebox/cordis'
@@ -20,6 +19,23 @@ import type { ReplyMessage, WorkerBootData, WorkerToHost } from './protocol.ts'
 import { jsonStringBytesUpTo, jsonValueBytesUpTo, truncateJsonStringBytes } from './output-json.ts'
 import { decodeWorkerJson, encodeWorkerJson } from './worker-json.ts'
 import type { WorkerJsonWire } from './worker-json.ts'
+
+/**
+ * Strip TypeScript types before handing a program to the worker, so the
+ * program it evaluates is plain JavaScript. Node exposes this as
+ * `node:module.stripTypeScriptTypes`; the bundled bun runtime does not (its
+ * worker threads execute TypeScript natively), so the identity fallback is
+ * semantically equivalent there — types are stripped by the runtime itself.
+ */
+async function stripTypes(program: string): Promise<string> {
+  // Platform-specific module member: `stripTypeScriptTypes` exists only under
+  // Node (ESM-only named export) — the bundled bun runtime lacks it, so a
+  // static import would fail the whole plugin at load there. Detect the
+  // member on the namespace; a CJS-transformed namespace lacks it too.
+  const mod = (await import('node:module')) as { stripTypeScriptTypes?: (code: string) => string }
+  if (typeof mod.stripTypeScriptTypes === 'function') return mod.stripTypeScriptTypes(program)
+  return program
+}
 
 /** Plugin config: every execution cap, changeable from `cordis.yml` (no hardcoded tunables). */
 export interface Config {
@@ -299,7 +315,7 @@ export class WorkerThreadCodeRuntime extends CodeRuntime {
 
     let code: string
     try {
-      const stripped = stripTypeScriptTypes(STRIP_WRAP.prefix + request.program + STRIP_WRAP.suffix)
+      const stripped = await stripTypes(STRIP_WRAP.prefix + request.program + STRIP_WRAP.suffix)
       code = stripped.slice(STRIP_WRAP.prefix.length, stripped.length - STRIP_WRAP.suffix.length)
     } catch (error: unknown) {
       // A program that does not survive the type-strip (syntax error,

@@ -18,6 +18,10 @@
 
     - id: hmr
       name: '@williamcodebox/cordis-plugin-hmr'
+      # HMR needs the Node internal ESM loader (--expose-internals /
+      # node-addon-require-builtin), which the bundled bun runtime does not
+      # provide; the distribution launcher exports OMD_NO_HMR=1 to disable it.
+      disabled: !!js process.env.OMD_NO_HMR === '1'
       config:
         root: ['.']
 

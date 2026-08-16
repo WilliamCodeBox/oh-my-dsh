@@ -15,7 +15,7 @@
  *   pnpm run build:dist [-- --bun /path/to/bun --out /tmp/omd-dist.tar.gz]
  */
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, rmSync, copyFileSync, chmodSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, copyFileSync, chmodSync, writeFileSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -49,13 +49,37 @@ rmSync(work, { recursive: true, force: true })
 mkdirSync(work, { recursive: true })
 
 try {
-  // 1. deploy the launcher closure (real dependency tree, workspace protocols resolved)
-  run(`pnpm deploy --legacy --prod --filter @williamcodebox/oh-my-dsh ${work}`, repoRoot)
+  // 1. deploy the launcher closure (real dependency tree, workspace protocols
+  //    resolved). No `--prod`: pnpm's prod closure starts from the root
+  //    package's `dependencies`, which is empty here, so the flag silently
+  //    drops every workspace plugin the base bundle depends on (observed: 28
+  //    runtime plugins missing). The root devDependencies leak in instead;
+  //    step 2 removes exactly that set.
+  run(`pnpm deploy --legacy --filter @williamcodebox/oh-my-dsh ${work}`, repoRoot)
+
+  // 2. drop the root devDependencies from the deployed tree. The root package
+  //    declares no `dependencies`, so nothing else is reachable from it;
+  //    removing exactly its devDependencies keys (top-level symlink plus the
+  //    .pnpm store entries) leaves the workspace prod closure intact.
+  const dropDevDeps = join(import.meta.dirname, 'drop-dev-deps.py')
+  if (existsSync(dropDevDeps)) {
+    run(`python3 ${dropDevDeps} ${join(work, 'node_modules')} ${repoRoot}`, repoRoot)
+  }
 
   // 2. replace workspace symlinks with real copies (self-contained tree)
   const unlink = join(import.meta.dirname, 'unlink-workspace.py')
   if (existsSync(unlink)) {
     run(`python3 ${unlink} ${join(work, 'node_modules')} ${repoRoot}`, repoRoot)
+  }
+
+  // 2b. promote every workspace package to the top-level scope. pnpm deploy
+  //     hoists only the app's direct dependencies there; the app-boot profile
+  //     fallback resolves bundle dependencies from the tree root, so without
+  //     promotion the assembled tree cannot load any bundle plugin beyond the
+  //     direct set (observed: omd-base's deps missing at boot).
+  const promote = join(import.meta.dirname, 'promote-workspace-links.py')
+  if (existsSync(promote)) {
+    run(`python3 ${promote} ${join(work, 'node_modules')}`, repoRoot)
   }
 
   // 3. trim to publish semantics: drop src/tests/docs/build metadata
@@ -69,15 +93,30 @@ try {
   chmodSync(join(work, 'bun'), 0o755)
   writeFileSync(
     join(work, 'omd'),
-    `#!/bin/sh\nDIR="$(cd "$(dirname "$0")" && pwd)"\nexec "$DIR/bun" "$DIR/lib/bin.js" "$@"\n`,
+    `#!/bin/sh\nDIR="$(cd "$(dirname "$0")" && pwd)"\nexport OMD_NO_HMR=1\nexec "$DIR/bun" --expose-internals "$DIR/lib/bin.js" "$@"\n`,
   )
   chmodSync(join(work, 'omd'), 0o755)
 
-  // 4. smoke: version must resolve through the assembled tree (home OUTSIDE the tree)
+  // 5. smoke: boot the headless profile through the assembled tree (home
+  //    OUTSIDE the tree). The tree is healthy when the plugin tree loads and
+  //    the run reaches the model step — with no API key that is the expected
+  //    MISSING_CREDENTIAL failure. A missing plugin fails earlier with
+  //    "plugin tree failed to load"; that is what this smoke rejects.
   const smokeHome = join(tmpdir(), `omd-smoke-${process.pid}`)
-  run(`DSH_HOME=${smokeHome} ${join(work, 'omd')} --version`, work)
+  const smokeOut = join(tmpdir(), `omd-smoke-${process.pid}.log`)
+  const smoke = spawnSync(
+    `DSH_HOME=${smokeHome} ${join(work, 'omd')} --profile headless "smoke" < /dev/null > ${smokeOut} 2>&1`,
+    { cwd: work, shell: true },
+  )
+  const smokeLog = existsSync(smokeOut) ? readFileSync(smokeOut, 'utf8') : ''
+  const loaded = smokeLog.includes('MISSING_CREDENTIAL') || (smoke.status === 0 && !smokeLog.includes('plugin tree failed to load'))
+  if (!loaded) {
+    console.error(`assemble-omd-dist: smoke failed — plugin tree did not load:\n${smokeLog.slice(0, 4000)}`)
+    process.exit(1)
+  }
+  console.log('assemble-omd-dist: smoke ok (headless tree loaded)')
 
-  // 5. pack (tolerate mtime churn from the smoke run; GNU tar)
+  // 6. pack (tolerate mtime churn from the smoke run; GNU tar)
   run(`tar czf ${outPath} --warning=no-file-changed -C ${work} .`, work)
   console.log(`assemble-omd-dist: ${outPath}`)
 } finally {
