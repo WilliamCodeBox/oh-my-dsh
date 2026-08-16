@@ -10,7 +10,7 @@
  */
 
 import { truncateToWidth, visibleWidth, type Component } from '@earendil-works/pi-tui'
-import { contextBar } from './format.ts'
+import { contextBar, formatCount } from './format.ts'
 import { sanitizeText } from './sanitize.ts'
 import type { SemanticTheme } from './theme.ts'
 
@@ -82,7 +82,7 @@ export function renderMetaRow(data: MetaRowData, theme: SemanticTheme, width: nu
   const right = data.context === undefined
     ? ''
     : theme.fg(contextTokenFor(data.context.ratio), contextBar(data.context.ratio, 10))
-      + (data.context.window === undefined ? '' : theme.fg('dim', ` ${data.context.used}/${data.context.window}`))
+      + (data.context.window === undefined ? '' : theme.fg('dim', ` ${formatCount(data.context.used)}/${formatCount(data.context.window)}`))
 
   const left = leftParts.join('  ')
   const center = centerParts.join('  ')

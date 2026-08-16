@@ -20,6 +20,22 @@ export function contextBar(ratio: number, width: number): string {
   return `${'█'.repeat(filled)}${'░'.repeat(width - filled)} ${Math.round(clamped * 100)}%`
 }
 
+/**
+ * Compact token count: `7828` → `7.8k`, `12500` → `12.5k`, `100000` →
+ * `100k`, `1000000` → `1M`. Below 1000 the raw number stays.
+ */
+export function formatCount(value: number): string {
+  if (value >= 1_000_000) {
+    const millions = value / 1_000_000
+    return `${millions === Math.round(millions) ? Math.round(millions) : millions.toFixed(1)}M`
+  }
+  if (value >= 1_000) {
+    const thousands = value / 1_000
+    return `${thousands >= 100 ? Math.round(thousands) : thousands.toFixed(1)}k`
+  }
+  return String(value)
+}
+
 /** Truncate one line to a cap with an explicit remainder note. */
 export function capped(line: string, cap: number): string {
   return line.length <= cap ? line : `${line.slice(0, cap)} …(+${line.length - cap})`

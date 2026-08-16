@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { formatItem, formatStatus, sanitizedLines } from '../src/format.ts'
+import { formatCount, formatItem, formatStatus, sanitizedLines } from '../src/format.ts'
 import type { AssistantItem, ToolItem, TranscriptState, TurnItem, UserItem } from '../src/transcript.ts'
 
 const user = (text: string): UserItem => ({ kind: 'user', seq: 1, time: 1000, text, source: { kind: 'user' }, turn: 1 })
@@ -114,6 +114,31 @@ describe('formatStatus', () => {
       end: { time: 12_000, reason: { kind: 'completed' as const } },
     }
     expect(formatStatus({ ...base, items: [turnItem] })).toBe('11s')
+  })
+})
+
+describe('formatCount', () => {
+  it('keeps small counts verbatim', () => {
+    expect(formatCount(0)).toBe('0')
+    expect(formatCount(999)).toBe('999')
+  })
+
+  it('abbreviates thousands with one decimal below 100k', () => {
+    expect(formatCount(1_000)).toBe('1.0k')
+    expect(formatCount(7_828)).toBe('7.8k')
+    expect(formatCount(12_500)).toBe('12.5k')
+    expect(formatCount(99_999)).toBe('100.0k')
+  })
+
+  it('drops the decimal at 100k and above', () => {
+    expect(formatCount(100_000)).toBe('100k')
+    expect(formatCount(999_999)).toBe('1000k')
+  })
+
+  it('abbreviates millions, whole values without a decimal', () => {
+    expect(formatCount(1_000_000)).toBe('1M')
+    expect(formatCount(1_250_000)).toBe('1.3M')
+    expect(formatCount(10_000_000)).toBe('10M')
   })
 })
 

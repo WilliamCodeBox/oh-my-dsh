@@ -31,7 +31,7 @@ describe('renderMetaRow', () => {
     expect(line).toContain('*2')
     expect(line).toContain('?3')
     expect(line).toContain(contextBar(0.45, 10))
-    expect(line).toContain('90000/200000')
+    expect(line).toContain('90.0k/200k')
   })
 
   it('colors the context bar by thresholds', () => {
