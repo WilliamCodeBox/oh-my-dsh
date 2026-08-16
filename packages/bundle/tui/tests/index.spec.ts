@@ -585,12 +585,11 @@ describe('tui runner', () => {
     const runPromise = test.run()
     await vi.waitFor(() => { expect(terminal.started).toBe(true) })
     // A finalized turn with usage drives the cost display.
-    test.ctx.on('session/append', () => {})
     test.recorded.agent?.session.append('assistant/message', {
       turn: 1,
       step: 1,
       message: {
-        id: 'a1',
+        id: MessageId('a1'),
         role: 'assistant',
         content: [{ type: 'text', text: 'hi' }],
         source: { kind: 'model', provider: 'p', model: 'm' },

@@ -43,8 +43,9 @@ describe('highlightCode', () => {
 
   it('does not color keywords inside strings', () => {
     const lines = highlightCode('const s = "const"', 'ts', fg)
-    const first = lines[0].indexOf(darkTheme.fg('syntaxKeyword', 'const'))
-    const second = lines[0].indexOf(darkTheme.fg('syntaxKeyword', 'const'), first + 1)
+    const firstLine = lines[0] ?? ''
+    const first = firstLine.indexOf(darkTheme.fg('syntaxKeyword', 'const'))
+    const second = firstLine.indexOf(darkTheme.fg('syntaxKeyword', 'const'), first + 1)
     // Only the identifier const is a keyword; the string content is not.
     expect(second).toBe(-1)
   })
