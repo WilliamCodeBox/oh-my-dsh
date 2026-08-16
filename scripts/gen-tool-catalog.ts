@@ -15,7 +15,6 @@ import type { Agent } from '@williamcodebox/omd-agent'
 import { createScope } from '@williamcodebox/omd-scope'
 import SessionStore, { SessionId } from '@williamcodebox/omd-session'
 import SessionProjectionRegistry from '@williamcodebox/omd-session-projection'
-import SqliteSessionQueryEngine from '@williamcodebox/omd-session-query-sqlite'
 import GoalService from '@williamcodebox/omd-goal'
 import SystemPrompt from '@williamcodebox/omd-system-prompt'
 import ToolRuntime, { type Config as ToolsConfig } from '@williamcodebox/omd-tools'
@@ -55,7 +54,6 @@ import * as ToolSchedule from '@williamcodebox/omd-schedule'
 import Lsp from '@williamcodebox/omd-lsp'
 import * as ToolLsp from '@williamcodebox/omd-tool-lsp'
 import * as ToolSkill from '@williamcodebox/omd-tool-skill'
-import * as ToolSessionQuery from '@williamcodebox/omd-tool-session-query'
 import * as ToolTasks from '@williamcodebox/omd-tool-jobs'
 import * as ToolTodo from '@williamcodebox/omd-tool-todo'
 import * as ToolSubagent from '@williamcodebox/omd-tool-subagent'
@@ -421,20 +419,7 @@ const TOOL_PACKAGES: ToolPackage[] = [
       await ctx.plugin(ToolSkill)
     },
   },
-  {
-    pkg: '@williamcodebox/omd-tool-session-query',
-    dir: 'tool-session-query',
-    source: 'packages/session-query/tool-session-query/src/index.ts',
-    requires: ['ctx.tools', 'ctx.systemPrompt', 'ctx.sessionQuery', 'a calling Agent for workspace authority'],
-    writes: ['tool/call', 'tool/result'],
-    async mount(ctx) {
-      await ctx.plugin(SessionStore)
-      await ctx.plugin(SqliteSessionQueryEngine, { path: ':memory:' })
-      await ctx.plugin(ToolSessionQuery)
-    },
-    note:
-      'The five read-only tools hide provider cursors and authorize every result from the immutable calling agent session. The package is opt-in; compositions that need enforced deadlines or bounded inline output also mount the generic timeout or spill policies.',
-  },
+
   {
     pkg: '@williamcodebox/omd-tool-subagent',
     dir: 'tool-subagent',

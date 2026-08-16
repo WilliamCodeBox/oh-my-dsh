@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-25-subagent-policy-inheritance.md
+2026-07-25-subagent-policy-inheritance.md: f2b1cad74ec2f306e64a73c7c0a2262005d1eef1
+2026-07-25-subagent-policy-inheritance.zh.md: 22a8b4c2d8fdc71a75d89a0ef3d02fbe2a4ee5c3

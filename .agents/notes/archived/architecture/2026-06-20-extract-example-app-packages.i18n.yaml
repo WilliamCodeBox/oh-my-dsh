@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-06-20-extract-example-app-packages.md: 06466aa575a535afe0ba614fb2c2c5b3e857aeab
-2026-06-20-extract-example-app-packages.zh.md: ccd8eae1524210d75770248566810423280df3b0
+2026-06-20-extract-example-app-packages.md: 93dc070ec2a8bb7f4b5b21ae55be7754a64aaf7e
+2026-06-20-extract-example-app-packages.zh.md: c7d82814a777e397bf71d50f4066008ad6e4e98d

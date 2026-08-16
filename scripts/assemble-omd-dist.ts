@@ -50,7 +50,7 @@ mkdirSync(work, { recursive: true })
 
 try {
   // 1. deploy the launcher closure (real dependency tree, workspace protocols resolved)
-  run(`pnpm deploy --legacy --filter @williamcodebox/oh-my-dsh ${work}`, repoRoot)
+  run(`pnpm deploy --legacy --prod --filter @williamcodebox/oh-my-dsh ${work}`, repoRoot)
 
   // 2. replace workspace symlinks with real copies (self-contained tree)
   const unlink = join(import.meta.dirname, 'unlink-workspace.py')

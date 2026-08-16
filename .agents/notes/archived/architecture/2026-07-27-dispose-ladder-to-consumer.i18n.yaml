@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-27-dispose-ladder-to-consumer.md
+2026-07-27-dispose-ladder-to-consumer.md: 8974d7f417e4df8944f7d93bf889825c75cd72cc
+2026-07-27-dispose-ladder-to-consumer.zh.md: a0db41f05b0b833a66324267c6bc6d01a3c63236

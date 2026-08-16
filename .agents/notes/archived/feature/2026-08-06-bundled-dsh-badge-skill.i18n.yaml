@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-06-bundled-dsh-badge-skill.md
+2026-08-06-bundled-dsh-badge-skill.md: 4b29b1f04f3981f008e489cdeb4a8176c66d596f
+2026-08-06-bundled-dsh-badge-skill.zh.md: 8b57ca1f9a9cee54722eb6a51f4b8669c728d1ae

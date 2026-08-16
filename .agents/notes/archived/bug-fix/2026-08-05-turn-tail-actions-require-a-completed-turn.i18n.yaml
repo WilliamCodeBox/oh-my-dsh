@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-05-turn-tail-actions-require-a-completed-turn.md
+2026-08-05-turn-tail-actions-require-a-completed-turn.md: 974e09a64eda42f58ddfd5f57a109a0b79d0cc9b
+2026-08-05-turn-tail-actions-require-a-completed-turn.zh.md: f1d3dc775e5e8d42d76fcf234e01e49bed78b3ac

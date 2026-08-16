@@ -14,8 +14,7 @@
     "where.exe"
   ],
   "ignoreWorkspaces": [
-    "vendor/*",
-    "python/sdk-runtime"
+    "vendor/*"
   ],
   "ignoreDependencies": [
     "@yarnpkg/cli-dist",
@@ -31,7 +30,8 @@
         "scripts/**/*.ts",
         "scripts/**/*.mjs",
         "scripts/**/*.cjs"
-      ]
+      ],
+      "ignore": []
     },
     "examples": {
       "entry": [

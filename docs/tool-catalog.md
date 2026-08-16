@@ -31,7 +31,6 @@ This table connects model-visible tool names to the plugin package and service s
 | `@williamcodebox/omd-tool-lsp` | `lsp` | `ctx.tools`, `ctx.lsp`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@williamcodebox/omd-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema. |
 | `@williamcodebox/omd-tool-ralph` | `ralph` | `ctx.tools`, `ctx.workflowEngine`, `ctx.subagents`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents every fresh round)` | `tool/call`, `tool/result`, `workflow and child session events during execution` | - | A fixed foreground workflow starts one fresh structured child per round; the model selects only the immutable objective and an optional round cap. |
 | `@williamcodebox/omd-tool-skill` | `skill` | `ctx.tools`, `ctx.agents`, `ctx.skills` | `tool/call`, `tool/result`, `user/message replacement catalogs via agent.inject()` | - | - |
-| `@williamcodebox/omd-tool-session-query` | `session_event_read`, `session_event_search`, `session_event_trace`, `session_search`, `session_trace` | `ctx.tools`, `ctx.systemPrompt`, `ctx.sessionQuery`, `a calling Agent for workspace authority` | `tool/call`, `tool/result` | - | The five read-only tools hide provider cursors and authorize every result from the immutable calling agent session. The package is opt-in; compositions that need enforced deadlines or bounded inline output also mount the generic timeout or spill policies. |
 | `@williamcodebox/omd-tool-subagent` | `subagent` | `ctx.tools`, `ctx.subagents`, `ctx.systemPrompt` | `tool/call`, `tool/result`, `child session events through the chosen provider` | `subagent`, `subagent_fork` | The registered tool name is the load-time `toolName` config (default `subagent`); the schema above is that default. The shipped compositions load this package once per subagent backend, so the model additionally sees `subagent_fork` bound to the fork backend. Each instance's description, `run_in_background` parameter, and system-prompt policy follow its own `backgroundMode` and `enableRunInBackground`, so the two shipped schemas are not identical: `subagent` is `continuable` and defaults omitted calls to background with automatic settlement delivery, while `subagent_fork` stays `one-shot` and defaults them to foreground — see `packages/bundle/base/cordis.patch.yml` and `examples/acp-agent/cordis.yml`. |
 | `@williamcodebox/omd-tool-subagent-control` | `interrupt_agent`, `list_agents`, `send_message` | `ctx.tools`, `ctx.subagents`, `ctx.agents and ctx.sessionProjections (list_agents only)` | `tool/call`, `tool/result`, `child session events through ctx.subagents` | - | The globally named control tools over continuable background subagents: provider-bound `tool-subagent` instances register distinct delegation tools, while this package registers `send_message` and `interrupt_agent` once, plus `list_agents` from its separately loaded `/list-agents` plugin (whose catalog rows use the sessionProjections and live Agent registries). |
 | `@williamcodebox/omd-tool-subagent-report` | `report` | `ctx.subagents`, `ctx.systemPrompt`, `a live continuable in-process child Agent` | `tool/call`, `tool/result`, `a user-role message in the direct parent session` | - | Registered per continuable in-process child rather than globally, so this schema is visible only inside such a child and survives its global `toolFilter`. The same contribution installs the child-scoped `tool:report` prompt section, which this catalog does not render. The parent-facing `send_message` tool is installed independently. |
@@ -40,7 +39,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@williamcodebox/omd-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@williamcodebox/omd-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
 
-<a id="deepseek-aidsh-tool-ask-user"></a>
+<a id="williamcodeboxomd-tool-ask-user"></a>
 
 ## `@williamcodebox/omd-tool-ask-user`
 
@@ -114,7 +113,7 @@ Source: [`packages/interaction/tool-ask-user/src/index.ts`](../packages/interact
 
 ask_user_question pauses the tool call until the active UI provider returns a human answer.
 
-<a id="deepseek-aidsh-tools"></a>
+<a id="williamcodeboxomd-tools"></a>
 
 ## `@williamcodebox/omd-tools`
 
@@ -146,7 +145,7 @@ Source: [`packages/core/tools/src/code-mode.ts`](../packages/core/tools/src/code
 
 Owned by the tool registry as a reserved transport outside filterable capability layers under `mode: code` / `mode: both` (see the Code Mode Agent Note). Under `code` it is the registry's only wire contribution; the other visible capabilities are declared in a generated SDK section in the loaded runtime's language, and a program calls them through bindings scheduled under the native concurrency contract (submission-ordered starts and policy; concurrency-safe bodies overlap up to `maxParallelSubCalls`) that re-enter the complete guarded tool pipeline and link each nested execution to this outer result.
 
-<a id="deepseek-aidsh-plan-mode"></a>
+<a id="williamcodeboxomd-plan-mode"></a>
 
 ## `@williamcodebox/omd-plan-mode`
 
@@ -173,7 +172,7 @@ Source: [`packages/plan/plan-mode/src/index.ts`](../packages/plan/plan-mode/src/
 
 exit_plan_mode stays in the model-facing schema while planning is inactive so transitions add no tool-catalog churn on top of the plan-policy change. Its execute path rejects calls outside plan mode; in plan mode it presents the plan over the user-questions seam (approve / keep planning with feedback), and approval logs plan mode inactive at the step boundary.
 
-<a id="deepseek-aidsh-tool-bash"></a>
+<a id="williamcodeboxomd-tool-bash"></a>
 
 ## `@williamcodebox/omd-tool-bash`
 
@@ -217,7 +216,7 @@ Source: [`packages/shell/tool-bash/src/index.ts`](../packages/shell/tool-bash/sr
 
 The bash tool is the model-facing consumer of the bash executor seam. A `run_in_background` run registers with the generic `ctx.jobs` runtime and is collected/stopped through the `job_*` tools from `@williamcodebox/omd-tool-jobs`; the `enableRunInBackground` config (default true) removes the parameter entirely when disabled.
 
-<a id="deepseek-aidsh-tool-pwsh"></a>
+<a id="williamcodeboxomd-tool-pwsh"></a>
 
 ## `@williamcodebox/omd-tool-pwsh`
 
@@ -261,7 +260,7 @@ Source: [`packages/shell/tool-pwsh/src/index.ts`](../packages/shell/tool-pwsh/sr
 
 The pwsh tool is the PowerShell-dialect consumer of the bash executor seam for Windows compositions (a PowerShell executor such as `@williamcodebox/omd-pwsh-local` backs `ctx.shell`); it mirrors the bash tool call-for-call minus sandbox controls — `run_in_background` runs register with the generic `ctx.jobs` runtime and are collected/stopped through the `job_*` tools, and the managed `DSH_*` environment comes from `@williamcodebox/omd-shell-env`. Each call runs in a fresh process (no persistent PTY session), with native `C:\...` paths and `$env:NAME` variables.
 
-<a id="deepseek-aidsh-tool-cordis"></a>
+<a id="williamcodeboxomd-tool-cordis"></a>
 
 ## `@williamcodebox/omd-tool-cordis`
 
@@ -499,7 +498,7 @@ Source: [`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/
 
 Not in any shipped tree (a deliberate opt-in — dynamic package code reaches the real runtime, see .agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.md). The toolset injects `ctx.dynamicCordisRunner` from `@williamcodebox/omd-cordis-host-runner`, which owns the definition registry and the vm sandbox; a composition missing it never activates the tools. A running package may register ADDITIONAL model-visible tools until it is stopped, undefined, or DSH restarts; a full changed request header logs those tool-set changes.
 
-<a id="deepseek-aidsh-tool-bash-persistent"></a>
+<a id="williamcodeboxomd-tool-bash-persistent"></a>
 
 ## `@williamcodebox/omd-tool-bash-persistent`
 
@@ -526,7 +525,7 @@ Source: [`packages/shell/tool-bash-persistent/src/index.ts`](../packages/shell/t
 
 One owner-isolated persistent bash tool; deployment composition supplies the PTY backend and may override the model-facing environment description.
 
-<a id="deepseek-aidsh-tool-str-replace-editor"></a>
+<a id="williamcodeboxomd-tool-str-replace-editor"></a>
 
 ## `@williamcodebox/omd-tool-str-replace-editor`
 
@@ -596,7 +595,7 @@ Source: [`packages/fs/tool-str-replace-editor/src/index.ts`](../packages/fs/tool
 
 Standalone view/create/unique literal replace/line insert tool over the filesystem seam; it composes with any shell or terminal API.
 
-<a id="deepseek-aidsh-tool-fs"></a>
+<a id="williamcodeboxomd-tool-fs"></a>
 
 ## `@williamcodebox/omd-tool-fs`
 
@@ -713,7 +712,7 @@ Source: [`packages/fs/tool-fs/src/index.ts`](../packages/fs/tool-fs/src/index.ts
 
 The read-before-write/edit policy is added by `@williamcodebox/omd-fs-observation-policy` (an `fs/*` event-gate plugin, no schema change); a deployment that loads these tools is expected to also load it. `read_image` is not registered without `ctx.attachments`; its schema is route-independent, and execution refuses unless the exact routed model declares image input.
 
-<a id="deepseek-aidsh-tool-fs-search"></a>
+<a id="williamcodeboxomd-tool-fs-search"></a>
 
 ## `@williamcodebox/omd-tool-fs-search`
 
@@ -773,7 +772,7 @@ Source: [`packages/fs/tool-fs-search/src/index.ts`](../packages/fs/tool-fs-searc
 
 glob and grep are unconditional discovery tools that spawn the packaged ripgrep binary (`@vscode/ripgrep`) through ctx.subprocess as ordinary foreground calls (never background jobs) — no host `rg` install and no shell layer. The catalog uses `sampleOverCapGlobResults: true`; deployments must choose that behavior explicitly. Capped results save the complete formatted list through the optional ctx.spillStore backend; returned locators are follow-up-readable/searchable when the backend exposes local paths in co-located deployments.
 
-<a id="deepseek-aidsh-tool-terminal"></a>
+<a id="williamcodeboxomd-tool-terminal"></a>
 
 ## `@williamcodebox/omd-tool-terminal`
 
@@ -938,7 +937,7 @@ Source: [`packages/terminal/tool-terminal/src/index.ts`](../packages/terminal/to
 
 The six terminal tools are opt-in and complement one-shot shell/filesystem tools. `terminal_send(run_in_background: true)` registers with `ctx.jobs`; TUI, named key sequences, BEL, resize, auto-start, and cross-agent sharing are absent from the schema.
 
-<a id="deepseek-aidsh-tool-goal"></a>
+<a id="williamcodeboxomd-tool-goal"></a>
 
 ## `@williamcodebox/omd-tool-goal`
 
@@ -1032,7 +1031,7 @@ Source: [`packages/goal/tool-goal/src/index.ts`](../packages/goal/tool-goal/src/
 
 create, edit, pause, and resume require direct-human root authority; complete and blocked also accept the exact current goal round. The default blocked lower bound is three admitted rounds.
 
-<a id="deepseek-aidsh-schedule"></a>
+<a id="williamcodeboxomd-schedule"></a>
 
 ## `@williamcodebox/omd-schedule`
 
@@ -1129,7 +1128,7 @@ Source: [`packages/schedule/schedule/src/tools.ts`](../packages/schedule/schedul
 
 Registered only inside live root Agent scopes created after the opt-in Schedule plugin loads. Version 1 accepts after_seconds, explicit absolute at, and bounded fixed-rate every_seconds, and discloses session-local delivery; management reads and mutations require the shared Session persistence barrier.
 
-<a id="deepseek-aidsh-tool-lsp"></a>
+<a id="williamcodeboxomd-tool-lsp"></a>
 
 ## `@williamcodebox/omd-tool-lsp`
 
@@ -1177,7 +1176,7 @@ Source: [`packages/lsp/tool-lsp/src/index.ts`](../packages/lsp/tool-lsp/src/inde
 
 The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@williamcodebox/omd-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema.
 
-<a id="deepseek-aidsh-tool-ralph"></a>
+<a id="williamcodeboxomd-tool-ralph"></a>
 
 ## `@williamcodebox/omd-tool-ralph`
 
@@ -1208,7 +1207,7 @@ Source: [`packages/workflow/tool-ralph/src/index.ts`](../packages/workflow/tool-
 
 A fixed foreground workflow starts one fresh structured child per round; the model selects only the immutable objective and an optional round cap.
 
-<a id="deepseek-aidsh-tool-skill"></a>
+<a id="williamcodeboxomd-tool-skill"></a>
 
 ## `@williamcodebox/omd-tool-skill`
 
@@ -1233,242 +1232,7 @@ Load the full instructions for an available skill. Call this with the exact skil
 
 Source: [`packages/skill/tool-skill/src/index.ts`](../packages/skill/tool-skill/src/index.ts)
 
-<a id="deepseek-aidsh-tool-session-query"></a>
-
-## `@williamcodebox/omd-tool-session-query`
-
-### `session_event_read`
-
-Read one full unabridged event and optional neighboring raw-event summaries from an authorized session.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "session_id": {
-      "type": "string",
-      "description": "Target session id. Omit for the current session."
-    },
-    "seq": {
-      "type": "integer",
-      "description": "Target event sequence number."
-    },
-    "before": {
-      "type": "integer",
-      "description": "Number of preceding raw events to summarize. Omit for none."
-    },
-    "after": {
-      "type": "integer",
-      "description": "Number of following raw events to summarize. Omit for none."
-    }
-  },
-  "required": [
-    "seq"
-  ]
-}
-```
-
-Source: [`packages/session-query/tool-session-query/src/index.ts`](../packages/session-query/tool-session-query/src/index.ts)
-
-### `session_event_search`
-
-Search prior events in one authorized session; the current session excludes the step performing this call.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "session_id": {
-      "type": "string",
-      "description": "Target session id. Omit for the current session."
-    },
-    "query": {
-      "type": "string",
-      "description": "Literal full-text query over the target session."
-    },
-    "seq_from": {
-      "type": "integer",
-      "description": "Inclusive event sequence lower bound."
-    },
-    "seq_to": {
-      "type": "integer",
-      "description": "Inclusive event sequence upper bound."
-    },
-    "time_from": {
-      "type": "string",
-      "description": "Inclusive timezone-qualified ISO 8601 event-time lower bound."
-    },
-    "time_to": {
-      "type": "string",
-      "description": "Inclusive timezone-qualified ISO 8601 event-time upper bound."
-    },
-    "event_types": {
-      "type": "array",
-      "description": "Event types to include.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "surfaces": {
-      "type": "array",
-      "description": "Event surfaces to include.",
-      "items": {
-        "type": "string",
-        "enum": [
-          "current",
-          "shadowed",
-          "log-only"
-        ]
-      }
-    }
-  },
-  "required": [
-    "query"
-  ]
-}
-```
-
-Source: [`packages/session-query/tool-session-query/src/index.ts`](../packages/session-query/tool-session-query/src/index.ts)
-
-### `session_event_trace`
-
-Read every direct replacement and relationship to a cited source event for one event in an authorized session.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "session_id": {
-      "type": "string",
-      "description": "Target session id. Omit for the current session."
-    },
-    "seq": {
-      "type": "integer",
-      "description": "Target event sequence number."
-    }
-  },
-  "required": [
-    "seq"
-  ]
-}
-```
-
-Source: [`packages/session-query/tool-session-query/src/index.ts`](../packages/session-query/tool-session-query/src/index.ts)
-
-### `session_search`
-
-Search prior sessions in the caller workspace and return the strongest matching event from each session.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "query": {
-      "type": "string",
-      "description": "Literal full-text query over prior session history."
-    },
-    "session_ids": {
-      "type": "array",
-      "description": "Optional session ids to include.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "created_at_from": {
-      "type": "string",
-      "description": "Inclusive timezone-qualified ISO 8601 creation-time lower bound."
-    },
-    "created_at_to": {
-      "type": "string",
-      "description": "Inclusive timezone-qualified ISO 8601 creation-time upper bound."
-    },
-    "parent_session_ids": {
-      "type": "array",
-      "description": "Optional direct parent session ids.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "include_root_sessions": {
-      "type": "boolean",
-      "description": "Include sessions with no parent in the parent filter."
-    },
-    "availability": {
-      "type": "array",
-      "description": "Require at least one selected source availability.",
-      "items": {
-        "type": "string",
-        "enum": [
-          "live",
-          "persisted"
-        ]
-      }
-    },
-    "event_seq_from": {
-      "type": "integer",
-      "description": "Inclusive event sequence lower bound."
-    },
-    "event_seq_to": {
-      "type": "integer",
-      "description": "Inclusive event sequence upper bound."
-    },
-    "event_time_from": {
-      "type": "string",
-      "description": "Inclusive timezone-qualified ISO 8601 event-time lower bound."
-    },
-    "event_time_to": {
-      "type": "string",
-      "description": "Inclusive timezone-qualified ISO 8601 event-time upper bound."
-    },
-    "event_types": {
-      "type": "array",
-      "description": "Event types to include.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "event_surfaces": {
-      "type": "array",
-      "description": "Event surfaces to include.",
-      "items": {
-        "type": "string",
-        "enum": [
-          "current",
-          "shadowed",
-          "log-only"
-        ]
-      }
-    }
-  },
-  "required": [
-    "query"
-  ]
-}
-```
-
-Source: [`packages/session-query/tool-session-query/src/index.ts`](../packages/session-query/tool-session-query/src/index.ts)
-
-### `session_trace`
-
-Read the authorized session lineage around one session, including complete visible ancestor and descendant relationships.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "session_id": {
-      "type": "string",
-      "description": "Target session id. Omit for the current session."
-    }
-  }
-}
-```
-
-Source: [`packages/session-query/tool-session-query/src/index.ts`](../packages/session-query/tool-session-query/src/index.ts)
-
-The five read-only tools hide provider cursors and authorize every result from the immutable calling agent session. The package is opt-in; compositions that need enforced deadlines or bounded inline output also mount the generic timeout or spill policies.
-
-<a id="deepseek-aidsh-tool-subagent"></a>
+<a id="williamcodeboxomd-tool-subagent"></a>
 
 ## `@williamcodebox/omd-tool-subagent`
 
@@ -1504,7 +1268,7 @@ Source: [`packages/subagent/tool-subagent/src/index.ts`](../packages/subagent/to
 
 The registered tool name is the load-time `toolName` config (default `subagent`); the schema above is that default. The shipped compositions load this package once per subagent backend, so the model additionally sees `subagent_fork` bound to the fork backend. Each instance's description, `run_in_background` parameter, and system-prompt policy follow its own `backgroundMode` and `enableRunInBackground`, so the two shipped schemas are not identical: `subagent` is `continuable` and defaults omitted calls to background with automatic settlement delivery, while `subagent_fork` stays `one-shot` and defaults them to foreground — see `packages/bundle/base/cordis.patch.yml` and `examples/acp-agent/cordis.yml`.
 
-<a id="deepseek-aidsh-tool-subagent-control"></a>
+<a id="williamcodeboxomd-tool-subagent-control"></a>
 
 ## `@williamcodebox/omd-tool-subagent-control`
 
@@ -1579,7 +1343,7 @@ Source: [`packages/subagent/tool-subagent-control/src/index.ts`](../packages/sub
 
 The globally named control tools over continuable background subagents: provider-bound `tool-subagent` instances register distinct delegation tools, while this package registers `send_message` and `interrupt_agent` once, plus `list_agents` from its separately loaded `/list-agents` plugin (whose catalog rows use the sessionProjections and live Agent registries).
 
-<a id="deepseek-aidsh-tool-subagent-report"></a>
+<a id="williamcodeboxomd-tool-subagent-report"></a>
 
 ## `@williamcodebox/omd-tool-subagent-report`
 
@@ -1606,7 +1370,7 @@ Source: [`packages/subagent/tool-subagent-report/src/index.ts`](../packages/suba
 
 Registered per continuable in-process child rather than globally, so this schema is visible only inside such a child and survives its global `toolFilter`. The same contribution installs the child-scoped `tool:report` prompt section, which this catalog does not render. The parent-facing `send_message` tool is installed independently.
 
-<a id="deepseek-aidsh-tool-jobs"></a>
+<a id="williamcodeboxomd-tool-jobs"></a>
 
 ## `@williamcodebox/omd-tool-jobs`
 
@@ -1679,7 +1443,7 @@ Source: [`packages/jobs/tool-jobs/src/index.ts`](../packages/jobs/tool-jobs/src/
 
 The kind-agnostic background-job controller: background bash commands, PTY sends, and subagents are read, listed, and killed through the same three tools. Loading the plugin attaches the controller that arms producers' `ctx.jobs.start()`.
 
-<a id="deepseek-aidsh-tool-todo"></a>
+<a id="williamcodeboxomd-tool-todo"></a>
 
 ## `@williamcodebox/omd-tool-todo`
 
@@ -1729,7 +1493,7 @@ Source: [`packages/todo/tool-todo/src/index.ts`](../packages/todo/tool-todo/src/
 
 todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.
 
-<a id="deepseek-aidsh-tool-workflow"></a>
+<a id="williamcodeboxomd-tool-workflow"></a>
 
 ## `@williamcodebox/omd-tool-workflow`
 
@@ -1824,7 +1588,7 @@ Constraints: concurrency and total-agent caps apply; no filesystem, network, tim
 
 Source: [`packages/workflow/tool-workflow/src/index.ts`](../packages/workflow/tool-workflow/src/index.ts)
 
-<a id="deepseek-aidsh-tool-web"></a>
+<a id="williamcodeboxomd-tool-web"></a>
 
 ## `@williamcodebox/omd-tool-web`
 

@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-07-31-fork-anchor-floors-to-event-seq.md
+2026-07-31-fork-anchor-floors-to-event-seq.md: 9f60cf3c101c5259a7cfe9f6f808ad86a1a8b195
+2026-07-31-fork-anchor-floors-to-event-seq.zh.md: ae53bc75a9c2235683397e0b518a9819ec51ed3f

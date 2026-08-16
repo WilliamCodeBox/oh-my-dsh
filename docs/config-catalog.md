@@ -9,84 +9,7 @@ This file is GENERATED from source (`scripts/gen-config-catalog.ts`) and verifie
 
 A `Requires:` line lists the service keys the plugin `inject`s: its `cordis.yml` tree must also load providers for those services. Scope is the harness tier (`packages/`); the vendored cordis plugins a config tree may also load (`hmr`, the console logger, …) are pinned upstream source ([vendoring policy](../vendor/README.md)) and not catalogued here.
 
-<a id="deepseek-aidsh-acp"></a>
-
-## `@williamcodebox/omd-acp`
-
-Requires: `agents`
-
-```ts config-catalog
-/** Plugin config: the provider/model selection used for each ACP-created agent. */
-export interface AcpConfig {
-  /** Provider route for created agents. */
-  provider?: string
-  /** Model name for created agents. */
-  model?: string
-  /** Runtime-only transport override; production uses stdio. */
-  stream?: Stream
-}
-```
-
-Depends on: `Stream` (`@agentclientprotocol/sdk`)
-
-Source: [`packages/acp/acp/src/index.ts:70`](../packages/acp/acp/src/index.ts)
-
-<a id="deepseek-aidsh-acp-demo"></a>
-
-## `@williamcodebox/omd-acp-demo`
-
-```ts config-catalog
-/**
- * App config: the swappable per-deployment values. `provider` and `model` configure
- * each agent the ACP bridge creates at `session/new`; `persona` is the
- * deployment persona (forwarded to the system-prompt plugin); `toolOrder` is
- * the explicit model-facing tool order (forwarded to the system-prompt plugin);
- * `tools` is the tool registry's config (its presentation `mode`, forwarded
- * through agent-spine-demo); `persistenceRoot` is the JSONL backend's directory.
- */
-export interface Config {
-  /** Provider route for ACP-created agents. */
-  provider: string
-  /** Model name for ACP-created agents (must have a registered adapter). */
-  model: string
-  /** Bundled agent-loop concurrency cap; `1` is serial and omission uses its default. */
-  maxParallelToolCalls?: number
-  /** Deployment persona (the system-prompt plugin's `persona` config). */
-  persona?: string
-  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see dsh-system-prompt). */
-  toolOrder?: string[]
-  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see dsh-tools). */
-  tools?: ToolsConfig
-  /** DeepSeek Harness home directory exposed to bash and used for local skill discovery. */
-  dshHome?: string
-  /** Fallback session-title limits forwarded through agent-spine-demo. */
-  sessionTitle?: NonNullable<agentCore.Config['sessionTitle']>
-  /** Directory for JSONL sessions and the derived query index. Defaults to `./.sessions`. */
-  persistenceRoot?: string
-  /** Write delta-chunk runs as packed storage rows (the JSONL backend's `packChunks`). Defaults to `true`. */
-  packChunks?: boolean
-  /** JSONL artifact encoding; defaults to checksummed Zstandard frames. */
-  persistenceCompression?: JsonlCompression
-  /** Controls automatic AGENTS.md/CLAUDE.md loading; configure a byte budget or set `false`. */
-  workspaceContext: agentCore.Config['workspaceContext']
-  /** Skill registry, local-provider, and model-facing consumer config forwarded to agent-spine-demo. */
-  skills?: agentCore.SkillConfig
-  /** Model-facing bash tool config forwarded through agent-core. */
-  toolBash?: NonNullable<agentCore.Config['toolBash']>
-  /** Process-local background-job admission config forwarded through agent-core. */
-  jobs?: NonNullable<agentCore.Config['jobs']>
-  /** Generic background-job controls forwarded through agent-core; set false to omit their tools. */
-  toolJobs?: NonNullable<agentCore.Config['toolJobs']>
-  /** Persisted same-session goals; owner defaults enable them, or false disables the stack and tools. */
-  goals?: agentCore.GoalConfig | false
-}
-```
-
-Depends on: [`agentCore`](../packages/examples/agent-spine-demo/src/index.ts) · [`JsonlCompression`](../packages/session/session-persistence-jsonl/src/index.ts) · [`ToolsConfig`](#deepseek-aidsh-tools)
-
-Source: [`packages/examples/acp-demo/src/index.ts:39`](../packages/examples/acp-demo/src/index.ts)
-
-<a id="deepseek-aidsh-agent-default-model"></a>
+<a id="williamcodeboxomd-agent-default-model"></a>
 
 ## `@williamcodebox/omd-agent-default-model`
 
@@ -102,7 +25,7 @@ export interface Config {
 
 Source: [`packages/core/agent-default-model/src/index.ts:41`](../packages/core/agent-default-model/src/index.ts)
 
-<a id="deepseek-aidsh-agent-instructions"></a>
+<a id="williamcodeboxomd-agent-instructions"></a>
 
 ## `@williamcodebox/omd-agent-instructions`
 
@@ -132,7 +55,7 @@ export interface Config {
 
 Source: [`packages/context/agent-instructions/src/config.ts:18`](../packages/context/agent-instructions/src/config.ts)
 
-<a id="deepseek-aidsh-agent-loop"></a>
+<a id="williamcodeboxomd-agent-loop"></a>
 
 ## `@williamcodebox/omd-agent-loop`
 
@@ -164,7 +87,7 @@ Depends on: [`AgentOptions`](subsystems/core.md) · [`SessionId`](subsystems/cor
 
 Source: [`packages/core/agent-loop/src/index.ts:255`](../packages/core/agent-loop/src/index.ts)
 
-<a id="deepseek-aidsh-agent-presets"></a>
+<a id="williamcodeboxomd-agent-presets"></a>
 
 ## `@williamcodebox/omd-agent-presets`
 
@@ -202,7 +125,7 @@ export type PresetTrust = 'system' | 'user'
 
 Source: [`packages/preset/agent-presets/src/preset.ts:52`](../packages/preset/agent-presets/src/preset.ts)
 
-<a id="deepseek-aidsh-agent-spine-demo"></a>
+<a id="williamcodeboxomd-agent-spine-demo"></a>
 
 ## `@williamcodebox/omd-agent-spine-demo`
 
@@ -290,11 +213,11 @@ export interface GoalConfig {
 }
 ```
 
-Depends on: [`AgentLoopConfig`](#deepseek-aidsh-agent-loop) · [`GoalDomainConfig`](#deepseek-aidsh-goal) · [`InvariantConfig`](#deepseek-aidsh-invariants) · [`JobsConfig`](#deepseek-aidsh-jobs-local) · [`SessionTitleConfig`](#deepseek-aidsh-session-title) · [`SkillFileSystem`](../packages/skill/skill-filesystem/src/index.ts) · [`SkillRegistryConfig`](#deepseek-aidsh-skill) · [`SystemPromptConfig`](#deepseek-aidsh-system-prompt) · [`toolBash`](../packages/shell/tool-bash/src/index.ts) · [`toolGoal`](../packages/goal/tool-goal/src/index.ts) · [`toolJobs`](../packages/jobs/tool-jobs/src/index.ts) · [`ToolsConfig`](#deepseek-aidsh-tools) · [`toolSkill`](../packages/skill/tool-skill/src/index.ts) · [`workspaceContext`](../packages/context/agent-instructions/src/index.ts)
+Depends on: [`AgentLoopConfig`](#williamcodeboxomd-agent-loop) · [`GoalDomainConfig`](#williamcodeboxomd-goal) · [`InvariantConfig`](#williamcodeboxomd-invariants) · [`JobsConfig`](#williamcodeboxomd-jobs-local) · [`SessionTitleConfig`](#williamcodeboxomd-session-title) · [`SkillFileSystem`](../packages/skill/skill-filesystem/src/index.ts) · [`SkillRegistryConfig`](#williamcodeboxomd-skill) · [`SystemPromptConfig`](#williamcodeboxomd-system-prompt) · [`toolBash`](../packages/shell/tool-bash/src/index.ts) · [`toolGoal`](../packages/goal/tool-goal/src/index.ts) · [`toolJobs`](../packages/jobs/tool-jobs/src/index.ts) · [`ToolsConfig`](#williamcodeboxomd-tools) · [`toolSkill`](../packages/skill/tool-skill/src/index.ts) · [`workspaceContext`](../packages/context/agent-instructions/src/index.ts)
 
 Source: [`packages/examples/agent-spine-demo/src/index.ts:92`](../packages/examples/agent-spine-demo/src/index.ts)
 
-<a id="deepseek-aidsh-agent-tool-presentation"></a>
+<a id="williamcodeboxomd-agent-tool-presentation"></a>
 
 ## `@williamcodebox/omd-agent-tool-presentation`
 
@@ -318,7 +241,7 @@ Depends on: [`ToolPresentationMode`](subsystems/tools.md)
 
 Source: [`packages/core/agent-tool-presentation/src/index.ts:38`](../packages/core/agent-tool-presentation/src/index.ts)
 
-<a id="deepseek-aidsh-attachment-local"></a>
+<a id="williamcodeboxomd-attachment-local"></a>
 
 ## `@williamcodebox/omd-attachment-local`
 
@@ -340,7 +263,7 @@ export interface Config {
 
 Source: [`packages/attachment/attachment-local/src/index.ts:24`](../packages/attachment/attachment-local/src/index.ts)
 
-<a id="deepseek-aidsh-bash-local"></a>
+<a id="williamcodeboxomd-bash-local"></a>
 
 ## `@williamcodebox/omd-bash-local`
 
@@ -366,7 +289,7 @@ export interface Config {
 
 Source: [`packages/shell/bash-local/src/index.ts:41`](../packages/shell/bash-local/src/index.ts)
 
-<a id="deepseek-aidsh-bash-sandbox"></a>
+<a id="williamcodeboxomd-bash-sandbox"></a>
 
 ## `@williamcodebox/omd-bash-sandbox`
 
@@ -383,11 +306,11 @@ Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 export type Config = LocalConfig
 ```
 
-Depends on: [`LocalConfig`](#deepseek-aidsh-bash-local)
+Depends on: [`LocalConfig`](#williamcodeboxomd-bash-local)
 
 Source: [`packages/shell/bash-sandbox/src/index.ts:35`](../packages/shell/bash-sandbox/src/index.ts)
 
-<a id="deepseek-aidsh-client-connection"></a>
+<a id="williamcodeboxomd-client-connection"></a>
 
 ## `@williamcodebox/omd-client-connection`
 
@@ -412,7 +335,7 @@ export interface ConnectionConfig {
 
 Source: [`packages/client/connection/src/index.ts:50`](../packages/client/connection/src/index.ts)
 
-<a id="deepseek-aidsh-client-hmr"></a>
+<a id="williamcodeboxomd-client-hmr"></a>
 
 ## `@williamcodebox/omd-client-hmr`
 
@@ -428,7 +351,7 @@ export interface Config {
 
 Source: [`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
-<a id="deepseek-aidsh-code-runtime-worker-thread"></a>
+<a id="williamcodeboxomd-code-runtime-worker-thread"></a>
 
 ## `@williamcodebox/omd-code-runtime-worker-thread`
 
@@ -465,7 +388,7 @@ export interface Config {
 
 Source: [`packages/code-runtime/code-runtime-worker-thread/src/index.ts:25`](../packages/code-runtime/code-runtime-worker-thread/src/index.ts)
 
-<a id="deepseek-aidsh-compaction-basic"></a>
+<a id="williamcodeboxomd-compaction-basic"></a>
 
 ## `@williamcodebox/omd-compaction-basic`
 
@@ -511,7 +434,7 @@ export interface ModelCompactPolicyConfig extends CompactionPolicyConfig {
 
 Source: [`packages/compaction/compaction-basic/src/types.ts:38`](../packages/compaction/compaction-basic/src/types.ts)
 
-<a id="deepseek-aidsh-compaction-tool-result-pruner"></a>
+<a id="williamcodeboxomd-compaction-tool-result-pruner"></a>
 
 ## `@williamcodebox/omd-compaction-tool-result-pruner`
 
@@ -531,7 +454,7 @@ export interface ToolResultPruneConfig {
 
 Source: [`packages/compaction/compaction-tool-result-pruner/src/types.ts:4`](../packages/compaction/compaction-tool-result-pruner/src/types.ts)
 
-<a id="deepseek-aidsh-cordis-host-runner"></a>
+<a id="williamcodeboxomd-cordis-host-runner"></a>
 
 ## `@williamcodebox/omd-cordis-host-runner`
 
@@ -547,7 +470,7 @@ export interface Config {
 
 Source: [`packages/extensions/cordis-host-runner/src/index.ts:88`](../packages/extensions/cordis-host-runner/src/index.ts)
 
-<a id="deepseek-aidsh-credentials-local"></a>
+<a id="williamcodeboxomd-credentials-local"></a>
 
 ## `@williamcodebox/omd-credentials-local`
 
@@ -567,25 +490,7 @@ export interface Config {
 
 Source: [`packages/credentials/credentials-local/src/index.ts:55`](../packages/credentials/credentials-local/src/index.ts)
 
-<a id="deepseek-aidsh-e2b"></a>
-
-## `@williamcodebox/omd-e2b`
-
-```ts config-catalog
-/** Configuration for the shared E2B sandbox owner. */
-export interface Config {
-  /** API key; omission reads `E2B_API_KEY`. It is never forwarded into the sandbox. */
-  apiKey?: string
-  /** Shared remote working directory, created before adapters receive the sandbox. */
-  cwd?: string
-  /** E2B sandbox lifetime in milliseconds; expiry always deletes the sandbox. */
-  timeoutMs?: number
-}
-```
-
-Source: [`packages/e2b/e2b/src/index.ts:43`](../packages/e2b/e2b/src/index.ts)
-
-<a id="deepseek-aidsh-fs-local"></a>
+<a id="williamcodeboxomd-fs-local"></a>
 
 ## `@williamcodebox/omd-fs-local`
 
@@ -604,7 +509,7 @@ export interface Config {
 
 Source: [`packages/fs/fs-local/src/index.ts:41`](../packages/fs/fs-local/src/index.ts)
 
-<a id="deepseek-aidsh-fs-sandbox"></a>
+<a id="williamcodeboxomd-fs-sandbox"></a>
 
 ## `@williamcodebox/omd-fs-sandbox`
 
@@ -620,11 +525,11 @@ Requires: `sandboxPolicy`
 export type Config = LocalConfig
 ```
 
-Depends on: [`LocalConfig`](#deepseek-aidsh-fs-local)
+Depends on: [`LocalConfig`](#williamcodeboxomd-fs-local)
 
 Source: [`packages/fs/fs-sandbox/src/index.ts:49`](../packages/fs/fs-sandbox/src/index.ts)
 
-<a id="deepseek-aidsh-goal"></a>
+<a id="williamcodeboxomd-goal"></a>
 
 ## `@williamcodebox/omd-goal`
 
@@ -640,7 +545,7 @@ export interface Config {
 
 Source: [`packages/goal/goal/src/index.ts:116`](../packages/goal/goal/src/index.ts)
 
-<a id="deepseek-aidsh-headless"></a>
+<a id="williamcodeboxomd-headless"></a>
 
 ## `@williamcodebox/omd-headless`
 
@@ -656,72 +561,7 @@ export interface Config {
 
 Source: [`packages/bundle/headless/src/index.ts:31`](../packages/bundle/headless/src/index.ts)
 
-<a id="deepseek-aidsh-hooks-claude-code"></a>
-
-## `@williamcodebox/omd-hooks-claude-code`
-
-Requires: `shell`
-
-```ts config-catalog
-/** Plugin config: where the CC hook config lives + substitution roots. */
-export interface Config {
-  /**
-   * Path to a `hooks.json` or a settings file whose `hooks` key holds the config.
-   * Process-level: read once at load, a relative path resolves against the process
-   * launch cwd, so one config applies to the whole process.
-   * TODO(per-session-hook-config): per-session discovery of a project-local
-   * `hooks.json` from each `session/new.cwd`.
-   */
-  configPath: string
-  /**
-   * Replaces `${CLAUDE_PLUGIN_ROOT}` in command strings (the plugin's root dir).
-   */
-  pluginRoot?: string
-  /**
-   * Replaces `${CLAUDE_PROJECT_DIR}` in command strings AND is exported as the
-   * `CLAUDE_PROJECT_DIR` env var for hook processes. When omitted, the env var
-   * defaults per-run to the agent's session workspace (`session.header.cwd`, the
-   * same dir the hook runs in) — Claude Code always exports this var, and common
-   * unmodified hooks reference `$CLAUDE_PROJECT_DIR` for project-relative paths.
-   */
-  projectDir?: string
-  /** Default per-hook timeout in ms when a hook sets none (CC default: 600000). */
-  defaultTimeoutMs?: number
-  /** Character cap for the `hook/result` event's persisted stderr summary. */
-  stderrSummaryMaxChars?: number
-}
-```
-
-Source: [`packages/hooks/hooks-claude-code/src/index.ts:45`](../packages/hooks/hooks-claude-code/src/index.ts)
-
-<a id="deepseek-aidsh-hooks-codex"></a>
-
-## `@williamcodebox/omd-hooks-codex`
-
-Requires: `shell`
-
-```ts config-catalog
-/** Plugin config: where the Codex hooks.json lives + the model name for payloads. */
-export interface Config {
-  /**
-   * Path to a Codex `hooks.json`. Process-level: read once at load, a relative
-   * path resolves against the process launch cwd.
-   * TODO(per-session-hook-config): per-session project-local discovery from each
-   * `session/new.cwd`.
-   */
-  configPath: string
-  /** The model name stamped on every payload (Codex includes `model` on each event). */
-  model?: string
-  /** Default per-hook timeout in ms when a hook sets none (Codex default: 600000). */
-  defaultTimeoutMs?: number
-  /** Character cap for the `hook/result` event's persisted stderr summary. */
-  stderrSummaryMaxChars?: number
-}
-```
-
-Source: [`packages/hooks/hooks-codex/src/index.ts:44`](../packages/hooks/hooks-codex/src/index.ts)
-
-<a id="deepseek-aidsh-host-apiproxy"></a>
+<a id="williamcodeboxomd-host-apiproxy"></a>
 
 ## `@williamcodebox/omd-host-apiproxy`
 
@@ -755,7 +595,7 @@ export interface Config {
 
 Source: [`packages/host/apiproxy/src/index.ts:41`](../packages/host/apiproxy/src/index.ts)
 
-<a id="deepseek-aidsh-host-directory-picker-browse"></a>
+<a id="williamcodeboxomd-host-directory-picker-browse"></a>
 
 ## `@williamcodebox/omd-host-directory-picker-browse`
 
@@ -769,7 +609,7 @@ export interface Config {
 
 Source: [`packages/host/directory-picker-browse/src/index.ts:181`](../packages/host/directory-picker-browse/src/index.ts)
 
-<a id="deepseek-aidsh-host-frontend-static"></a>
+<a id="williamcodeboxomd-host-frontend-static"></a>
 
 ## `@williamcodebox/omd-host-frontend-static`
 
@@ -785,7 +625,7 @@ export interface Config {
 
 Source: [`packages/host/frontend-static/src/index.ts:28`](../packages/host/frontend-static/src/index.ts)
 
-<a id="deepseek-aidsh-host-webserver"></a>
+<a id="williamcodeboxomd-host-webserver"></a>
 
 ## `@williamcodebox/omd-host-webserver`
 
@@ -801,7 +641,7 @@ export interface Config {
 
 Source: [`packages/host/webserver/src/index.ts:45`](../packages/host/webserver/src/index.ts)
 
-<a id="deepseek-aidsh-invariants"></a>
+<a id="williamcodeboxomd-invariants"></a>
 
 ## `@williamcodebox/omd-invariants`
 
@@ -819,7 +659,7 @@ export interface Config {
 
 Source: [`packages/runtime-diagnostics/invariants/src/index.ts:15`](../packages/runtime-diagnostics/invariants/src/index.ts)
 
-<a id="deepseek-aidsh-jobs-local"></a>
+<a id="williamcodeboxomd-jobs-local"></a>
 
 ## `@williamcodebox/omd-jobs-local`
 
@@ -836,7 +676,7 @@ export interface Config {
 
 Source: [`packages/jobs/jobs-local/src/index.ts:31`](../packages/jobs/jobs-local/src/index.ts)
 
-<a id="deepseek-aidsh-llm-deepseek"></a>
+<a id="williamcodeboxomd-llm-deepseek"></a>
 
 ## `@williamcodebox/omd-llm-deepseek`
 
@@ -891,7 +731,7 @@ Depends on: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
 
 Source: [`packages/llm/llm-deepseek/src/index.ts:62`](../packages/llm/llm-deepseek/src/index.ts)
 
-<a id="deepseek-aidsh-llm-pi-ai"></a>
+<a id="williamcodeboxomd-llm-pi-ai"></a>
 
 ## `@williamcodebox/omd-llm-pi-ai`
 
@@ -1081,7 +921,7 @@ Depends on: `Api` (`@earendil-works/pi-ai`) · `CacheRetention` (`@earendil-work
 
 Source: [`packages/llm/llm-pi-ai/src/config.ts:172`](../packages/llm/llm-pi-ai/src/config.ts)
 
-<a id="deepseek-aidsh-llm-replay"></a>
+<a id="williamcodeboxomd-llm-replay"></a>
 
 ## `@williamcodebox/omd-llm-replay`
 
@@ -1149,7 +989,7 @@ Depends on: [`ModelModality`](../packages/llm/llm/src/index.ts) · [`RetryPolicy
 
 Source: [`packages/test-support/llm-replay/src/index.ts:776`](../packages/test-support/llm-replay/src/index.ts)
 
-<a id="deepseek-aidsh-llm-retry"></a>
+<a id="williamcodeboxomd-llm-retry"></a>
 
 ## `@williamcodebox/omd-llm-retry`
 
@@ -1162,7 +1002,7 @@ export type Config = Readonly<Record<string, never>>
 
 Source: [`packages/llm/llm-retry/src/index.ts:24`](../packages/llm/llm-retry/src/index.ts)
 
-<a id="deepseek-aidsh-lsp-stdio"></a>
+<a id="williamcodeboxomd-lsp-stdio"></a>
 
 ## `@williamcodebox/omd-lsp-stdio`
 
@@ -1204,7 +1044,7 @@ export interface LspLocalServerConfig {
 
 Source: [`packages/lsp/lsp-stdio/src/index.ts:82`](../packages/lsp/lsp-stdio/src/index.ts)
 
-<a id="deepseek-aidsh-mcp-client"></a>
+<a id="williamcodeboxomd-mcp-client"></a>
 
 ## `@williamcodebox/omd-mcp-client`
 
@@ -1277,7 +1117,7 @@ export interface ReconnectConfig {
 
 Source: [`packages/mcp/mcp-client/src/index.ts:98`](../packages/mcp/mcp-client/src/index.ts)
 
-<a id="deepseek-aidsh-message-feedback"></a>
+<a id="williamcodeboxomd-message-feedback"></a>
 
 ## `@williamcodebox/omd-message-feedback`
 
@@ -1293,7 +1133,7 @@ export interface Config {
 
 Source: [`packages/feedback/message-feedback/src/index.ts:49`](../packages/feedback/message-feedback/src/index.ts)
 
-<a id="deepseek-aidsh-permission-presets"></a>
+<a id="williamcodeboxomd-permission-presets"></a>
 
 ## `@williamcodebox/omd-permission-presets`
 
@@ -1332,7 +1172,7 @@ Depends on: [`ApprovalPolicy`](subsystems/approval.md) · [`SandboxMode`](subsys
 
 Source: [`packages/interaction/permission-presets/src/index.ts:140`](../packages/interaction/permission-presets/src/index.ts)
 
-<a id="deepseek-aidsh-persona"></a>
+<a id="williamcodeboxomd-persona"></a>
 
 ## `@williamcodebox/omd-persona`
 
@@ -1356,7 +1196,7 @@ export interface Config {
 
 Source: [`packages/preset/persona/src/index.ts:34`](../packages/preset/persona/src/index.ts)
 
-<a id="deepseek-aidsh-plan-mode"></a>
+<a id="williamcodeboxomd-plan-mode"></a>
 
 ## `@williamcodebox/omd-plan-mode`
 
@@ -1372,7 +1212,7 @@ export interface PlanModeConfig {
 
 Source: [`packages/plan/plan-mode/src/index.ts:70`](../packages/plan/plan-mode/src/index.ts)
 
-<a id="deepseek-aidsh-pwsh-local"></a>
+<a id="williamcodeboxomd-pwsh-local"></a>
 
 ## `@williamcodebox/omd-pwsh-local`
 
@@ -1405,7 +1245,7 @@ export interface Config {
 
 Source: [`packages/shell/pwsh-local/src/index.ts:58`](../packages/shell/pwsh-local/src/index.ts)
 
-<a id="deepseek-aidsh-pwsh-sandbox"></a>
+<a id="williamcodeboxomd-pwsh-sandbox"></a>
 
 ## `@williamcodebox/omd-pwsh-sandbox`
 
@@ -1423,11 +1263,11 @@ Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 export type Config = LocalConfig
 ```
 
-Depends on: [`LocalConfig`](#deepseek-aidsh-pwsh-local)
+Depends on: [`LocalConfig`](#williamcodeboxomd-pwsh-local)
 
 Source: [`packages/shell/pwsh-sandbox/src/index.ts:40`](../packages/shell/pwsh-sandbox/src/index.ts)
 
-<a id="deepseek-aidsh-repeat-tool-reminder"></a>
+<a id="williamcodeboxomd-repeat-tool-reminder"></a>
 
 ## `@williamcodebox/omd-repeat-tool-reminder`
 
@@ -1461,7 +1301,7 @@ export interface Config {
 
 Source: [`packages/guard/repeat-tool-reminder/src/index.ts:28`](../packages/guard/repeat-tool-reminder/src/index.ts)
 
-<a id="deepseek-aidsh-sandbox-local"></a>
+<a id="williamcodeboxomd-sandbox-local"></a>
 
 ## `@williamcodebox/omd-sandbox-local`
 
@@ -1493,7 +1333,7 @@ export interface Config {
 
 Source: [`packages/sandbox/sandbox-local/src/index.ts:44`](../packages/sandbox/sandbox-local/src/index.ts)
 
-<a id="deepseek-aidsh-sandbox-policy"></a>
+<a id="williamcodeboxomd-sandbox-policy"></a>
 
 ## `@williamcodebox/omd-sandbox-policy`
 
@@ -1520,31 +1360,7 @@ Depends on: [`SandboxMode`](subsystems/sandbox.md)
 
 Source: [`packages/sandbox/sandbox-policy/src/index.ts:67`](../packages/sandbox/sandbox-policy/src/index.ts)
 
-<a id="deepseek-aidsh-sdk-jsonrpc-server"></a>
-
-## `@williamcodebox/omd-sdk-jsonrpc-server`
-
-Requires: `agents`
-
-```ts config-catalog
-/** JSON-RPC deployment config plus runtime-only test hooks. */
-export interface JsonRpcConfig {
-  /** Report max-token turn/subagent termination as a successful SDK result. */
-  maxTokensAsSuccess?: boolean
-  /** Transport input override; production uses `process.stdin`. */
-  input?: Readable
-  /** Transport output override; production uses `process.stdout`. */
-  output?: Writable
-  /** Process-exit override; production uses `process.exit`. */
-  exit?: (code: number) => void
-}
-```
-
-Depends on: `Readable` (`node:stream`) · `Writable` (`node:stream`)
-
-Source: [`packages/sdk/server/src/index.ts:25`](../packages/sdk/server/src/index.ts)
-
-<a id="deepseek-aidsh-session-persistence-jsonl"></a>
+<a id="williamcodeboxomd-session-persistence-jsonl"></a>
 
 ## `@williamcodebox/omd-session-persistence-jsonl`
 
@@ -1583,7 +1399,7 @@ export type JsonlCompression = 'zstd' | 'none'
 
 Source: [`packages/session/session-persistence-jsonl/src/index.ts:60`](../packages/session/session-persistence-jsonl/src/index.ts)
 
-<a id="deepseek-aidsh-session-persistence-sqlite"></a>
+<a id="williamcodeboxomd-session-persistence-sqlite"></a>
 
 ## `@williamcodebox/omd-session-persistence-sqlite`
 
@@ -1628,7 +1444,7 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 Source: [`packages/session/session-persistence-sqlite/src/index.ts:70`](../packages/session/session-persistence-sqlite/src/index.ts)
 
-<a id="deepseek-aidsh-session-projection-cache"></a>
+<a id="williamcodeboxomd-session-projection-cache"></a>
 
 ## `@williamcodebox/omd-session-projection-cache`
 
@@ -1651,7 +1467,7 @@ export interface Config {
 
 Source: [`packages/session/session-projection-cache/src/index.ts:42`](../packages/session/session-projection-cache/src/index.ts)
 
-<a id="deepseek-aidsh-session-query-sqlite"></a>
+<a id="williamcodeboxomd-session-query-sqlite"></a>
 
 ## `@williamcodebox/omd-session-query-sqlite`
 
@@ -1697,7 +1513,7 @@ Depends on: [`SessionQueryConfig`](../packages/session-query/session-query/src/i
 
 Source: [`packages/session-query/session-query-sqlite/src/index.ts:89`](../packages/session-query/session-query-sqlite/src/index.ts)
 
-<a id="deepseek-aidsh-session-reference"></a>
+<a id="williamcodeboxomd-session-reference"></a>
 
 ## `@williamcodebox/omd-session-reference`
 
@@ -1717,7 +1533,7 @@ export interface Config {
 
 Source: [`packages/context/session-reference/src/config.ts:11`](../packages/context/session-reference/src/config.ts)
 
-<a id="deepseek-aidsh-session-telemetry-otel"></a>
+<a id="williamcodeboxomd-session-telemetry-otel"></a>
 
 ## `@williamcodebox/omd-session-telemetry-otel`
 
@@ -1763,7 +1579,7 @@ Depends on: `BatchLogRecordProcessorOptions` (`@opentelemetry/sdk-logs`) · `OTL
 
 Source: [`packages/session/session-telemetry-otel/src/index.ts:91`](../packages/session/session-telemetry-otel/src/index.ts)
 
-<a id="deepseek-aidsh-session-title"></a>
+<a id="williamcodeboxomd-session-title"></a>
 
 ## `@williamcodebox/omd-session-title`
 
@@ -1783,22 +1599,7 @@ export interface Config {
 
 Source: [`packages/session/session-title/src/index.ts:79`](../packages/session/session-title/src/index.ts)
 
-<a id="deepseek-aidsh-session-title-all-prompts-llm"></a>
-
-## `@williamcodebox/omd-session-title-all-prompts-llm`
-
-Requires: `sessionTitle` · `llm` · `sessions`
-
-```ts config-catalog
-/** Required LLM policy; this plugin adds no defaults. */
-export type Config = SessionTitleLlmConfig
-```
-
-Depends on: [`SessionTitleLlmConfig`](../packages/session/session-title-llm/src/index.ts)
-
-Source: [`packages/session/session-title-all-prompts-llm/src/index.ts:15`](../packages/session/session-title-all-prompts-llm/src/index.ts)
-
-<a id="deepseek-aidsh-session-title-first-prompt-llm"></a>
+<a id="williamcodeboxomd-session-title-first-prompt-llm"></a>
 
 ## `@williamcodebox/omd-session-title-first-prompt-llm`
 
@@ -1813,7 +1614,7 @@ Depends on: [`SessionTitleLlmConfig`](../packages/session/session-title-llm/src/
 
 Source: [`packages/session/session-title-first-prompt-llm/src/index.ts:15`](../packages/session/session-title-first-prompt-llm/src/index.ts)
 
-<a id="deepseek-aidsh-settings-file"></a>
+<a id="williamcodeboxomd-settings-file"></a>
 
 ## `@williamcodebox/omd-settings-file`
 
@@ -1833,7 +1634,7 @@ export interface Config {
 
 Source: [`packages/settings/settings-file/src/index.ts:21`](../packages/settings/settings-file/src/index.ts)
 
-<a id="deepseek-aidsh-shell-env"></a>
+<a id="williamcodeboxomd-shell-env"></a>
 
 ## `@williamcodebox/omd-shell-env`
 
@@ -1847,7 +1648,7 @@ export interface Config {
 
 Source: [`packages/shell/shell-env/src/index.ts:29`](../packages/shell/shell-env/src/index.ts)
 
-<a id="deepseek-aidsh-skill"></a>
+<a id="williamcodeboxomd-skill"></a>
 
 ## `@williamcodebox/omd-skill`
 
@@ -1861,7 +1662,7 @@ export interface Config {
 
 Source: [`packages/skill/skill/src/index.ts:279`](../packages/skill/skill/src/index.ts)
 
-<a id="deepseek-aidsh-skill-filesystem"></a>
+<a id="williamcodeboxomd-skill-filesystem"></a>
 
 ## `@williamcodebox/omd-skill-filesystem`
 
@@ -1899,7 +1700,7 @@ export interface Config {
 
 Source: [`packages/skill/skill-filesystem/src/index.ts:49`](../packages/skill/skill-filesystem/src/index.ts)
 
-<a id="deepseek-aidsh-spill-local"></a>
+<a id="williamcodeboxomd-spill-local"></a>
 
 ## `@williamcodebox/omd-spill-local`
 
@@ -1917,7 +1718,7 @@ export interface Config {
 
 Source: [`packages/spill/spill-local/src/index.ts:22`](../packages/spill/spill-local/src/index.ts)
 
-<a id="deepseek-aidsh-spill-policy"></a>
+<a id="williamcodeboxomd-spill-policy"></a>
 
 ## `@williamcodebox/omd-spill-policy`
 
@@ -1937,7 +1738,7 @@ export interface Config {
 
 Source: [`packages/spill/spill-policy/src/index.ts:60`](../packages/spill/spill-policy/src/index.ts)
 
-<a id="deepseek-aidsh-storage-domain"></a>
+<a id="williamcodeboxomd-storage-domain"></a>
 
 ## `@williamcodebox/omd-storage-domain`
 
@@ -1960,7 +1761,7 @@ export interface Config {
 
 Source: [`packages/storage/storage-domain/src/index.ts:52`](../packages/storage/storage-domain/src/index.ts)
 
-<a id="deepseek-aidsh-storage-json"></a>
+<a id="williamcodeboxomd-storage-json"></a>
 
 ## `@williamcodebox/omd-storage-json`
 
@@ -1981,47 +1782,7 @@ export interface Config {
 
 Source: [`packages/storage/storage-json/src/index.ts:27`](../packages/storage/storage-json/src/index.ts)
 
-<a id="deepseek-aidsh-storage-sqlite"></a>
-
-## `@williamcodebox/omd-storage-sqlite`
-
-Requires: `storage`
-
-```ts config-catalog
-/** Plugin configuration. */
-export interface Config {
-  /**
-   * Filesystem path to the SQLite database file. The special value `:memory:`
-   * opens an in-process database (tests). On filesystems with POSIX modes,
-   * missing directories and databases are created owner-only; existing path
-   * modes are preserved. Filesystem setup errors other than an existing
-   * database fail the open. The backend does not protect confidentiality or
-   * integrity when another principal can replace the database entry in its
-   * parent directory.
-   */
-  path: string
-  /**
-   * SQLite `journal_mode` pragma. `wal` (the default) suits local disks; pick
-   * a rollback-journal mode (`delete`/`truncate`/`persist`) on filesystems
-   * where WAL's shared-memory files do not work (network mounts). See
-   * {@link JournalMode}.
-   */
-  journalMode?: JournalMode
-}
-
-/**
- * Journal modes the backend will run under. `wal` is the default; the
- * rollback-journal modes (`delete`/`truncate`/`persist`) exist for
- * filesystems where WAL's shared-memory files do not work (network mounts).
- * `memory`/`off` are excluded: dropping journal durability silently
- * contradicts the durability clause of the KV backend contract.
- */
-export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
-```
-
-Source: [`packages/storage/storage-sqlite/src/index.ts:24`](../packages/storage/storage-sqlite/src/index.ts)
-
-<a id="deepseek-aidsh-subagent-acp"></a>
+<a id="williamcodeboxomd-subagent-acp"></a>
 
 ## `@williamcodebox/omd-subagent-acp`
 
@@ -2074,7 +1835,7 @@ export type PermissionPolicy = 'allow' | 'reject'
 
 Source: [`packages/subagent/subagent-acp/src/index.ts:27`](../packages/subagent/subagent-acp/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-claude-code"></a>
+<a id="williamcodeboxomd-subagent-claude-code"></a>
 
 ## `@williamcodebox/omd-subagent-claude-code`
 
@@ -2095,7 +1856,7 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-claude-code/src/index.ts:32`](../packages/subagent/subagent-claude-code/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-codex"></a>
+<a id="williamcodeboxomd-subagent-codex"></a>
 
 ## `@williamcodebox/omd-subagent-codex`
 
@@ -2116,7 +1877,7 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-codex/src/index.ts:30`](../packages/subagent/subagent-codex/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-dsh-sdk"></a>
+<a id="williamcodeboxomd-subagent-dsh-sdk"></a>
 
 ## `@williamcodebox/omd-subagent-dsh-sdk`
 
@@ -2169,7 +1930,7 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-dsh-sdk/src/index.ts:29`](../packages/subagent/subagent-dsh-sdk/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-fork-in-process"></a>
+<a id="williamcodeboxomd-subagent-fork-in-process"></a>
 
 ## `@williamcodebox/omd-subagent-fork-in-process`
 
@@ -2185,7 +1946,7 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-fork-in-process/src/index.ts:31`](../packages/subagent/subagent-fork-in-process/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-spawn-in-process"></a>
+<a id="williamcodeboxomd-subagent-spawn-in-process"></a>
 
 ## `@williamcodebox/omd-subagent-spawn-in-process`
 
@@ -2201,23 +1962,7 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-spawn-in-process/src/index.ts:25`](../packages/subagent/subagent-spawn-in-process/src/index.ts)
 
-<a id="deepseek-aidsh-subprocess-e2b"></a>
-
-## `@williamcodebox/omd-subprocess-e2b`
-
-Requires: `e2b`
-
-```ts config-catalog
-/** Configuration for the E2B subprocess adapter. */
-export interface Config {
-  /** Remote status/liveness poll cadence in milliseconds; each tick is one control-plane request. */
-  pollMs?: number
-}
-```
-
-Source: [`packages/e2b/subprocess-e2b/src/index.ts:25`](../packages/e2b/subprocess-e2b/src/index.ts)
-
-<a id="deepseek-aidsh-system-prompt"></a>
+<a id="williamcodeboxomd-system-prompt"></a>
 
 ## `@williamcodebox/omd-system-prompt`
 
@@ -2244,7 +1989,7 @@ export interface Config {
 
 Source: [`packages/core/system-prompt/src/index.ts:186`](../packages/core/system-prompt/src/index.ts)
 
-<a id="deepseek-aidsh-terminal-bash"></a>
+<a id="williamcodeboxomd-terminal-bash"></a>
 
 ## `@williamcodebox/omd-terminal-bash`
 
@@ -2289,7 +2034,7 @@ export interface Config {
 
 Source: [`packages/terminal/terminal-bash/src/config.ts:6`](../packages/terminal/terminal-bash/src/config.ts)
 
-<a id="deepseek-aidsh-time-context"></a>
+<a id="williamcodeboxomd-time-context"></a>
 
 ## `@williamcodebox/omd-time-context`
 
@@ -2307,7 +2052,7 @@ export interface Config {
 
 Source: [`packages/context/time-context/src/index.ts:27`](../packages/context/time-context/src/index.ts)
 
-<a id="deepseek-aidsh-tmux-context"></a>
+<a id="williamcodeboxomd-tmux-context"></a>
 
 ## `@williamcodebox/omd-tmux-context`
 
@@ -2323,7 +2068,7 @@ export interface Config {
 
 Source: [`packages/context/tmux-context/src/index.ts:34`](../packages/context/tmux-context/src/index.ts)
 
-<a id="deepseek-aidsh-token-meter"></a>
+<a id="williamcodeboxomd-token-meter"></a>
 
 ## `@williamcodebox/omd-token-meter`
 
@@ -2334,7 +2079,7 @@ export type TokenMeterConfig = Record<string, never>
 
 Source: [`packages/llm/token-meter/src/types.ts:12`](../packages/llm/token-meter/src/types.ts)
 
-<a id="deepseek-aidsh-tool-bash"></a>
+<a id="williamcodeboxomd-tool-bash"></a>
 
 ## `@williamcodebox/omd-tool-bash`
 
@@ -2350,7 +2095,7 @@ export interface Config {
 
 Source: [`packages/shell/tool-bash/src/index.ts:34`](../packages/shell/tool-bash/src/index.ts)
 
-<a id="deepseek-aidsh-tool-bash-persistent"></a>
+<a id="williamcodeboxomd-tool-bash-persistent"></a>
 
 ## `@williamcodebox/omd-tool-bash-persistent`
 
@@ -2372,7 +2117,7 @@ export interface Config {
 
 Source: [`packages/shell/tool-bash-persistent/src/index.ts:405`](../packages/shell/tool-bash-persistent/src/index.ts)
 
-<a id="deepseek-aidsh-tool-fs"></a>
+<a id="williamcodeboxomd-tool-fs"></a>
 
 ## `@williamcodebox/omd-tool-fs`
 
@@ -2394,7 +2139,7 @@ export interface Config {
 
 Source: [`packages/fs/tool-fs/src/index.ts:25`](../packages/fs/tool-fs/src/index.ts)
 
-<a id="deepseek-aidsh-tool-fs-search"></a>
+<a id="williamcodeboxomd-tool-fs-search"></a>
 
 ## `@williamcodebox/omd-tool-fs-search`
 
@@ -2429,7 +2174,7 @@ export interface Config {
 
 Source: [`packages/fs/tool-fs-search/src/index.ts:73`](../packages/fs/tool-fs-search/src/index.ts)
 
-<a id="deepseek-aidsh-tool-goal"></a>
+<a id="williamcodeboxomd-tool-goal"></a>
 
 ## `@williamcodebox/omd-tool-goal`
 
@@ -2445,7 +2190,7 @@ export interface Config {
 
 Source: [`packages/goal/tool-goal/src/index.ts:26`](../packages/goal/tool-goal/src/index.ts)
 
-<a id="deepseek-aidsh-tool-jobs"></a>
+<a id="williamcodeboxomd-tool-jobs"></a>
 
 ## `@williamcodebox/omd-tool-jobs`
 
@@ -2479,7 +2224,7 @@ export type CompletionDelivery = 'quiet' | 'wakeup'
 
 Source: [`packages/jobs/tool-jobs/src/index.ts:32`](../packages/jobs/tool-jobs/src/index.ts)
 
-<a id="deepseek-aidsh-tool-lsp"></a>
+<a id="williamcodeboxomd-tool-lsp"></a>
 
 ## `@williamcodebox/omd-tool-lsp`
 
@@ -2499,7 +2244,7 @@ export interface Config {
 
 Source: [`packages/lsp/tool-lsp/src/index.ts:58`](../packages/lsp/tool-lsp/src/index.ts)
 
-<a id="deepseek-aidsh-tool-pwsh"></a>
+<a id="williamcodeboxomd-tool-pwsh"></a>
 
 ## `@williamcodebox/omd-tool-pwsh`
 
@@ -2515,7 +2260,7 @@ export interface Config {
 
 Source: [`packages/shell/tool-pwsh/src/index.ts:52`](../packages/shell/tool-pwsh/src/index.ts)
 
-<a id="deepseek-aidsh-tool-ralph"></a>
+<a id="williamcodeboxomd-tool-ralph"></a>
 
 ## `@williamcodebox/omd-tool-ralph`
 
@@ -2537,25 +2282,7 @@ export interface Config {
 
 Source: [`packages/workflow/tool-ralph/src/index.ts:23`](../packages/workflow/tool-ralph/src/index.ts)
 
-<a id="deepseek-aidsh-tool-session-query"></a>
-
-## `@williamcodebox/omd-tool-session-query`
-
-Requires: `tools` · `systemPrompt` · `sessionQuery`
-
-```ts config-catalog
-/** Deployment-owned search count and timeout bounds. */
-export interface Config {
-  /** Maximum authorized hits returned by one search call. Defaults to 100. */
-  maxSearchResults?: number
-  /** Cooperative full-text search deadline in milliseconds. Defaults to 30000. */
-  searchTimeoutMs?: number
-}
-```
-
-Source: [`packages/session-query/tool-session-query/src/index.ts:29`](../packages/session-query/tool-session-query/src/index.ts)
-
-<a id="deepseek-aidsh-tool-skill"></a>
+<a id="williamcodeboxomd-tool-skill"></a>
 
 ## `@williamcodebox/omd-tool-skill`
 
@@ -2571,7 +2298,7 @@ export interface Config {
 
 Source: [`packages/skill/tool-skill/src/index.ts:61`](../packages/skill/tool-skill/src/index.ts)
 
-<a id="deepseek-aidsh-tool-str-replace-editor"></a>
+<a id="williamcodeboxomd-tool-str-replace-editor"></a>
 
 ## `@williamcodebox/omd-tool-str-replace-editor`
 
@@ -2589,7 +2316,7 @@ export interface Config {
 
 Source: [`packages/fs/tool-str-replace-editor/src/index.ts:497`](../packages/fs/tool-str-replace-editor/src/index.ts)
 
-<a id="deepseek-aidsh-tool-subagent"></a>
+<a id="williamcodeboxomd-tool-subagent"></a>
 
 ## `@williamcodebox/omd-tool-subagent`
 
@@ -2654,7 +2381,7 @@ Depends on: [`AgentOptions`](subsystems/core.md)
 
 Source: [`packages/subagent/tool-subagent/src/index.ts:29`](../packages/subagent/tool-subagent/src/index.ts)
 
-<a id="deepseek-aidsh-tool-subagent-report"></a>
+<a id="williamcodeboxomd-tool-subagent-report"></a>
 
 ## `@williamcodebox/omd-tool-subagent-report`
 
@@ -2676,7 +2403,7 @@ Depends on: [`SubagentReportDelivery`](subsystems/subagent.md)
 
 Source: [`packages/subagent/tool-subagent-report/src/index.ts:27`](../packages/subagent/tool-subagent-report/src/index.ts)
 
-<a id="deepseek-aidsh-tool-terminal"></a>
+<a id="williamcodeboxomd-tool-terminal"></a>
 
 ## `@williamcodebox/omd-tool-terminal`
 
@@ -2694,7 +2421,7 @@ export interface Config {
 
 Source: [`packages/terminal/tool-terminal/src/index.ts:35`](../packages/terminal/tool-terminal/src/index.ts)
 
-<a id="deepseek-aidsh-tool-todo"></a>
+<a id="williamcodeboxomd-tool-todo"></a>
 
 ## `@williamcodebox/omd-tool-todo`
 
@@ -2716,7 +2443,7 @@ export interface Config {
 
 Source: [`packages/todo/tool-todo/src/index.ts:29`](../packages/todo/tool-todo/src/index.ts)
 
-<a id="deepseek-aidsh-tool-web"></a>
+<a id="williamcodeboxomd-tool-web"></a>
 
 ## `@williamcodebox/omd-tool-web`
 
@@ -2742,7 +2469,7 @@ export interface Config {
 
 Source: [`packages/web/tool-web/src/index.ts:37`](../packages/web/tool-web/src/index.ts)
 
-<a id="deepseek-aidsh-tool-workflow"></a>
+<a id="williamcodeboxomd-tool-workflow"></a>
 
 ## `@williamcodebox/omd-tool-workflow`
 
@@ -2760,7 +2487,7 @@ export interface Config {
 
 Source: [`packages/workflow/tool-workflow/src/index.ts:33`](../packages/workflow/tool-workflow/src/index.ts)
 
-<a id="deepseek-aidsh-tools"></a>
+<a id="williamcodeboxomd-tools"></a>
 
 ## `@williamcodebox/omd-tools`
 
@@ -2796,7 +2523,29 @@ export type ToolPresentationMode = 'native' | 'code' | 'both'
 
 Source: [`packages/core/tools/src/index.ts:654`](../packages/core/tools/src/index.ts)
 
-<a id="deepseek-aidsh-typert-loader"></a>
+<a id="williamcodeboxomd-tui"></a>
+
+## `@williamcodebox/omd-tui`
+
+Requires: `agentDefaultModel` · `agents` · `sessions` · `userQuestions` · `commands`
+
+```ts config-catalog
+/** Plugin config: startup values resolved from the injected provider service. */
+export interface Config {
+  /** Resume this persisted session instead of creating a fresh one. */
+  resume?: string
+  /** Session workspace root; defaults to the invoking directory. */
+  workspace?: string
+  /** `provider/model` pair for this session; defaults to the current selection. */
+  model?: string
+  /** Permission preset applied at session creation. */
+  permission?: string
+}
+```
+
+Source: [`packages/bundle/tui/src/index.ts:46`](../packages/bundle/tui/src/index.ts)
+
+<a id="williamcodeboxomd-typert-loader"></a>
 
 ## `@williamcodebox/omd-typert-loader`
 
@@ -2812,7 +2561,7 @@ export interface Config {
 
 Source: [`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
 
-<a id="deepseek-aidsh-user-approval"></a>
+<a id="williamcodeboxomd-user-approval"></a>
 
 ## `@williamcodebox/omd-user-approval`
 
@@ -2843,7 +2592,7 @@ export type ApprovalPolicy = 'ask' | 'never'
 
 Source: [`packages/interaction/user-approval/src/index.ts:177`](../packages/interaction/user-approval/src/index.ts)
 
-<a id="deepseek-aidsh-web"></a>
+<a id="williamcodeboxomd-web"></a>
 
 ## `@williamcodebox/omd-web`
 
@@ -2864,7 +2613,7 @@ export interface WebRuntimeConfig {
 
 Source: [`packages/web/web/src/index.ts:55`](../packages/web/web/src/index.ts)
 
-<a id="deepseek-aidsh-web-app"></a>
+<a id="williamcodeboxomd-web-app"></a>
 
 ## `@williamcodebox/omd-web-app`
 
@@ -2889,7 +2638,7 @@ export interface Config {
 
 Source: [`packages/bundle/web-app/src/index.ts:38`](../packages/bundle/web-app/src/index.ts)
 
-<a id="deepseek-aidsh-web-fetch-http"></a>
+<a id="williamcodeboxomd-web-fetch-http"></a>
 
 ## `@williamcodebox/omd-web-fetch-http`
 
@@ -2915,7 +2664,7 @@ export interface Config {
 
 Source: [`packages/web/web-fetch-http/src/index.ts:34`](../packages/web/web-fetch-http/src/index.ts)
 
-<a id="deepseek-aidsh-web-search-deepseek"></a>
+<a id="williamcodeboxomd-web-search-deepseek"></a>
 
 ## `@williamcodebox/omd-web-search-deepseek`
 
@@ -2943,7 +2692,7 @@ export interface Config {
 
 Source: [`packages/web/web-search-deepseek/src/index.ts:46`](../packages/web/web-search-deepseek/src/index.ts)
 
-<a id="deepseek-aidsh-web-search-exa"></a>
+<a id="williamcodeboxomd-web-search-exa"></a>
 
 ## `@williamcodebox/omd-web-search-exa`
 
@@ -2967,7 +2716,7 @@ export interface Config {
 
 Source: [`packages/web/web-search-exa/src/index.ts:38`](../packages/web/web-search-exa/src/index.ts)
 
-<a id="deepseek-aidsh-web-search-perplexity"></a>
+<a id="williamcodeboxomd-web-search-perplexity"></a>
 
 ## `@williamcodebox/omd-web-search-perplexity`
 
@@ -2991,7 +2740,7 @@ export interface Config {
 
 Source: [`packages/web/web-search-perplexity/src/index.ts:32`](../packages/web/web-search-perplexity/src/index.ts)
 
-<a id="deepseek-aidsh-workflow-worker-thread"></a>
+<a id="williamcodeboxomd-workflow-worker-thread"></a>
 
 ## `@williamcodebox/omd-workflow-worker-thread`
 
@@ -3065,7 +2814,6 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@williamcodebox/omd-command-goal` — requires `commands` · `goals` ([`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts))
 - `@williamcodebox/omd-commands` ([`packages/interaction/commands/src/index.ts`](../packages/interaction/commands/src/index.ts))
 - `@williamcodebox/omd-cordis-client-runner` ([`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts))
-- `@williamcodebox/omd-fs-e2b` — requires `e2b` ([`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts))
 - `@williamcodebox/omd-fs-observation-policy` ([`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts))
 - `@williamcodebox/omd-goal-round-driver` — requires `agents` · `goals` · `sessions` ([`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts))
 - `@williamcodebox/omd-host-directory-picker-auto` — requires `webServer` · `loader` ([`packages/host/directory-picker-auto/src/index.ts`](../packages/host/directory-picker-auto/src/index.ts))
@@ -3131,7 +2879,6 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@williamcodebox/omd-client-web-react` ([`packages/client/web-react/src/index.ts`](../packages/client/web-react/src/index.ts))
 - `@williamcodebox/omd-cmdline` ([`packages/boot/cmdline/src/index.ts`](../packages/boot/cmdline/src/index.ts))
 - `@williamcodebox/omd-home-paths` ([`packages/util/home-paths/src/index.ts`](../packages/util/home-paths/src/index.ts))
-- `@williamcodebox/omd-hook-protocol` ([`packages/hooks/hook-protocol/src/index.ts`](../packages/hooks/hook-protocol/src/index.ts))
 - `@williamcodebox/omd-launch-environment` ([`packages/util/launch-environment/src/index.ts`](../packages/util/launch-environment/src/index.ts))
 - `@williamcodebox/omd-llm-mock-server` ([`packages/test-support/llm-mock-server/src/index.ts`](../packages/test-support/llm-mock-server/src/index.ts))
 - `@williamcodebox/omd-loader-smoke` ([`packages/test-support/loader-smoke/src/index.ts`](../packages/test-support/loader-smoke/src/index.ts))
@@ -3140,12 +2887,12 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@williamcodebox/omd-sandbox-windows-acl` ([`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts))
 - `@williamcodebox/omd-scope` ([`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts))
 - `@williamcodebox/omd-sdk-client` ([`packages/sdk/client/src/index.ts`](../packages/sdk/client/src/index.ts))
-- `@williamcodebox/omd-sdk-jsonrpc-demo` ([`packages/examples/jsonrpc-demo/src/index.ts`](../packages/examples/jsonrpc-demo/src/index.ts))
 - `@williamcodebox/omd-sdk-protocol` ([`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts))
 - `@williamcodebox/omd-session-telemetry` ([`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts))
 - `@williamcodebox/omd-session-title-llm` ([`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts))
 - `@williamcodebox/omd-subagent-in-process-driver` ([`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts))
 - `@williamcodebox/omd-timeout` ([`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts))
+- `@williamcodebox/omd-tui-renderer` ([`packages/interaction/tui-renderer/src/index.ts`](../packages/interaction/tui-renderer/src/index.ts))
 - `@williamcodebox/omd-typert-generator` ([`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts))
 - `@williamcodebox/omd-typert-protocol` ([`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts))
 - `@williamcodebox/omd-typert-registry` ([`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts))

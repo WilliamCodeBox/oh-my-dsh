@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-07-25-scriptable-llm-wire-fault-server.md
+2026-07-25-scriptable-llm-wire-fault-server.md: bc9eeac3693c9c5f45f7cedd3b98362c13378ffc
+2026-07-25-scriptable-llm-wire-fault-server.zh.md: 2866f211ae98c6f8d416c295398c13fadf50faaf

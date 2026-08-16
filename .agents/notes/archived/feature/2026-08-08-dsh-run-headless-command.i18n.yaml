@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/feature/2026-08-08-dsh-run-headless-command.md
-2026-08-08-dsh-run-headless-command.md: ce9cff965192357022c49655983fe6ff8d554b9f
-2026-08-08-dsh-run-headless-command.zh.md: 0484c069ed6365235e4616542a4fb3d5ceb2d880
+2026-08-08-dsh-run-headless-command.md: 01a384d218687bcf3905a27bd35a9799205b21bb
+2026-08-08-dsh-run-headless-command.zh.md: fe55c31c698a964653d5e7f93647cf88aa66b6f2

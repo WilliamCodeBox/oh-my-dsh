@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/feature/2026-07-24-configurable-tui-prompt-theme.md
-2026-07-24-configurable-tui-prompt-theme.md: 918eaa617811049a5caa4b9f43a8cc12854471c3
-2026-07-24-configurable-tui-prompt-theme.zh.md: eccfed00c3fe866291d2f18bd7cecf117296bd58
+2026-07-24-configurable-tui-prompt-theme.md: 849ef0acfc6080baf663404c70c1f7e93eec668d
+2026-07-24-configurable-tui-prompt-theme.zh.md: bd254a40e770177d4e9cd5020ee26777c8c0778e

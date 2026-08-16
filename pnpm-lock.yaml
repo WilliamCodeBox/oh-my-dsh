@@ -45,9 +45,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
-      '@williamcodebox/omd-tool-session-query':
-        specifier: workspace:^
-        version: link:packages/session-query/tool-session-query
       '@yarnpkg/cli-dist':
         specifier: 4.17.1
         version: 4.17.1
@@ -644,9 +641,6 @@ importers:
       '@williamcodebox/cordis-plugin-timer':
         specifier: workspace:*
         version: link:../vendor/timer
-      '@williamcodebox/omd-acp-demo':
-        specifier: workspace:*
-        version: link:../packages/examples/acp-demo
       '@williamcodebox/omd-agent':
         specifier: workspace:*
         version: link:../packages/core/agent
@@ -698,12 +692,6 @@ importers:
       '@williamcodebox/omd-credentials-local':
         specifier: workspace:*
         version: link:../packages/credentials/credentials-local
-      '@williamcodebox/omd-e2b':
-        specifier: workspace:*
-        version: link:../packages/e2b/e2b
-      '@williamcodebox/omd-fs-e2b':
-        specifier: workspace:*
-        version: link:../packages/e2b/fs-e2b
       '@williamcodebox/omd-fs-local':
         specifier: workspace:*
         version: link:../packages/fs/fs-local
@@ -719,12 +707,6 @@ importers:
       '@williamcodebox/omd-goal-round-driver':
         specifier: workspace:*
         version: link:../packages/goal/goal-round-driver
-      '@williamcodebox/omd-hooks-claude-code':
-        specifier: workspace:*
-        version: link:../packages/hooks/hooks-claude-code
-      '@williamcodebox/omd-hooks-codex':
-        specifier: workspace:*
-        version: link:../packages/hooks/hooks-codex
       '@williamcodebox/omd-invariants':
         specifier: workspace:*
         version: link:../packages/runtime-diagnostics/invariants
@@ -776,9 +758,6 @@ importers:
       '@williamcodebox/omd-scope':
         specifier: workspace:*
         version: link:../packages/core/scope
-      '@williamcodebox/omd-sdk-jsonrpc-server':
-        specifier: workspace:*
-        version: link:../packages/sdk/server
       '@williamcodebox/omd-session':
         specifier: workspace:*
         version: link:../packages/core/session
@@ -833,9 +812,6 @@ importers:
       '@williamcodebox/omd-subagent':
         specifier: workspace:*
         version: link:../packages/subagent/subagent
-      '@williamcodebox/omd-subagent-acp':
-        specifier: workspace:*
-        version: link:../packages/subagent/subagent-acp
       '@williamcodebox/omd-subagent-claude-code':
         specifier: workspace:*
         version: link:../packages/subagent/subagent-claude-code
@@ -851,9 +827,6 @@ importers:
       '@williamcodebox/omd-subagent-spawn-in-process':
         specifier: workspace:*
         version: link:../packages/subagent/subagent-spawn-in-process
-      '@williamcodebox/omd-subprocess-e2b':
-        specifier: workspace:*
-        version: link:../packages/e2b/subprocess-e2b
       '@williamcodebox/omd-subprocess-local':
         specifier: workspace:*
         version: link:../packages/subprocess/subprocess-local
@@ -908,9 +881,6 @@ importers:
       '@williamcodebox/omd-tool-ralph':
         specifier: workspace:*
         version: link:../packages/workflow/tool-ralph
-      '@williamcodebox/omd-tool-session-query':
-        specifier: workspace:*
-        version: link:../packages/session-query/tool-session-query
       '@williamcodebox/omd-tool-skill':
         specifier: workspace:*
         version: link:../packages/skill/tool-skill
@@ -987,43 +957,6 @@ importers:
   native/landlock-run/packages/linux-arm64: {}
 
   native/landlock-run/packages/linux-x64: {}
-
-  packages/acp/acp:
-    dependencies:
-      '@agentclientprotocol/sdk':
-        specifier: 0.25.1
-        version: 0.25.1(zod@4.4.3)
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@williamcodebox/omd-agent-loop':
-        specifier: workspace:^
-        version: link:../../core/agent-loop
-      '@williamcodebox/omd-agent-loop-testkit':
-        specifier: workspace:^
-        version: link:../../test-support/agent-loop-testkit
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../llm/llm
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../core/tools
-      '@williamcodebox/omd-user-approval':
-        specifier: workspace:^
-        version: link:../../interaction/user-approval
 
   packages/api/gateway:
     dependencies:
@@ -3964,117 +3897,6 @@ importers:
         specifier: workspace:^
         version: link:../../util/launch-environment
 
-  packages/e2b/e2b:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-      e2b:
-        specifier: 2.29.1
-        version: 2.29.1
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-loader-smoke':
-        specifier: workspace:^
-        version: link:../../test-support/loader-smoke
-      '@williamcodebox/omd-sandbox-policy':
-        specifier: workspace:^
-        version: link:../../sandbox/sandbox-policy
-
-  packages/e2b/fs-e2b:
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-e2b':
-        specifier: workspace:^
-        version: link:../e2b
-      '@williamcodebox/omd-fs':
-        specifier: workspace:^
-        version: link:../../fs/fs
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-
-  packages/e2b/subprocess-e2b:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-e2b':
-        specifier: workspace:^
-        version: link:../e2b
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-subprocess':
-        specifier: workspace:^
-        version: link:../../subprocess/subprocess
-      '@williamcodebox/omd-timeout':
-        specifier: workspace:^
-        version: link:../../util/timeout
-
-  packages/examples/acp-demo:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/cordis-plugin-include':
-        specifier: workspace:^
-        version: link:../../../vendor/include
-      '@williamcodebox/cordis-plugin-loader':
-        specifier: workspace:^
-        version: link:../../../vendor/loader
-      '@williamcodebox/omd-acp':
-        specifier: workspace:^
-        version: link:../../acp/acp
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@williamcodebox/omd-agent-instructions':
-        specifier: workspace:^
-        version: link:../../context/agent-instructions
-      '@williamcodebox/omd-agent-spine-demo':
-        specifier: workspace:^
-        version: link:../agent-spine-demo
-      '@williamcodebox/omd-app-boot':
-        specifier: workspace:^
-        version: link:../../boot/app-boot
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-session-checkpoint-policy':
-        specifier: workspace:^
-        version: link:../../session/session-checkpoint-policy
-      '@williamcodebox/omd-session-persistence-jsonl':
-        specifier: workspace:^
-        version: link:../../session/session-persistence-jsonl
-      '@williamcodebox/omd-session-query':
-        specifier: workspace:^
-        version: link:../../session-query/session-query
-      '@williamcodebox/omd-session-query-sqlite':
-        specifier: workspace:^
-        version: link:../../session-query/session-query-sqlite
-      '@williamcodebox/omd-system-prompt':
-        specifier: workspace:^
-        version: link:../../core/system-prompt
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../core/tools
-
   packages/examples/agent-spine-demo:
     dependencies:
       '@williamcodebox/schemastery':
@@ -4186,19 +4008,6 @@ importers:
       '@williamcodebox/omd-tools':
         specifier: workspace:^
         version: link:../../core/tools
-
-  packages/examples/jsonrpc-demo:
-    dependencies:
-      '@williamcodebox/omd-app-boot':
-        specifier: workspace:^
-        version: link:../../boot/app-boot
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
 
   packages/extensions/cordis-client-runner:
     devDependencies:
@@ -4844,122 +4653,6 @@ importers:
       '@williamcodebox/omd-timeout':
         specifier: workspace:^
         version: link:../../util/timeout
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../core/tools
-
-  packages/hooks/hook-protocol:
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-shell':
-        specifier: workspace:^
-        version: link:../../shell/shell
-
-  packages/hooks/hooks-claude-code:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@williamcodebox/omd-agent-loop':
-        specifier: workspace:^
-        version: link:../../core/agent-loop
-      '@williamcodebox/omd-agent-loop-testkit':
-        specifier: workspace:^
-        version: link:../../test-support/agent-loop-testkit
-      '@williamcodebox/omd-bash-local':
-        specifier: workspace:^
-        version: link:../../shell/bash-local
-      '@williamcodebox/omd-hook-protocol':
-        specifier: workspace:^
-        version: link:../hook-protocol
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../llm/llm
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-session-persistence':
-        specifier: workspace:^
-        version: link:../../session/session-persistence
-      '@williamcodebox/omd-session-persistence-jsonl':
-        specifier: workspace:^
-        version: link:../../session/session-persistence-jsonl
-      '@williamcodebox/omd-shell':
-        specifier: workspace:^
-        version: link:../../shell/shell
-      '@williamcodebox/omd-subagent':
-        specifier: workspace:^
-        version: link:../../subagent/subagent
-      '@williamcodebox/omd-subprocess-local':
-        specifier: workspace:^
-        version: link:../../subprocess/subprocess-local
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../core/tools
-
-  packages/hooks/hooks-codex:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@williamcodebox/omd-agent-loop':
-        specifier: workspace:^
-        version: link:../../core/agent-loop
-      '@williamcodebox/omd-agent-loop-testkit':
-        specifier: workspace:^
-        version: link:../../test-support/agent-loop-testkit
-      '@williamcodebox/omd-bash-local':
-        specifier: workspace:^
-        version: link:../../shell/bash-local
-      '@williamcodebox/omd-hook-protocol':
-        specifier: workspace:^
-        version: link:../hook-protocol
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../llm/llm
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-session-persistence':
-        specifier: workspace:^
-        version: link:../../session/session-persistence
-      '@williamcodebox/omd-session-persistence-jsonl':
-        specifier: workspace:^
-        version: link:../../session/session-persistence-jsonl
-      '@williamcodebox/omd-shell':
-        specifier: workspace:^
-        version: link:../../shell/shell
-      '@williamcodebox/omd-subprocess-local':
-        specifier: workspace:^
-        version: link:../../subprocess/subprocess-local
       '@williamcodebox/omd-tools':
         specifier: workspace:^
         version: link:../../core/tools
@@ -6095,49 +5788,6 @@ importers:
         specifier: workspace:^
         version: link:../../subagent/subagent
 
-  packages/sdk/server:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/cordis-plugin-loader':
-        specifier: workspace:^
-        version: link:../../../vendor/loader
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@williamcodebox/omd-agent-spine-demo':
-        specifier: workspace:^
-        version: link:../../examples/agent-spine-demo
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../llm/llm
-      '@williamcodebox/omd-llm-deepseek':
-        specifier: workspace:^
-        version: link:../../llm/llm-deepseek
-      '@williamcodebox/omd-scope':
-        specifier: workspace:^
-        version: link:../../core/scope
-      '@williamcodebox/omd-sdk-protocol':
-        specifier: workspace:^
-        version: link:../protocol
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-session-persistence-jsonl':
-        specifier: workspace:^
-        version: link:../../session/session-persistence-jsonl
-      '@williamcodebox/omd-subagent':
-        specifier: workspace:^
-        version: link:../../subagent/subagent
-
   packages/session-query/session-log-export:
     devDependencies:
       '@types/react':
@@ -6234,55 +5884,6 @@ importers:
       '@williamcodebox/omd-session-query':
         specifier: workspace:^
         version: link:../session-query
-
-  packages/session-query/tool-session-query:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../llm/llm
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-session-persistence':
-        specifier: workspace:^
-        version: link:../../session/session-persistence
-      '@williamcodebox/omd-session-persistence-jsonl':
-        specifier: workspace:^
-        version: link:../../session/session-persistence-jsonl
-      '@williamcodebox/omd-session-query':
-        specifier: workspace:^
-        version: link:../session-query
-      '@williamcodebox/omd-session-query-sqlite':
-        specifier: workspace:^
-        version: link:../session-query-sqlite
-      '@williamcodebox/omd-session-title':
-        specifier: workspace:^
-        version: link:../../session/session-title
-      '@williamcodebox/omd-system-prompt':
-        specifier: workspace:^
-        version: link:../../core/system-prompt
-      '@williamcodebox/omd-timeout':
-        specifier: workspace:^
-        version: link:../../util/timeout
-      '@williamcodebox/omd-tool-call-timeout-policy':
-        specifier: workspace:^
-        version: link:../../guard/timeout-policy
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../core/tools
 
   packages/session/session-checkpoint-policy:
     devDependencies:
@@ -6557,31 +6158,6 @@ importers:
       '@williamcodebox/omd-session-projection':
         specifier: workspace:^
         version: link:../session-projection
-
-  packages/session/session-title-all-prompts-llm:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../llm/llm
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@williamcodebox/omd-session-title':
-        specifier: workspace:^
-        version: link:../session-title
-      '@williamcodebox/omd-session-title-llm':
-        specifier: workspace:^
-        version: link:../session-title-llm
 
   packages/session/session-title-first-prompt-llm:
     dependencies:
@@ -7224,22 +6800,6 @@ importers:
         version: link:../storage
 
   packages/storage/storage-json:
-    dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@williamcodebox/omd-storage':
-        specifier: workspace:^
-        version: link:../storage
-
-  packages/storage/storage-sqlite:
     dependencies:
       '@williamcodebox/schemastery':
         specifier: link:../../../vendor/schemastery
@@ -8601,333 +8161,6 @@ importers:
         specifier: workspace:^
         version: link:../../storage/storage-domain
 
-  python/sdk-runtime:
-    dependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../vendor/cordis
-      '@williamcodebox/cordis-plugin-group':
-        specifier: workspace:^
-        version: link:../../vendor/group
-      '@williamcodebox/cordis-plugin-include':
-        specifier: workspace:^
-        version: link:../../vendor/include
-      '@williamcodebox/cordis-plugin-loader':
-        specifier: workspace:^
-        version: link:../../vendor/loader
-      '@williamcodebox/cordis-plugin-timer':
-        specifier: workspace:^
-        version: link:../../vendor/timer
-      '@williamcodebox/cosmokit':
-        specifier: link:../../vendor/cosmokit
-        version: link:../../vendor/cosmokit
-      '@williamcodebox/omd-acp':
-        specifier: workspace:^
-        version: link:../../packages/acp/acp
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../packages/core/agent
-      '@williamcodebox/omd-agent-instructions':
-        specifier: workspace:^
-        version: link:../../packages/context/agent-instructions
-      '@williamcodebox/omd-agent-loop':
-        specifier: workspace:^
-        version: link:../../packages/core/agent-loop
-      '@williamcodebox/omd-agent-spine-demo':
-        specifier: workspace:^
-        version: link:../../packages/examples/agent-spine-demo
-      '@williamcodebox/omd-anonymous-user-id':
-        specifier: workspace:^
-        version: link:../../packages/identity/anonymous-user-id
-      '@williamcodebox/omd-app-boot':
-        specifier: workspace:^
-        version: link:../../packages/boot/app-boot
-      '@williamcodebox/omd-attachment':
-        specifier: workspace:^
-        version: link:../../packages/attachment/attachment
-      '@williamcodebox/omd-bash-local':
-        specifier: workspace:^
-        version: link:../../packages/shell/bash-local
-      '@williamcodebox/omd-brand':
-        specifier: workspace:^
-        version: link:../../packages/util/brand
-      '@williamcodebox/omd-code-runtime':
-        specifier: workspace:^
-        version: link:../../packages/code-runtime/code-runtime
-      '@williamcodebox/omd-code-runtime-worker-thread':
-        specifier: workspace:^
-        version: link:../../packages/code-runtime/code-runtime-worker-thread
-      '@williamcodebox/omd-command-goal':
-        specifier: workspace:^
-        version: link:../../packages/goal/command-goal
-      '@williamcodebox/omd-commands':
-        specifier: workspace:^
-        version: link:../../packages/interaction/commands
-      '@williamcodebox/omd-compaction':
-        specifier: workspace:^
-        version: link:../../packages/compaction/compaction
-      '@williamcodebox/omd-compaction-basic':
-        specifier: workspace:^
-        version: link:../../packages/compaction/compaction-basic
-      '@williamcodebox/omd-compaction-tool-result-pruner':
-        specifier: workspace:^
-        version: link:../../packages/compaction/compaction-tool-result-pruner
-      '@williamcodebox/omd-cordis-host-runner':
-        specifier: workspace:^
-        version: link:../../packages/extensions/cordis-host-runner
-      '@williamcodebox/omd-credentials':
-        specifier: workspace:^
-        version: link:../../packages/credentials/credentials
-      '@williamcodebox/omd-fs':
-        specifier: workspace:^
-        version: link:../../packages/fs/fs
-      '@williamcodebox/omd-fs-local':
-        specifier: workspace:^
-        version: link:../../packages/fs/fs-local
-      '@williamcodebox/omd-fs-observation-policy':
-        specifier: workspace:^
-        version: link:../../packages/fs/fs-observation-policy
-      '@williamcodebox/omd-fs-sandbox':
-        specifier: workspace:^
-        version: link:../../packages/fs/fs-sandbox
-      '@williamcodebox/omd-goal':
-        specifier: workspace:^
-        version: link:../../packages/goal/goal
-      '@williamcodebox/omd-goal-round-driver':
-        specifier: workspace:^
-        version: link:../../packages/goal/goal-round-driver
-      '@williamcodebox/omd-home-paths':
-        specifier: workspace:^
-        version: link:../../packages/util/home-paths
-      '@williamcodebox/omd-hook-protocol':
-        specifier: workspace:^
-        version: link:../../packages/hooks/hook-protocol
-      '@williamcodebox/omd-hooks-claude-code':
-        specifier: workspace:^
-        version: link:../../packages/hooks/hooks-claude-code
-      '@williamcodebox/omd-hooks-codex':
-        specifier: workspace:^
-        version: link:../../packages/hooks/hooks-codex
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../packages/runtime-diagnostics/invariants
-      '@williamcodebox/omd-jobs':
-        specifier: workspace:^
-        version: link:../../packages/jobs/jobs
-      '@williamcodebox/omd-jobs-local':
-        specifier: workspace:^
-        version: link:../../packages/jobs/jobs-local
-      '@williamcodebox/omd-launch-environment':
-        specifier: workspace:^
-        version: link:../../packages/util/launch-environment
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../packages/llm/llm
-      '@williamcodebox/omd-llm-deepseek':
-        specifier: workspace:^
-        version: link:../../packages/llm/llm-deepseek
-      '@williamcodebox/omd-llm-pi-ai':
-        specifier: workspace:^
-        version: link:../../packages/llm/llm-pi-ai
-      '@williamcodebox/omd-llm-retry':
-        specifier: workspace:^
-        version: link:../../packages/llm/llm-retry
-      '@williamcodebox/omd-output-retention':
-        specifier: workspace:^
-        version: link:../../packages/util/output-retention
-      '@williamcodebox/omd-permission-presets':
-        specifier: workspace:^
-        version: link:../../packages/interaction/permission-presets
-      '@williamcodebox/omd-plan-mode':
-        specifier: workspace:^
-        version: link:../../packages/plan/plan-mode
-      '@williamcodebox/omd-repeat-tool-reminder':
-        specifier: workspace:^
-        version: link:../../packages/guard/repeat-tool-reminder
-      '@williamcodebox/omd-sandbox':
-        specifier: workspace:^
-        version: link:../../packages/sandbox/sandbox
-      '@williamcodebox/omd-sandbox-local':
-        specifier: workspace:^
-        version: link:../../packages/sandbox/sandbox-local
-      '@williamcodebox/omd-sandbox-policy':
-        specifier: workspace:^
-        version: link:../../packages/sandbox/sandbox-policy
-      '@williamcodebox/omd-scope':
-        specifier: workspace:^
-        version: link:../../packages/core/scope
-      '@williamcodebox/omd-sdk-jsonrpc-demo':
-        specifier: workspace:^
-        version: link:../../packages/examples/jsonrpc-demo
-      '@williamcodebox/omd-sdk-jsonrpc-server':
-        specifier: workspace:^
-        version: link:../../packages/sdk/server
-      '@williamcodebox/omd-sdk-protocol':
-        specifier: workspace:^
-        version: link:../../packages/sdk/protocol
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../packages/core/session
-      '@williamcodebox/omd-session-checkpoint-policy':
-        specifier: workspace:^
-        version: link:../../packages/session/session-checkpoint-policy
-      '@williamcodebox/omd-session-persistence':
-        specifier: workspace:^
-        version: link:../../packages/session/session-persistence
-      '@williamcodebox/omd-session-persistence-jsonl':
-        specifier: workspace:^
-        version: link:../../packages/session/session-persistence-jsonl
-      '@williamcodebox/omd-session-persistence-sqlite':
-        specifier: workspace:^
-        version: link:../../packages/session/session-persistence-sqlite
-      '@williamcodebox/omd-session-projection':
-        specifier: workspace:^
-        version: link:../../packages/session/session-projection
-      '@williamcodebox/omd-session-query':
-        specifier: workspace:^
-        version: link:../../packages/session-query/session-query
-      '@williamcodebox/omd-session-query-sqlite':
-        specifier: workspace:^
-        version: link:../../packages/session-query/session-query-sqlite
-      '@williamcodebox/omd-session-reference':
-        specifier: workspace:^
-        version: link:../../packages/context/session-reference
-      '@williamcodebox/omd-session-title':
-        specifier: workspace:^
-        version: link:../../packages/session/session-title
-      '@williamcodebox/omd-settings':
-        specifier: workspace:^
-        version: link:../../packages/settings/settings
-      '@williamcodebox/omd-shell':
-        specifier: workspace:^
-        version: link:../../packages/shell/shell
-      '@williamcodebox/omd-shell-env':
-        specifier: workspace:^
-        version: link:../../packages/shell/shell-env
-      '@williamcodebox/omd-skill':
-        specifier: workspace:^
-        version: link:../../packages/skill/skill
-      '@williamcodebox/omd-skill-filesystem':
-        specifier: workspace:^
-        version: link:../../packages/skill/skill-filesystem
-      '@williamcodebox/omd-subagent':
-        specifier: workspace:^
-        version: link:../../packages/subagent/subagent
-      '@williamcodebox/omd-subagent-acp':
-        specifier: workspace:^
-        version: link:../../packages/subagent/subagent-acp
-      '@williamcodebox/omd-subagent-fork-in-process':
-        specifier: workspace:^
-        version: link:../../packages/subagent/subagent-fork-in-process
-      '@williamcodebox/omd-subagent-in-process-driver':
-        specifier: workspace:^
-        version: link:../../packages/subagent/subagent-in-process-driver
-      '@williamcodebox/omd-subagent-spawn-in-process':
-        specifier: workspace:^
-        version: link:../../packages/subagent/subagent-spawn-in-process
-      '@williamcodebox/omd-subprocess':
-        specifier: workspace:^
-        version: link:../../packages/subprocess/subprocess
-      '@williamcodebox/omd-subprocess-local':
-        specifier: workspace:^
-        version: link:../../packages/subprocess/subprocess-local
-      '@williamcodebox/omd-system-prompt':
-        specifier: workspace:^
-        version: link:../../packages/core/system-prompt
-      '@williamcodebox/omd-terminal':
-        specifier: workspace:^
-        version: link:../../packages/terminal/terminal
-      '@williamcodebox/omd-terminal-bash':
-        specifier: workspace:^
-        version: link:../../packages/terminal/terminal-bash
-      '@williamcodebox/omd-timeout':
-        specifier: workspace:^
-        version: link:../../packages/util/timeout
-      '@williamcodebox/omd-token-meter':
-        specifier: workspace:^
-        version: link:../../packages/llm/token-meter
-      '@williamcodebox/omd-tool-ask-user':
-        specifier: workspace:^
-        version: link:../../packages/interaction/tool-ask-user
-      '@williamcodebox/omd-tool-bash':
-        specifier: workspace:^
-        version: link:../../packages/shell/tool-bash
-      '@williamcodebox/omd-tool-bash-persistent':
-        specifier: workspace:^
-        version: link:../../packages/shell/tool-bash-persistent
-      '@williamcodebox/omd-tool-call-timeout-policy':
-        specifier: workspace:^
-        version: link:../../packages/guard/timeout-policy
-      '@williamcodebox/omd-tool-cordis':
-        specifier: workspace:^
-        version: link:../../packages/extensions/tool-cordis
-      '@williamcodebox/omd-tool-fs':
-        specifier: workspace:^
-        version: link:../../packages/fs/tool-fs
-      '@williamcodebox/omd-tool-goal':
-        specifier: workspace:^
-        version: link:../../packages/goal/tool-goal
-      '@williamcodebox/omd-tool-jobs':
-        specifier: workspace:^
-        version: link:../../packages/jobs/tool-jobs
-      '@williamcodebox/omd-tool-skill':
-        specifier: workspace:^
-        version: link:../../packages/skill/tool-skill
-      '@williamcodebox/omd-tool-str-replace-editor':
-        specifier: workspace:^
-        version: link:../../packages/fs/tool-str-replace-editor
-      '@williamcodebox/omd-tool-subagent':
-        specifier: workspace:^
-        version: link:../../packages/subagent/tool-subagent
-      '@williamcodebox/omd-tool-subagent-control':
-        specifier: workspace:^
-        version: link:../../packages/subagent/tool-subagent-control
-      '@williamcodebox/omd-tool-todo':
-        specifier: workspace:^
-        version: link:../../packages/todo/tool-todo
-      '@williamcodebox/omd-tool-web':
-        specifier: workspace:^
-        version: link:../../packages/web/tool-web
-      '@williamcodebox/omd-tool-workflow':
-        specifier: workspace:^
-        version: link:../../packages/workflow/tool-workflow
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../packages/core/tools
-      '@williamcodebox/omd-typert-protocol':
-        specifier: workspace:^
-        version: link:../../packages/typert/protocol
-      '@williamcodebox/omd-user-approval':
-        specifier: workspace:^
-        version: link:../../packages/interaction/user-approval
-      '@williamcodebox/omd-user-questions':
-        specifier: workspace:^
-        version: link:../../packages/interaction/user-questions
-      '@williamcodebox/omd-web':
-        specifier: workspace:^
-        version: link:../../packages/web/web
-      '@williamcodebox/omd-web-fetch-http':
-        specifier: workspace:^
-        version: link:../../packages/web/web-fetch-http
-      '@williamcodebox/omd-web-search-deepseek':
-        specifier: workspace:^
-        version: link:../../packages/web/web-search-deepseek
-      '@williamcodebox/omd-web-search-exa':
-        specifier: workspace:^
-        version: link:../../packages/web/web-search-exa
-      '@williamcodebox/omd-web-search-perplexity':
-        specifier: workspace:^
-        version: link:../../packages/web/web-search-perplexity
-      '@williamcodebox/omd-workflow':
-        specifier: workspace:^
-        version: link:../../packages/workflow/workflow
-      '@williamcodebox/omd-workflow-worker-thread':
-        specifier: workspace:^
-        version: link:../../packages/workflow/workflow-worker-thread
-      '@williamcodebox/schemastery':
-        specifier: link:../../vendor/schemastery
-        version: link:../../vendor/schemastery
-
   vendor/cordis:
     dependencies:
       '@standard-schema/spec':
@@ -9472,22 +8705,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@bufbuild/protobuf@2.13.0':
-    resolution: {integrity: sha512-acq7c49vxfm1ggJ95P70TX7ABDM0vxr1SYD3BB0o0jnBLB4OAqeHyKuN+cD3w80gXEDQ2zxHpR6CUeA+O/aU9g==}
-
   '@chevrotain/types@11.1.2':
     resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
-
-  '@connectrpc/connect-web@2.0.0-rc.3':
-    resolution: {integrity: sha512-w88P8Lsn5CCsA7MFRl2e6oLY4J/5toiNtJns/YJrlyQaWOy3RO8pDgkz+iIkG98RPMhj2thuBvsd3Cn4DKKCkw==}
-    peerDependencies:
-      '@bufbuild/protobuf': ^2.2.0
-      '@connectrpc/connect': 2.0.0-rc.3
-
-  '@connectrpc/connect@2.0.0-rc.3':
-    resolution: {integrity: sha512-ARBt64yEyKbanyRETTjcjJuHr2YXorzQo0etyS5+P6oSeW8xEuzajA9g+zDnMcj1hlX2dQE93foIWQGfpru7gQ==}
-    peerDependencies:
-      '@bufbuild/protobuf': ^2.2.0
 
   '@csstools/color-helpers@6.1.0':
     resolution: {integrity: sha512-064IFJdjTfUqnjpCVpMOdbr8FLQBhinbZj6yRv2An2E41O/pLEXqfFRWqGq/SxlE5PEUYTlvWsG2r8MswAVvkg==}
@@ -10276,14 +9495,6 @@ packages:
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
-
-  '@isaacs/cliui@9.0.0':
-    resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
-    engines: {node: '>=18'}
-
-  '@isaacs/fs-minipass@4.0.1':
-    resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
-    engines: {node: '>=18.0.0'}
 
   '@joplin/turndown-plugin-gfm@1.0.67':
     resolution: {integrity: sha512-FZfW5EZfidhzd1IaY1uxHnIZPTVOxAdleMZ4/1U6Nt5b7+Qj5JThDnaIomuJtetnUBzuRNbe9FWMuqD4B3dlWA==}
@@ -12027,10 +11238,6 @@ packages:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
     engines: {node: '>=18'}
 
-  chalk@5.6.2:
-    resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
-    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
-
   character-entities-html4@2.1.0:
     resolution: {integrity: sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==}
 
@@ -12047,10 +11254,6 @@ packages:
   chokidar@5.0.0:
     resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
     engines: {node: '>= 20.19.0'}
-
-  chownr@3.0.0:
-    resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
-    engines: {node: '>=18'}
 
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
@@ -12077,9 +11280,6 @@ packages:
   commander@8.3.0:
     resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
     engines: {node: '>= 12'}
-
-  compare-versions@6.1.1:
-    resolution: {integrity: sha512-4hm4VPpIecmlg59CHXnRDnqGplJFrbLG4aFEl5vl6cK1u76ws3LLvX7ikFnTDl5vo39sjWD6AaDPYodJp/NNHg==}
 
   content-disposition@1.1.0:
     resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
@@ -12346,9 +11546,6 @@ packages:
     resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
     engines: {node: '>=0.3.1'}
 
-  dockerfile-ast@0.7.1:
-    resolution: {integrity: sha512-oX/A4I0EhSkGqrFv0YuvPkBUSYp1XiY8O8zAKc8Djglx8ocz+JfOr8gP0ryRMC2myqvDLagmnZaU9ot1vG2ijw==}
-
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
 
@@ -12367,10 +11564,6 @@ packages:
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
-
-  e2b@2.29.1:
-    resolution: {integrity: sha512-n4aGNwRKTj2oct7BrOWfR4T+xGO834vbsrzfSlWUNJrhz615Lp+ad9hc8KtRaaHULKr/W/14Z6v4c7fqk3y0pg==}
-    engines: {node: '>=20.18.1'}
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
@@ -12700,12 +11893,6 @@ packages:
     deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
-  glob@11.1.0:
-    resolution: {integrity: sha512-vuNwKSaKiqm7g0THUBu2x7ckSs3XJLXE+2ssL7/MfTGPLLcrJQ/4Uq1CjPTtO5cCIiRxqvN6Twy1qOwhL0Xjcw==}
-    engines: {node: 20 || >=22}
-    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
-    hasBin: true
-
   globals@17.7.0:
     resolution: {integrity: sha512-Czmyns5dUsq4seFBR/Kdydhmo8y9kC79hiSkPn0YcGtNnYWnrgt0vjrSjx9tspoDGWm2CMarffRuLjM4xUz8xg==}
     engines: {node: '>=18'}
@@ -12883,10 +12070,6 @@ packages:
 
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
-
-  jackspeak@4.2.3:
-    resolution: {integrity: sha512-ykkVRwrYvFm1nb2AJfKKYPr0emF6IiXDYUaFx4Zn9ZuIH7MrzEZ3sD5RlqGXNRpHtvUHJyOnCEFxOlNDtGo7wg==}
-    engines: {node: 20 || >=22}
 
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
@@ -13383,10 +12566,6 @@ packages:
   minisearch@7.2.0:
     resolution: {integrity: sha512-dqT2XBYUOZOiC5t2HRnwADjhNS2cecp9u+TJRiJ1Qp/f5qjkeT5APcGPjHw+bz89Ms8Jp+cG4AlE+QZ/QnDglg==}
 
-  minizlib@3.1.0:
-    resolution: {integrity: sha512-KZxYo1BUkWD2TVFLr0MQoM8vUUigWD3LlD83a/75BqC+4qE0Hb1Vo5v1FgcfaNXvfXzr+5EhQ6ing/CaBijTlw==}
-    engines: {node: '>= 18'}
-
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
@@ -13527,12 +12706,6 @@ packages:
       zod:
         optional: true
 
-  openapi-fetch@0.14.1:
-    resolution: {integrity: sha512-l7RarRHxlEZYjMLd/PR0slfMVse2/vvIAGm75/F7J6MlQ8/b9uUQmUF2kCPrQhJqMXSxmYWObVgeYXbFYzZR+A==}
-
-  openapi-typescript-helpers@0.0.15:
-    resolution: {integrity: sha512-opyTPaunsklCBpTK8JGef6mfPhLSnyy5a0IN9vKtx3+4aExf+KxEqYwIy3hqkedXIB97u357uLMJsOnm3GVjsw==}
-
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -13619,10 +12792,6 @@ packages:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
 
-  path-scurry@2.0.2:
-    resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
-    engines: {node: 18 || 20 || >=22}
-
   path-to-regexp@8.4.2:
     resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
 
@@ -13642,9 +12811,6 @@ packages:
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
-
-  platform@1.3.6:
-    resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
 
   playwright-core@1.61.1:
     resolution: {integrity: sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==}
@@ -14025,10 +13191,6 @@ packages:
 
   tabbable@6.5.0:
     resolution: {integrity: sha512-wieBHXygIm7OyQOu5hQlkk62/WyCFYGlWg7L6/ZCUZwx0o398Zkn4pVmMyfYhfMG8kGrj/Krt8eIk6UKC6VzwA==}
-
-  tar@7.5.22:
-    resolution: {integrity: sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==}
-    engines: {node: '>=18'}
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -14428,9 +13590,6 @@ packages:
   vscode-languageserver-protocol@3.18.2:
     resolution: {integrity: sha512-XRyDbT0Pp3sSNti3JmxVEUMySWCSi1hhM+/KUlCy1hV1zmrqpM1OwO12EAki8blhmLuIMpaJrYbo0OzGVfK2Qg==}
 
-  vscode-languageserver-textdocument@1.0.12:
-    resolution: {integrity: sha512-cxWNPesCnQCcMPeenjKKsOCKQZ/L6Tv19DTRIGuLWe32lyzWhihGVJ/rcckZXJxfdKCFvRLS3fpBIsV/ZGX4zA==}
-
   vscode-languageserver-types@3.18.0:
     resolution: {integrity: sha512-8TsGPNMIMiiBdkORgRSvLjuiEIiAFtO+KssmYWxQ+uSVvlf7RjK8YKCOjPzZ+YA04jXEV7+7LvkSmHkhpNS99g==}
 
@@ -14521,10 +13680,6 @@ packages:
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
-
-  yallist@5.0.0:
-    resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
-    engines: {node: '>=18'}
 
   yaml@2.9.0:
     resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
@@ -15129,18 +14284,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@bufbuild/protobuf@2.13.0': {}
-
   '@chevrotain/types@11.1.2': {}
-
-  '@connectrpc/connect-web@2.0.0-rc.3(@bufbuild/protobuf@2.13.0)(@connectrpc/connect@2.0.0-rc.3(@bufbuild/protobuf@2.13.0))':
-    dependencies:
-      '@bufbuild/protobuf': 2.13.0
-      '@connectrpc/connect': 2.0.0-rc.3(@bufbuild/protobuf@2.13.0)
-
-  '@connectrpc/connect@2.0.0-rc.3(@bufbuild/protobuf@2.13.0)':
-    dependencies:
-      '@bufbuild/protobuf': 2.13.0
 
   '@csstools/color-helpers@6.1.0': {}
 
@@ -15673,12 +14817,6 @@ snapshots:
       strip-ansi-cjs: strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
-
-  '@isaacs/cliui@9.0.0': {}
-
-  '@isaacs/fs-minipass@4.0.1':
-    dependencies:
-      minipass: 7.1.3
 
   '@joplin/turndown-plugin-gfm@1.0.67': {}
 
@@ -17178,8 +16316,6 @@ snapshots:
 
   chai@6.2.2: {}
 
-  chalk@5.6.2: {}
-
   character-entities-html4@2.1.0: {}
 
   character-entities-legacy@3.0.0: {}
@@ -17193,8 +16329,6 @@ snapshots:
   chokidar@5.0.0:
     dependencies:
       readdirp: 5.0.0
-
-  chownr@3.0.0: {}
 
   clsx@2.1.1: {}
 
@@ -17211,8 +16345,6 @@ snapshots:
   commander@7.2.0: {}
 
   commander@8.3.0: {}
-
-  compare-versions@6.1.1: {}
 
   content-disposition@1.1.0: {}
 
@@ -17485,11 +16617,6 @@ snapshots:
 
   diff@9.0.0: {}
 
-  dockerfile-ast@0.7.1:
-    dependencies:
-      vscode-languageserver-textdocument: 1.0.12
-      vscode-languageserver-types: 3.18.0
-
   dom-accessibility-api@0.5.16: {}
 
   dompurify@3.4.11:
@@ -17505,20 +16632,6 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       es-errors: 1.3.0
       gopd: 1.2.0
-
-  e2b@2.29.1:
-    dependencies:
-      '@bufbuild/protobuf': 2.13.0
-      '@connectrpc/connect': 2.0.0-rc.3(@bufbuild/protobuf@2.13.0)
-      '@connectrpc/connect-web': 2.0.0-rc.3(@bufbuild/protobuf@2.13.0)(@connectrpc/connect@2.0.0-rc.3(@bufbuild/protobuf@2.13.0))
-      chalk: 5.6.2
-      compare-versions: 6.1.1
-      dockerfile-ast: 0.7.1
-      glob: 11.1.0
-      openapi-fetch: 0.14.1
-      platform: 1.3.6
-      tar: 7.5.22
-      undici: 7.28.0
 
   eastasianwidth@0.2.0: {}
 
@@ -17976,15 +17089,6 @@ snapshots:
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
 
-  glob@11.1.0:
-    dependencies:
-      foreground-child: 3.3.1
-      jackspeak: 4.2.3
-      minimatch: 10.2.5
-      minipass: 7.1.3
-      package-json-from-dist: 1.0.1
-      path-scurry: 2.0.2
-
   globals@17.7.0: {}
 
   globrex@0.1.2: {}
@@ -18144,10 +17248,6 @@ snapshots:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
-
-  jackspeak@4.2.3:
-    dependencies:
-      '@isaacs/cliui': 9.0.0
 
   jiti@2.7.0: {}
 
@@ -18831,10 +17931,6 @@ snapshots:
 
   minisearch@7.2.0: {}
 
-  minizlib@3.1.0:
-    dependencies:
-      minipass: 7.1.3
-
   mitt@3.0.1: {}
 
   mri@1.2.0: {}
@@ -18952,12 +18048,6 @@ snapshots:
     optionalDependencies:
       ws: 8.21.0
       zod: 4.4.3
-
-  openapi-fetch@0.14.1:
-    dependencies:
-      openapi-typescript-helpers: 0.0.15
-
-  openapi-typescript-helpers@0.0.15: {}
 
   optionator@0.9.4:
     dependencies:
@@ -19091,11 +18181,6 @@ snapshots:
       lru-cache: 10.4.3
       minipass: 7.1.3
 
-  path-scurry@2.0.2:
-    dependencies:
-      lru-cache: 11.5.1
-      minipass: 7.1.3
-
   path-to-regexp@8.4.2: {}
 
   pathe@2.0.3: {}
@@ -19107,8 +18192,6 @@ snapshots:
   picomatch@4.0.4: {}
 
   pkce-challenge@5.0.1: {}
-
-  platform@1.3.6: {}
 
   playwright-core@1.61.1: {}
 
@@ -19592,14 +18675,6 @@ snapshots:
 
   tabbable@6.5.0: {}
 
-  tar@7.5.22:
-    dependencies:
-      '@isaacs/fs-minipass': 4.0.1
-      chownr: 3.0.0
-      minipass: 7.1.3
-      minizlib: 3.1.0
-      yallist: 5.0.0
-
   tinybench@2.9.0: {}
 
   tinyexec@1.2.4: {}
@@ -20030,8 +19105,6 @@ snapshots:
       vscode-jsonrpc: 9.0.1
       vscode-languageserver-types: 3.18.0
 
-  vscode-languageserver-textdocument@1.0.12: {}
-
   vscode-languageserver-types@3.18.0: {}
 
   vue@3.5.39(typescript@6.0.3):
@@ -20100,8 +19173,6 @@ snapshots:
   xmlchars@2.2.0: {}
 
   yallist@3.1.1: {}
-
-  yallist@5.0.0: {}
 
   yaml@2.9.0: {}
 
