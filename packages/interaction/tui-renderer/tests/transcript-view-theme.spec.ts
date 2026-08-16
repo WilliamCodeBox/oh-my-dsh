@@ -176,6 +176,32 @@ describe('TranscriptView themed path', () => {
     expect(joined).toContain(darkTheme.fg('diffAdded', '+ keep'))
   })
 
+  it('interleaves diff edits in unified order', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/call', { callId: 'c1', turn: 1, step: 1, name: 'fs.write', arguments: '{}' }, 1, { surfaceOp: 'append' }))
+    transcript.fold(ev('tool/result', {
+      turn: 1,
+      step: 1,
+      message: {
+        content: [{ type: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'ok' }] }],
+      },
+      meta: { diffs: [{ path: 'a.ts', oldText: 'a\nb\nc', newText: 'a\nx\nc' }] },
+    }, 2, { surfaceOp: 'append' }))
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    const ctxA = joined.indexOf(darkTheme.fg('diffContext', '  a'))
+    const delB = joined.indexOf(darkTheme.fg('diffRemoved', '- b'))
+    const addX = joined.indexOf(darkTheme.fg('diffAdded', '+ x'))
+    const ctxC = joined.indexOf(darkTheme.fg('diffContext', '  c'))
+    expect(ctxA).toBeGreaterThan(-1)
+    expect(delB).toBeGreaterThan(-1)
+    expect(addX).toBeGreaterThan(-1)
+    expect(ctxC).toBeGreaterThan(-1)
+    // Unified order: a, -b, +x, c.
+    expect(ctxA).toBeLessThan(delB)
+    expect(delB).toBeLessThan(addX)
+    expect(addX).toBeLessThan(ctxC)
+  })
+
   it('keeps the user background across inline markdown resets', () => {
     const lines = themedLines(t => foldUser(t, '**bold** and `code`', 2))
     const joined = lines.join('\n')

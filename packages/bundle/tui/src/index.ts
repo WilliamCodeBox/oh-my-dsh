@@ -8,7 +8,11 @@
  */
 
 import { randomUUID } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import type { Context } from '@williamcodebox/cordis'
 import z from '@williamcodebox/schemastery'
@@ -96,6 +100,8 @@ export const internals: {
   createTerminal: () => ReturnType<typeof processTerminal>
   /** Host emitter for the crash-restore handler; tests inject a safe emitter. */
   crashEmitter: CrashEmitter
+  /** Run the external editor over a temp file; tests inject a fake. */
+  runEditor: (file: string) => number
 } = {
   stdout: process.stdout,
   stderr: process.stderr,
@@ -104,6 +110,11 @@ export const internals: {
   createInput: () => new StdinInputSource(process.stdin),
   createTerminal: () => processTerminal(),
   crashEmitter: process,
+  runEditor: (file) => {
+    const editor = process.env.VISUAL?.trim() || process.env.EDITOR?.trim() || 'vi'
+    const result = spawnSync(editor, [file], { stdio: 'inherit', shell: true })
+    return result.status ?? 1
+  },
 }
 
 /** Presenter active in the current run; the crash handler stops it. */
@@ -619,6 +630,33 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       }
       return
     }
+    if (line === '/editor') {
+      // Suspend the presenter, edit the draft in $VISUAL/$EDITOR, resume.
+      // The presenter re-draws from the transcript on start, so the screen
+      // loss during the editor session is recovered.
+      void (async () => {
+        if (presenter === undefined || !presenter.isStarted) {
+          notice.text = 'editor unavailable'
+          return
+        }
+        const file = join(tmpdir(), `omd-draft-${randomUUID()}.md`)
+        writeFileSync(file, presenter.getInput())
+        presenter.stop()
+        const code = internals.runEditor(file)
+        if (code === 0) {
+          try {
+            presenter.setInput(readFileSync(file, 'utf8').replace(/\n$/, ''))
+            notice.text = 'editor updated'
+          } catch {
+            notice.text = 'editor output unreadable'
+          }
+        } else {
+          notice.text = 'editor exited with an error'
+        }
+        presenter.start()
+      })()
+      return
+    }
     if (line === '/sessions' || line.startsWith('/sessions ')) {
       // List persisted sessions and switch to the picked one: the drive loop
       // halts with the resume id and the outer loop rebuilds the agent.
@@ -679,6 +717,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
         { name: 'model', description: 'switch provider/model' },
         { name: 'thinking', description: 'set reasoning effort level' },
         { name: 'sessions', description: 'list and resume a session' },
+        { name: 'editor', description: 'edit the draft in $EDITOR' },
       ],
       config.workspace ?? process.cwd(),
     )

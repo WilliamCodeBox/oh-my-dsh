@@ -99,22 +99,65 @@ function diffsFromMetaValue(meta: JsonValue | undefined): DiffLike[] | undefined
   return valid.length === 0 ? undefined : valid
 }
 
-/** Minimal line-level unified diff: context/add/remove lines, no LCS. */
+/** One unified-diff edit line. */
+type DiffEdit = { kind: 'ctx' | 'del' | 'add'; text: string }
+
+/**
+ * Line-level longest-common-subsequence diff: interleaves context, removals,
+ * and additions in unified order instead of dumping adds then removes.
+ * O(n·m) table; diffs are file-sized, so the cost is bounded.
+ */
+function lcsDiff(before: string[], after: string[]): DiffEdit[] {
+  const n = before.length
+  const m = after.length
+  // DP table: dp[i][j] = LCS length of before[i..] and after[j..].
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array<number>(m + 1).fill(0))
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i]![j] = before[i] === after[j]
+        ? dp[i + 1]![j + 1]! + 1
+        : Math.max(dp[i + 1]![j]!, dp[i]![j + 1]!)
+    }
+  }
+  const edits: DiffEdit[] = []
+  let i = 0
+  let j = 0
+  while (i < n && j < m) {
+    if (before[i] === after[j]) {
+      edits.push({ kind: 'ctx', text: before[i]! })
+      i++
+      j++
+    } else if (dp[i + 1]![j]! >= dp[i]![j + 1]!) {
+      edits.push({ kind: 'del', text: before[i]! })
+      i++
+    } else {
+      edits.push({ kind: 'add', text: after[j]! })
+      j++
+    }
+  }
+  while (i < n) edits.push({ kind: 'del', text: before[i++]! })
+  while (j < m) edits.push({ kind: 'add', text: after[j++]! })
+  return edits
+}
+
+/** Unified diff lines: hunk header, then interleaved context/add/remove. */
 function diffCardLines(diff: DiffLike, theme: SemanticTheme): string[] {
   const lines = [theme.fg('diffHunk', `--- ${sanitizeText(diff.path)}`)]
   const before = diff.oldText?.split('\n') ?? []
   const after = diff.newText.split('\n')
-  const beforeSet = new Set(before.filter(line => line.trim() !== ''))
-  const afterSet = new Set(after.filter(line => line.trim() !== ''))
-  for (const line of after) {
-    if (line.trim() === '') continue
-    lines.push(beforeSet.has(line)
-      ? theme.fg('diffContext', `  ${sanitizeText(line)}`)
-      : theme.fg('diffAdded', `+ ${sanitizeText(line)}`))
-  }
-  for (const line of before) {
-    if (line.trim() === '') continue
-    if (!afterSet.has(line)) lines.push(theme.fg('diffRemoved', `- ${sanitizeText(line)}`))
+  for (const edit of lcsDiff(before, after)) {
+    if (edit.text.trim() === '' && edit.kind !== 'del') continue
+    switch (edit.kind) {
+      case 'ctx':
+        lines.push(theme.fg('diffContext', `  ${sanitizeText(edit.text)}`))
+        break
+      case 'del':
+        lines.push(theme.fg('diffRemoved', `- ${sanitizeText(edit.text)}`))
+        break
+      case 'add':
+        lines.push(theme.fg('diffAdded', `+ ${sanitizeText(edit.text)}`))
+        break
+    }
   }
   return lines
 }

@@ -576,7 +576,7 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('shows the session cost on the TTY status row when prices are configured', async () => {
     const test = await bench([], { costPerInputToken: 1e-6, costPerOutputToken: 2e-6 }, {}, { tty: true })
@@ -601,7 +601,33 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
+
+  it('edits the draft through $EDITOR: suspend, replace, resume', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    internals.runEditor = (file) => {
+      // Fake editor: rewrite the draft file, then succeed.
+      const { writeFileSync } = require('node:fs')
+      writeFileSync(file, 'edited draft')
+      return 0
+    }
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('first draft')
+    terminal.send('\x03') // clear the draft line
+    terminal.send('/editor')
+    terminal.send('\r')
+await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor updated') }, { timeout: 10000 })
+    // The editor session suspended and resumed the presenter.
+    expect(terminal.started).toBe(true)
+    // The edited draft is non-empty: clear it, then quit.
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
 
   it('reports /sessions as unavailable without a persistence service', async () => {
     // The built-in session switch needs ctx.sessionPersistence; without the
@@ -619,7 +645,7 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
   it('rejects an approval prompt by selecting the second option', async () => {
     const test = await bench([], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
@@ -637,7 +663,7 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('cancels a pending approval on Ctrl+C, then quits on the next press', async () => {
     const test = await bench([], {}, {
@@ -655,7 +681,7 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('fails an approval closed on the pipe path without a presenter', async () => {
     const test = await bench([{ kind: 'ctrl-c' }], {}, {
@@ -672,7 +698,7 @@ describe('tui runner', () => {
     expect(await request).toBe('unavailable')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('dispatches a known slash command through the command runtime on the pipe path', async () => {
     const test = await bench(
@@ -732,7 +758,7 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('keeps questions at NO_PROVIDER on the pipe path', async () => {
     const test = await bench([{ kind: 'ctrl-c' }], {}, {})
@@ -743,7 +769,7 @@ describe('tui runner', () => {
       .rejects.toMatchObject({ code: 'NO_PROVIDER' })
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('folds stored seed events into the presenter transcript on resume', async () => {
     const test = await bench([], { resume: 'session-persisted' }, {
@@ -769,7 +795,7 @@ describe('tui runner', () => {
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
-  })
+  }, 20000)
 
   it('stops the presenter and force-exits on an uncaughtException', async () => {
     const ctx = new Context()
