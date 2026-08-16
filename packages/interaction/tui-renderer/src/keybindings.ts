@@ -36,6 +36,9 @@ export class KeybindingRegistry {
 
   /**
    * Dispatch one raw key to matching bindings (last registered first).
+   * A throwing handler is contained: it counts as consumed and the error is
+   * logged instead of escaping into the terminal input path (which would
+   * hit uncaughtException and hard-exit the process mid-turn).
    * @param data - the raw key string from the presenter input listener.
    * @returns true when a binding consumed the key.
    */
@@ -43,7 +46,12 @@ export class KeybindingRegistry {
     for (let i = this.bindings.length - 1; i >= 0; i--) {
       const binding = this.bindings[i]!
       if (binding.key !== data) continue
-      if (binding.handler() !== false) return true
+      try {
+        if (binding.handler() !== false) return true
+      } catch (error) {
+        console.error(`keybinding ${binding.description ?? binding.key}:`, error)
+        return true
+      }
     }
     return false
   }

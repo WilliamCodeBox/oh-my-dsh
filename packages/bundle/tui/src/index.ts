@@ -315,7 +315,12 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
       key: '?',
       display: '?',
       description: 'show this keybinding help',
-      handler: () => { presenter.showHelp(registry.list().map(binding => ({ key: binding.display ?? binding.key, description: binding.description }))) },
+      handler: () => {
+        // Without a modal the key falls through to the editor so '?' stays
+        // typeable; with a modal the help would fight the modal's focus.
+        if (presenter.interactionPending) return false
+        presenter.showHelp(registry.list().map(binding => ({ key: binding.display ?? binding.key, description: binding.description })))
+      },
     })
     registry.register({
       key: '\x03',
@@ -583,13 +588,28 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   }
   // Transient right status: a spinner while a turn runs, plus the escape
   // hint so a long silent turn never looks hung. Also drives the terminal
-  // task-progress indicator (idempotent per status change).
+  // task-progress indicator (idempotent per status change). While a turn
+  // runs, a ~100ms timer re-renders so the spinner animates even without
+  // transcript events (rendering itself is throttled by pi-tui).
   let lastProgress: boolean | undefined
+  let spinnerTimer: NodeJS.Timeout | undefined
+  const stopSpinner = (): void => {
+    if (spinnerTimer !== undefined) {
+      clearInterval(spinnerTimer)
+      spinnerTimer = undefined
+    }
+  }
   const transient = (): string => {
     const running = agent.status === 'running'
     if (running !== lastProgress) {
       lastProgress = running
       presenter?.setProgress(running)
+      if (running) {
+        stopSpinner()
+        spinnerTimer = setInterval(() => presenter?.requestRender(), 100)
+      } else {
+        stopSpinner()
+      }
     }
     if (!running) return ''
     const frame = SPINNER_FRAMES[Math.floor(Date.now() / 100) % SPINNER_FRAMES.length]
@@ -603,6 +623,9 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
    * command/run + command/done fold; an unknown command reports via notice.
    */
   const dispatchLine = (line: string): void => {
+    // Empty submits (bare Enter) must not start a turn; the pipe path
+    // guards the same case.
+    if (line.trim() === '') return
     // Built-in model switching lives outside the commands runtime so it can
     // mutate the selection ref directly; everything else rides the runtime.
     const modelMatch = /^\/model(?:\s+(\S+))?$/.exec(line)
@@ -611,6 +634,9 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       if (pair === undefined) {
         const current = selectionRef.current
         notice.text = current === undefined ? 'no model selected' : `model ${current.provider}/${current.model}`
+      } else if (!pair.includes('/')) {
+        // Fail loud: a bare name would silently misroute the next request.
+        notice.text = 'model must be provider/model'
       } else {
         const parsed = parseModel(pair)
         selectionRef.current = parsed
@@ -633,27 +659,40 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     if (line === '/editor') {
       // Suspend the presenter, edit the draft in $VISUAL/$EDITOR, resume.
       // The presenter re-draws from the transcript on start, so the screen
-      // loss during the editor session is recovered.
+      // loss during the editor session is recovered. Every path restores
+      // the presenter so raw mode can never be left behind.
       void (async () => {
         if (presenter === undefined || !presenter.isStarted) {
           notice.text = 'editor unavailable'
           return
         }
-        const file = join(tmpdir(), `omd-draft-${randomUUID()}.md`)
-        writeFileSync(file, presenter.getInput())
-        presenter.stop()
-        const code = internals.runEditor(file)
-        if (code === 0) {
+        try {
+          const file = join(tmpdir(), `omd-draft-${randomUUID()}.md`)
+          presenter.stop()
           try {
-            presenter.setInput(readFileSync(file, 'utf8').replace(/\n$/, ''))
-            notice.text = 'editor updated'
+            writeFileSync(file, presenter.getInput())
           } catch {
-            notice.text = 'editor output unreadable'
+            notice.text = 'draft write failed'
+            return
           }
-        } else {
-          notice.text = 'editor exited with an error'
+          const code = internals.runEditor(file)
+          if (code === 0) {
+            try {
+              presenter.setInput(readFileSync(file, 'utf8').replace(/\n$/, ''))
+              notice.text = 'editor updated'
+            } catch {
+              notice.text = 'editor output unreadable'
+            }
+          } else {
+            notice.text = 'editor exited with an error'
+          }
+        } catch (error) {
+          notice.text = `editor failed: ${error instanceof Error ? error.message : String(error)}`
+        } finally {
+          // Restore raw mode + alt screen on every path: a stranded
+          // presenter leaves the user's shell unusable.
+          if (presenter !== undefined && !presenter.isStarted) presenter.start()
         }
-        presenter.start()
       })()
       return
     }
@@ -771,6 +810,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     offQuestions?.()
     presenter?.stop()
     offGit()
+    stopSpinner()
     activePresenter = undefined
 
     if (outcome.kind === 'hard-exit') {
@@ -791,6 +831,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     offQuestions?.()
     presenter?.stop()
     offGit()
+    stopSpinner()
     activePresenter = undefined
     throw error
   }

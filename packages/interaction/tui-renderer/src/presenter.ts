@@ -23,7 +23,7 @@ import {
   truncateToWidth,
   visibleWidth,
   type AutocompleteProvider,
-  type OverlayHandle,
+    type OverlayHandle,
   type SelectItem,
   type Terminal,
   type ViewportTUI,
@@ -36,6 +36,7 @@ import type {
 } from '@williamcodebox/omd-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
+import { sanitizeText } from './sanitize.ts'
 import { StatusRow, TranscriptView } from './transcript-view.ts'
 import { MetaRow, type MetaRowData } from './meta-row.ts'
 import { WorkspaceAutocomplete } from './autocomplete.ts'
@@ -87,6 +88,8 @@ export class TuiPresenter {
   private started = false
   /** The live interaction overlay, when one is asking. */
   private overlay: { handle: OverlayHandle } | undefined
+  /** Overlays waiting behind the live one (approvals/questions during a modal). */
+  private overlayQueue: Array<{ component: Component; focus?: Component; close: (() => void) | undefined }> = []
   /** External halt sink: the runner resolves its drive loop here. */
   private haltHandler: ((outcome: unknown) => void) | undefined
   /** The input-context row (model/thinking | cwd/git | context bar). */
@@ -257,19 +260,45 @@ export class TuiPresenter {
 
   /**
    * Mount one interaction overlay as the single interaction slot and return
-   * its close callback. Closing restores editor focus, hides the overlay,
-   * and clears the slot; the caller resolves its pending promise.
+   * its close callback. While one modal is live, further overlays queue;
+   * when the current one closes the queue advances and the queued modal's
+   * focus target receives focus (pi-tui's overlay stack would otherwise
+   * show both and strand the lower one's promise). The returned close is a
+   * proxy: before the queued modal mounts it cancels the queue entry;
+   * after mounting it closes the real modal.
    */
-  private mountOverlay(component: Component): () => void {
+  private mountOverlay(component: Component, focus?: Component): () => void {
+    if (this.overlay !== undefined) {
+      const pending: { component: Component; focus?: Component; close: (() => void) | undefined } = {
+        component,
+        ...(focus !== undefined ? { focus } : {}),
+        close: undefined,
+      }
+      this.overlayQueue.push(pending)
+      return () => {
+        pending.close?.()
+        const index = this.overlayQueue.indexOf(pending)
+        if (index !== -1) this.overlayQueue.splice(index, 1)
+      }
+    }
     const handle = this.tui.showOverlay(component)
     this.overlay = { handle }
-    return () => {
-      if (this.overlay === undefined) return
+    if (focus !== undefined) this.tui.setFocus(focus)
+    let closed = false
+    const close = (): void => {
+      if (closed) return
+      closed = true
       this.overlay = undefined
       handle.hide()
       this.tui.setFocus(this.editor)
-      this.tui.requestRender()
+      const next = this.overlayQueue.shift()
+      if (next !== undefined) {
+        next.close = this.mountOverlay(next.component, next.focus)
+      } else {
+        this.tui.requestRender()
+      }
     }
+    return close
   }
 
   /**
@@ -283,15 +312,14 @@ export class TuiPresenter {
   ): Promise<string | undefined> {
     const { promise, resolve } = Promise.withResolvers<string | undefined>()
     const card = new Box(1, 1)
-    card.addChild(new Text(title, 0, 0))
-    if (detail !== undefined && detail !== '') card.addChild(new Text(detail, 0, 0))
+    card.addChild(new Text(sanitizeText(title), 0, 0))
+    if (detail !== undefined && detail !== '') card.addChild(new Text(sanitizeText(detail), 0, 0))
     card.addChild(new Text('', 0, 0))
     const list = new SelectList(items, 5, this.theme.editor.selectList)
     card.addChild(list)
-    const close = this.mountOverlay(card)
+    const close = this.mountOverlay(card, list)
     list.onSelect = (item) => { close(); resolve(item.value) }
     list.onCancel = () => { close(); resolve(undefined) }
-    this.tui.setFocus(list)
     this.tui.requestRender()
     return promise
   }
@@ -304,13 +332,12 @@ export class TuiPresenter {
     const { promise, resolve } = Promise.withResolvers<string | undefined>()
     const input = new Input()
     const card = new Box(1, 1)
-    card.addChild(new Text(title, 0, 0))
-    if (detail !== undefined && detail !== '') card.addChild(new Text(detail, 0, 0))
+    card.addChild(new Text(sanitizeText(title), 0, 0))
+    if (detail !== undefined && detail !== '') card.addChild(new Text(sanitizeText(detail), 0, 0))
     card.addChild(input)
-    const close = this.mountOverlay(card)
+    const close = this.mountOverlay(card, input)
     input.onSubmit = (value) => { close(); resolve(value) }
     input.onEscape = () => { close(); resolve(undefined) }
-    this.tui.setFocus(input)
     this.tui.requestRender()
     return promise
   }
@@ -386,14 +413,14 @@ export class TuiPresenter {
   /**
    * Assemble the status row: the runner's left text (dim, running facts
    * from formatStatus) plus a transient right segment (spinner/retry/esc
-   * hints). Truncation drops from the left side first so the transient
-   * never disappears mid-task.
+   * hints). The transient renders even when the left text is empty (first
+   * turn before any usage lands); truncation drops the left first.
    */
   private renderStatus(width: number): string {
     const left = this.options.statusLine()
-    if (left === '') return ''
     const transient = this.options.transient?.() ?? ''
     const transientText = transient === '' ? '' : ` ${this.theme.fg('accent', transient)}`
+    if (left === '') return transientText
     const transientWidth = transient === '' ? 0 : 1 + visibleWidth(transient)
     const budget = Math.max(1, width - transientWidth)
     return truncateToWidth(this.theme.fg('dim', left), budget) + transientText

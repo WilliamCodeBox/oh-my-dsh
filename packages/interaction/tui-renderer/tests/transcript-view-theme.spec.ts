@@ -176,6 +176,26 @@ describe('TranscriptView themed path', () => {
     expect(joined).toContain(darkTheme.fg('diffAdded', '+ keep'))
   })
 
+  it('degrades gracefully for oversized diffs (beyond the LCS cap)', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/call', { callId: 'c1', turn: 1, step: 1, name: 'fs.write', arguments: '{}' }, 1, { surfaceOp: 'append' }))
+    const oldText = Array.from({ length: 3000 }, (_, i) => `old${i}`).join('\n')
+    const newText = Array.from({ length: 3000 }, (_, i) => `new${i}`).join('\n')
+    transcript.fold(ev('tool/result', {
+      turn: 1,
+      step: 1,
+      message: {
+        content: [{ type: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'ok' }] }],
+      },
+      meta: { diffs: [{ path: 'big.ts', oldText, newText }] },
+    }, 2, { surfaceOp: 'append' }))
+    const view = new TranscriptView(transcript, darkTheme)
+    // Must render without freezing: the linear fallback runs instantly.
+    const joined = view.render(80).join('\n')
+    expect(joined).toContain('+ new0')
+    expect(joined).toContain('- old0')
+  })
+
   it('interleaves diff edits in unified order', () => {
     const transcript = new Transcript()
     transcript.fold(ev('tool/call', { callId: 'c1', turn: 1, step: 1, name: 'fs.write', arguments: '{}' }, 1, { surfaceOp: 'append' }))

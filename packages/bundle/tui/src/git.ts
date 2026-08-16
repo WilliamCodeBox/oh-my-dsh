@@ -30,12 +30,16 @@ function git(args: readonly string[], cwd: string): Promise<string> {
   })
 }
 
-/** Read branch + porcelain counts; resolves undefined outside a repo. */
+/** Read branch + porcelain counts; resolves undefined only when the
+ * workspace is *not* a repository (git is present and HEAD resolves but
+ * the branch is unborn, or git is absent). Transient failures (timeout,
+ * IO, lock) reject so the watcher can retry instead of dying. */
 export async function readGitStatus(cwd: string): Promise<GitStatus | undefined> {
   let branch: string
   try {
     branch = (await git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd)).trim()
   } catch {
+    // git missing or outside a repository: treat as permanently no-repo.
     return undefined
   }
   if (branch === '') return undefined
@@ -43,7 +47,9 @@ export async function readGitStatus(cwd: string): Promise<GitStatus | undefined>
   try {
     porcelain = await git(['status', '--porcelain'], cwd)
   } catch {
-    return undefined
+    // The repo exists but the status read failed transiently; let the
+    // watcher retry rather than treating it as no-repo.
+    throw new Error(`git status failed in ${cwd}`)
   }
   let staged = 0
   let unstaged = 0
@@ -64,8 +70,9 @@ export async function readGitStatus(cwd: string): Promise<GitStatus | undefined>
 /**
  * Watch git status: report immediately, then re-read every `intervalMs`.
  * Worktree edits (unstaged counts) do not touch `.git/HEAD`, so a pure
- * HEAD stat-poll would miss them; porcelain is cheap on typical repos and
- * the poll stops once the workspace is not a repository.
+ * HEAD stat-poll would miss them; porcelain is cheap on typical repos.
+ * Outside a repository the watcher stops; transient read failures retry
+ * with a short backoff instead of dying.
  * @param cwd - the workspace directory.
  * @param onChange - receives each snapshot; undefined when not a repository.
  * @param intervalMs - poll cadence.
@@ -78,15 +85,25 @@ export function watchGitStatus(
 ): () => void {
   let disposed = false
   let timer: NodeJS.Timeout | undefined
+  const schedule = (delay: number): void => {
+    if (disposed) return
+    timer = setTimeout(poll, delay)
+  }
   const poll = (): void => {
     if (disposed) return
-    void readGitStatus(cwd).then((status) => {
-      if (disposed) return
-      onChange(status)
-      if (status !== undefined) {
-        timer = setTimeout(poll, intervalMs)
-      }
-    })
+    void readGitStatus(cwd).then(
+      (status) => {
+        if (disposed) return
+        onChange(status)
+        if (status !== undefined) schedule(intervalMs)
+      },
+      () => {
+        // Transient failure (repo exists, status read failed): retry soon
+        // and keep the last snapshot visible.
+        if (disposed) return
+        schedule(Math.max(500, intervalMs / 4))
+      },
+    )
   }
   // Immediate first read; keep polling only while inside a repository.
   poll()

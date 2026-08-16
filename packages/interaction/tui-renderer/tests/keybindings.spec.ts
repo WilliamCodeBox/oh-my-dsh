@@ -81,6 +81,13 @@ describe('KeybindingRegistry', () => {
     expect(second).toBe(1)
   })
 
+  it('contains a throwing handler and still consumes the key', () => {
+    const registry = new KeybindingRegistry()
+    registry.register({ key: 'x', description: 'boom', handler: () => { throw new Error('boom') } })
+    expect(() => registry.dispatch('x')).not.toThrow()
+    expect(registry.dispatch('x')).toBe(true)
+  })
+
   it('lists bindings in registration order for help', () => {
     const registry = new KeybindingRegistry()
     registry.register({ key: 'a', description: 'one', handler: () => {} })

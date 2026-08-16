@@ -11,6 +11,7 @@
 
 import { truncateToWidth, visibleWidth, type Component } from '@earendil-works/pi-tui'
 import { contextBar } from './format.ts'
+import { sanitizeText } from './sanitize.ts'
 import type { SemanticTheme } from './theme.ts'
 
 /** Git worktree state for the meta row. */
@@ -67,7 +68,7 @@ export function renderMetaRow(data: MetaRowData, theme: SemanticTheme, width: nu
 
   const centerParts: string[] = []
   if (data.cwd !== undefined) {
-    centerParts.push(theme.fg('dim', data.cwd))
+    centerParts.push(theme.fg('dim', sanitizeText(data.cwd)))
   }
   if (data.git !== undefined) {
     const git = data.git

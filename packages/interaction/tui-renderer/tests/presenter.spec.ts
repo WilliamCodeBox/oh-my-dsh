@@ -143,6 +143,29 @@ describe('TuiPresenter', () => {
     expect(laterSawCtrlC).toBe(false)
   })
 
+  it('queues a second overlay behind a live modal and closes both in order', async () => {
+    const tick = (): Promise<void> => {
+      const { promise, resolve } = Promise.withResolvers<undefined>()
+      setTimeout(resolve, 10)
+      return promise
+    }
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    const first = presenter.askApproval('fs.write', 'one')
+    await tick()
+    const second = presenter.askApproval('fs.read', 'two')
+    await tick()
+    // The second approval waited in the queue; the first closes first.
+    terminal.send('\r')
+    expect(await first).toBe('allowed-once')
+    await tick()
+    // After the first closes, the queued modal mounts and accepts Enter.
+    terminal.send('\r')
+    expect(await second).toBe('allowed-once')
+    presenter.stop()
+  })
+
   it('scrolls the transcript viewport without leaving end-following when at the bottom', () => {
     const terminal = new FakeTerminal()
     const presenter = makePresenter(terminal, new Transcript())

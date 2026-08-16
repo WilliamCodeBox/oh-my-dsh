@@ -629,6 +629,36 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     await test.ctx.fiber.dispose()
   }, 20000)
 
+  it('ignores an empty submit on the presenter path', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('\r')
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(test.recorded.followup).toHaveLength(0)
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('rejects /model without a provider/model separator', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('/model')
+    terminal.send(' ')
+    terminal.send('bare')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('model must be provider/model') })
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
   it('reports /sessions as unavailable without a persistence service', async () => {
     // The built-in session switch needs ctx.sessionPersistence; without the
     // service the command fails soft via the status notice instead of

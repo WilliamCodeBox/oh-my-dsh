@@ -14,9 +14,10 @@
  * @module @williamcodebox/omd-tui-renderer
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync, type Stats } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, join, sep } from 'node:path'
+import { sanitizeText } from './sanitize.ts'
 import {
   fuzzyFilter,
   fuzzyMatch,
@@ -26,6 +27,8 @@ import {
 } from '@earendil-works/pi-tui'
 
 const DELIMITERS = new Set([' ', '\t', '='])
+/** Line-range completion rejects files above this size (synchronous read). */
+const LINE_RANGE_MAX_BYTES = 1024 * 1024
 const EXCLUDED_DIRS = new Set(['node_modules', '.git'])
 const MAX_DEPTH = 2
 const MAX_RESULTS = 30
@@ -187,10 +190,19 @@ export class WorkspaceAutocomplete implements AutocompleteProvider {
   /**
    * Complete a `@file#L<start>` line-range reference: read the file, propose
    * a 10-line window starting at the typed line (or 1). The completion value
-   * replaces only the `#…` part, keeping the file token intact.
+   * replaces only the `#…` part, keeping the file token intact. Regular
+   * files only, size-capped, so a FIFO/device or a huge file cannot stall
+   * the main thread on every keystroke.
    */
   private lineRangeSuggestions(fileRel: string, lineInput: string): AutocompleteSuggestions | null {
     const file = join(this.basePath, fileRel)
+    let stat: Stats
+    try {
+      stat = statSync(file)
+    } catch {
+      return null
+    }
+    if (!stat.isFile() || stat.size > LINE_RANGE_MAX_BYTES) return null
     let content: string
     try {
       content = readFileSync(file, 'utf8')
@@ -206,7 +218,7 @@ export class WorkspaceAutocomplete implements AutocompleteProvider {
       items: [{
         value,
         label: `L${start}-L${end} (${total} lines)`,
-        description: `@${fileRel}${value}`,
+        description: `@${sanitizeText(fileRel)}${value}`,
       }],
       prefix: `#${lineInput}`,
     }
@@ -260,7 +272,7 @@ export class WorkspaceAutocomplete implements AutocompleteProvider {
       const value = `${entry.path}${isDirectory ? '/' : ''}`
       return {
         value,
-        label: `${basename(entry.path)}${isDirectory ? '/' : ''}`,
+        label: `${sanitizeText(basename(entry.path))}${isDirectory ? '/' : ''}`,
         description: `@${value}`,
       }
     })

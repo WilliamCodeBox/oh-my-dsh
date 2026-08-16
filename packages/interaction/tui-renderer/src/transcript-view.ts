@@ -60,11 +60,14 @@ function fingerprintOf(item: TranscriptItem): string {
       // fingerprint stays constant so the cache survives chunk deltas.
       return 'assistant'
     case 'tool':
-      return `tool:${item.name}:${item.args}:${item.result?.error?.name ?? ''}:${item.result?.text ?? ''}`
+      // meta carries the diff view; a result with empty text but diffs must
+      // still invalidate the card. The full result text is not hashed (MB
+      // scale); open/settled plus error identity suffice for re-render.
+      return `tool:${item.name}:${item.args}:${item.result === undefined ? 'open' : 'settled'}:${item.result?.error?.name ?? ''}:${item.result?.meta === undefined ? '' : 'meta'}`
     case 'turn':
       return `turn:${item.end?.reason.kind ?? 'open'}`
     case 'command':
-      return `command:${item.name}:${item.result?.kind ?? 'open'}:${item.result?.text ?? ''}`
+      return `command:${item.name}:${item.result?.kind ?? 'open'}`
   }
 }
 
@@ -102,12 +105,28 @@ function diffsFromMetaValue(meta: JsonValue | undefined): DiffLike[] | undefined
 /** One unified-diff edit line. */
 type DiffEdit = { kind: 'ctx' | 'del' | 'add'; text: string }
 
+/** LCS row cap: beyond this the full DP table would stall the render thread. */
+const LCS_MAX_LINES = 1500
+
 /**
  * Line-level longest-common-subsequence diff: interleaves context, removals,
- * and additions in unified order instead of dumping adds then removes.
- * O(n·m) table; diffs are file-sized, so the cost is bounded.
+ * and additions in unified order. O(n·m) table bounded by {@link LCS_MAX_LINES}
+ * per side; larger diffs fall back to a linear add/remove dump so huge tool
+ * results degrade to readable output instead of freezing the UI.
  */
 function lcsDiff(before: string[], after: string[]): DiffEdit[] {
+  if (before.length > LCS_MAX_LINES || after.length > LCS_MAX_LINES) {
+    const edits: DiffEdit[] = []
+    const beforeSet = new Set(before)
+    for (const line of after) {
+      edits.push(beforeSet.has(line) ? { kind: 'ctx', text: line } : { kind: 'add', text: line })
+    }
+    const afterSet = new Set(after)
+    for (const line of before) {
+      if (!afterSet.has(line)) edits.push({ kind: 'del', text: line })
+    }
+    return edits
+  }
   const n = before.length
   const m = after.length
   // DP table: dp[i][j] = LCS length of before[i..] and after[j..].
@@ -191,10 +210,11 @@ function toolCardFor(item: ToolItem, theme: SemanticTheme): Component {
 /**
  * Background function that re-applies the fill after every inline SGR reset:
  * Markdown's per-token `\x1b[0m` would otherwise drop the card background
- * for the rest of the line.
+ * for the rest of the line. The fill strips its own trailing reset so the
+ * re-applied background survives until the line's final reset.
  */
 function persistentBg(bg: (text: string) => string): (text: string) => string {
-  const fill = bg('')
+  const fill = bg('').replace(/\x1b\[0m$/, '')
   return text => bg(text.replace(/\x1b\[0m/g, `\x1b[0m${fill}`))
 }
 
@@ -247,10 +267,18 @@ export class TranscriptView implements Component {
       case 'assistant': {
         const md = markdownFor(item.text, theme)
         let lastText = item.text
+        let lastSetAt = 0
+        // Streaming chunks can arrive faster than re-lexing the whole
+        // message; throttle setText to ~80ms so the last block's highlight
+        // cost stays bounded while the text lags at most one frame.
         return (width) => {
           if (item.text !== lastText) {
-            md.setText(sanitizeText(item.text))
-            lastText = item.text
+            const now = Date.now()
+            if (now - lastSetAt >= 80) {
+              md.setText(sanitizeText(item.text))
+              lastText = item.text
+              lastSetAt = now
+            }
           }
           return md.render(width)
         }
