@@ -17,7 +17,7 @@ import type {} from '@williamcodebox/omd-agent-default-model'
 import { createUserMessage } from '@williamcodebox/omd-llm'
 import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, SessionEvent } from '@williamcodebox/omd-session'
-import { TuiPresenter, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme, workspaceAutocomplete } from '@williamcodebox/omd-tui-renderer'
+import { TuiPresenter, KeybindingRegistry, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme, workspaceAutocomplete } from '@williamcodebox/omd-tui-renderer'
 import type {} from '@williamcodebox/omd-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
@@ -231,10 +231,9 @@ function parseModel(pair: string): { provider: string; model: string } {
 }
 
 /** Composition-only setup installing the selected model on the agent scope. */
-function installSelection(selection: ModelSelectionRef['current']): (agentCtx: Context) => void {
+function installSelection(selection: ModelSelectionRef): (agentCtx: Context) => void {
   return (agentCtx) => {
-    const selected: ModelSelectionRef = { current: selection, assembled: undefined }
-    installModelSelection(agentCtx, selected)
+    installModelSelection(agentCtx, selection)
   }
 }
 
@@ -256,18 +255,33 @@ type InputOutcome = { kind: 'quit'; code: number } | { kind: 'hard-exit'; code: 
 async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<InputOutcome> {
   const ctrlC = new CtrlCController()
   return await new Promise<InputOutcome>((resolve) => {
-    presenter.onKey((data) => {
-      if (data === '\x1b[5~' || data === '\x1b[5;2~') {
-        // PgUp (and Shift+PgUp): page back through the transcript history.
-        presenter.pageTranscript(-1)
-        return true
-      }
-      if (data === '\x1b[6~' || data === '\x1b[6;2~') {
-        // PgDn (and Shift+PgDn): page forward; end-following resumes at the bottom.
-        presenter.pageTranscript(1)
-        return true
-      }
-      if (data !== '\x03') return false
+    // One registry for every raw key the presenter sees; the help overlay
+    // lists the same bindings, so key discovery never drifts from behavior.
+    const registry = new KeybindingRegistry()
+    registry.register({
+      key: '\x1b[5~',
+      description: 'page back through the transcript',
+      handler: () => { presenter.pageTranscript(-1) },
+    })
+  registry.register({
+    key: '\x1b[5;2~',
+    description: 'page back through the transcript',
+    handler: () => { presenter.pageTranscript(-1) },
+  })
+  registry.register({
+    key: '\x1b[6;2~',
+    description: 'page forward; end-following resumes at the bottom',
+    handler: () => { presenter.pageTranscript(1) },
+  })
+  registry.register({
+    key: '?',
+    description: 'show this keybinding help',
+    handler: () => { presenter.showHelp(registry.list().map(binding => ({ key: binding.key, description: binding.description }))) },
+  })
+  registry.register({
+    key: '\x03',
+    description: 'clear input / cancel / quit (three-step)',
+    handler: () => {
       // While an interaction modal is asking, Ctrl+C resolves the modal's
       // cancel binding instead of driving the quit machine: the modal owns
       // the key until the user decides.
@@ -291,6 +305,10 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
           break
       }
       return true
+    },
+    })
+    presenter.onKey((data) => {
+      return registry.dispatch(data)
     })
   })
 }
@@ -435,8 +453,11 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
   if (agents === undefined || defaultModel === undefined || sessions === undefined) return
 
   const selection = config.model !== undefined ? parseModel(config.model) : defaultModel.currentSelection()
+  // The mutable ref lets /model switch the next prompt's model at runtime;
+  // the assembly listener reads ref.current per request.
+  const selectionRef: ModelSelectionRef = { current: selection, assembled: undefined }
   const agentOptions = { provider: selection.provider, model: selection.model }
-  const setup = installSelection(selection)
+  const setup = installSelection(selectionRef)
   const handle = config.resume !== undefined
     ? await agents.resume({ resumeSessionId: SessionId(config.resume), agentOptions, setup })
     : await agents.create({
@@ -478,9 +499,18 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
   // pipe line stream): unknown slash commands report here instead of leaking
   // into the model or vanishing.
   const notice = { text: '' }
+  // Spinner frame over wall-clock time; the status row re-reads per render.
+  const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
   const statusLine = (): string => {
     const base = formatStatus(transcript.state)
     return notice.text === '' ? base : base === '' ? notice.text : `${base} | ${notice.text}`
+  }
+  // Transient right status: a spinner while a turn runs, plus the escape
+  // hint so a long silent turn never looks hung.
+  const transient = (): string => {
+    if (agent.status !== 'running') return ''
+    const frame = SPINNER_FRAMES[Math.floor(Date.now() / 100) % SPINNER_FRAMES.length]
+    return `${frame} running · esc to interrupt`
   }
 
   /**
@@ -490,6 +520,21 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
    * command/run + command/done fold; an unknown command reports via notice.
    */
   const dispatchLine = (line: string): void => {
+    // Built-in model switching lives outside the commands runtime so it can
+    // mutate the selection ref directly; everything else rides the runtime.
+    const modelMatch = /^\/model(?:\s+(\S+))?$/.exec(line)
+    if (modelMatch !== null) {
+      const pair = modelMatch[1]
+      if (pair === undefined) {
+        const current = selectionRef.current
+        notice.text = current === undefined ? 'no model selected' : `model ${current.provider}/${current.model}`
+      } else {
+        const parsed = parseModel(pair)
+        selectionRef.current = parsed
+        notice.text = `model ${parsed.provider}/${parsed.model}`
+      }
+      return
+    }
     if (parseCommand(line) !== undefined && commands !== undefined) {
       notice.text = ''
       void commands.execute(agent, line, commandAbort.signal).then(
@@ -517,12 +562,16 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     // @-file and slash-command completion over the workspace directory.
     const descriptors = commands?.list(agent) ?? []
     const autocomplete = workspaceAutocomplete(
-      descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
+      [
+        ...descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
+        { name: 'model', description: 'switch provider/model' },
+      ],
       config.workspace ?? process.cwd(),
     )
     presenter = new TuiPresenter(internals.createTerminal(), transcript, {
       onSubmit: dispatchLine,
       statusLine,
+      transient,
     }, themeForScheme(scheme), autocomplete)
     activePresenter = presenter
   }

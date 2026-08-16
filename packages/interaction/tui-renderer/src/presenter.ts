@@ -21,6 +21,7 @@ import {
   VStack,
   isViewportTUI,
   truncateToWidth,
+  visibleWidth,
   type AutocompleteProvider,
   type OverlayHandle,
   type SelectItem,
@@ -64,6 +65,8 @@ export interface PresenterOptions {
   onSubmit: (line: string) => void
   /** Status row text, re-read before each render. */
   statusLine: () => string
+  /** Transient right-side status (spinner, retry, esc hint); re-read per render. */
+  transient?: () => string
 }
 
 /**
@@ -290,6 +293,31 @@ export class TuiPresenter {
   }
 
   /**
+   * Show a read-only keybinding help overlay. Escape or Enter closes it and
+   * restores editor focus.
+   * @param entries - the keybindings to list.
+   */
+  showHelp(entries: readonly { key: string; description: string }[]): void {
+    if (this.overlay !== undefined) return
+    const card = new Box(1, 1)
+    card.addChild(new Text(this.theme.fg('accent', 'Keys'), 0, 0))
+    for (const entry of entries) {
+      card.addChild(new Text(`  ${entry.key.padEnd(20)} ${entry.description}`, 0, 0))
+    }
+    card.addChild(new Text('', 0, 0))
+    card.addChild(new Text(this.theme.fg('dim', 'esc / enter to close'), 0, 0))
+    const close = this.mountOverlay(card)
+    const offKey = this.onKey((data) => {
+      if (data === '\x1b' || data === '\r' || data === '\n') {
+        offKey()
+        close()
+        return true
+      }
+      return false
+    })
+  }
+
+  /**
    * Scroll the transcript viewport; positive scrolls toward the end. A
    * manual scroll leaves end-following until the viewport returns to the
    * bottom, so history stays readable while new content streams.
@@ -312,13 +340,19 @@ export class TuiPresenter {
   }
 
   /**
-   * Assemble the status row: the runner's left text (dim, already includes
-   * the provider/model via formatStatus) plus a context-window progress bar
-   * (threshold-colored). Truncated to the viewport width.
+   * Assemble the status row in three segments: the runner's left text
+   * (dim, already includes the provider/model via formatStatus), a
+   * context-window progress bar (threshold-colored), and a transient
+   * right segment (spinner/retry/esc hints). Truncation drops from the
+   * left side first so the transient never disappears mid-task.
    */
   private renderStatus(width: number): string {
     const left = this.options.statusLine()
     if (left === '') return ''
+    const transient = this.options.transient?.() ?? ''
+    const transientText = transient === '' ? '' : ` ${this.theme.fg('accent', transient)}`
+    const transientWidth = transient === '' ? 0 : 1 + visibleWidth(transient)
+    const budget = Math.max(1, width - transientWidth)
     const parts = [this.theme.fg('dim', left)]
     const ctx = this.transcript.state.context
     const total = this.transcript.state.usage.inputTokens + this.transcript.state.usage.outputTokens
@@ -327,7 +361,7 @@ export class TuiPresenter {
       const token = ratio > 0.9 ? 'error' : ratio > 0.7 ? 'warning' : 'dim'
       parts.push(this.theme.fg(token, contextBar(ratio, 10)))
     }
-    return truncateToWidth(parts.join('  '), width)
+    return truncateToWidth(parts.join('  '), budget) + transientText
   }
 
   /** Current editor text, for the Ctrl+C empty-input decision. */
