@@ -3,7 +3,7 @@
 # and unpack it. Usage:
 #
 #   curl -fsSL https://raw.githubusercontent.com/WilliamCodeBox/oh-my-dsh/main/install.sh | sh
-#   curl -fsSL ... | sh -s -- 0.1.0-rc.7          # pin a version
+#   curl -fsSL ... | sh -s -- 0.1.0-rc.8          # pin a version
 #   OMD_HOME=/opt/omd curl -fsSL ... | sh         # override install dir
 #
 # The tarball contains the bun runtime (GLIBC_2.17 — CentOS 7+ compatible)
