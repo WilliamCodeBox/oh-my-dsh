@@ -571,9 +571,16 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     return text
   }
   // Transient right status: a spinner while a turn runs, plus the escape
-  // hint so a long silent turn never looks hung.
+  // hint so a long silent turn never looks hung. Also drives the terminal
+  // task-progress indicator (idempotent per status change).
+  let lastProgress: boolean | undefined
   const transient = (): string => {
-    if (agent.status !== 'running') return ''
+    const running = agent.status === 'running'
+    if (running !== lastProgress) {
+      lastProgress = running
+      presenter?.setProgress(running)
+    }
+    if (!running) return ''
     const frame = SPINNER_FRAMES[Math.floor(Date.now() / 100) % SPINNER_FRAMES.length]
     return `${frame} running · esc to interrupt`
   }

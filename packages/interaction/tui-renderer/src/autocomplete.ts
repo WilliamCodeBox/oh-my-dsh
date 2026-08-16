@@ -14,7 +14,7 @@
  * @module @williamcodebox/omd-tui-renderer
  */
 
-import { readdirSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, join, sep } from 'node:path'
 import {
@@ -140,6 +140,10 @@ export class WorkspaceAutocomplete implements AutocompleteProvider {
     const before = current.slice(0, cursorCol)
     const atPrefix = extractAtPrefix(before)
     if (atPrefix !== null) {
+      const hashIndex = atPrefix.indexOf('#')
+      if (hashIndex !== -1) {
+        return this.lineRangeSuggestions(atPrefix.slice(1, hashIndex), atPrefix.slice(hashIndex + 1))
+      }
       return this.fileSuggestions(atPrefix, options.signal)
     }
     if (before.startsWith('/') && !before.includes(' ')) {
@@ -178,6 +182,34 @@ export class WorkspaceAutocomplete implements AutocompleteProvider {
     const nextLines = [...lines]
     nextLines[cursorLine] = next
     return { lines: nextLines, cursorLine, cursorCol: start + value.length }
+  }
+
+  /**
+   * Complete a `@file#L<start>` line-range reference: read the file, propose
+   * a 10-line window starting at the typed line (or 1). The completion value
+   * replaces only the `#…` part, keeping the file token intact.
+   */
+  private lineRangeSuggestions(fileRel: string, lineInput: string): AutocompleteSuggestions | null {
+    const file = join(this.basePath, fileRel)
+    let content: string
+    try {
+      content = readFileSync(file, 'utf8')
+    } catch {
+      return null
+    }
+    const total = content.split('\n').length
+    const match = /^L(\d+)/.exec(lineInput)
+    const start = match === null ? 1 : Math.min(parseInt(match[1]!, 10), total)
+    const end = Math.min(total, start + 9)
+    const value = `#L${start}-L${end}`
+    return {
+      items: [{
+        value,
+        label: `L${start}-L${end} (${total} lines)`,
+        description: `@${fileRel}${value}`,
+      }],
+      prefix: `#${lineInput}`,
+    }
   }
 
   /** Resolve the search directory, prefix, and base-relative dir for an `@` query. */

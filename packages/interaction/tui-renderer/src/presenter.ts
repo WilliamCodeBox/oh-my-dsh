@@ -378,6 +378,11 @@ export class TuiPresenter {
     if (this.started) this.tui.requestRender()
   }
 
+  /** Reflect the terminal's task-progress indicator (OSC 9). */
+  setProgress(active: boolean): void {
+    if (this.started) this.tui.terminal.setProgress(active)
+  }
+
   /**
    * Assemble the status row: the runner's left text (dim, running facts
    * from formatStatus) plus a transient right segment (spinner/retry/esc

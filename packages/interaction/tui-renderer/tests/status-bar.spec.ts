@@ -131,4 +131,15 @@ describe('workspaceAutocomplete', () => {
     expect(result.lines[0]).toBe('x @packages/')
     expect(result.cursorCol).toBe(12)
   })
+
+  it('completes a line range for @file#L references', async () => {
+    const provider = workspaceAutocomplete([], process.cwd())
+    const prefix = '@packages/interaction/tui-renderer/src/autocomplete.ts#L'
+    const suggestions = await provider.getSuggestions([prefix], 0, prefix.length, { signal: new AbortController().signal })
+    expect(suggestions).not.toBeNull()
+    expect(suggestions!.items[0]!.value).toMatch(/^#L\d+-L\d+$/)
+    const applied = provider.applyCompletion([prefix], 0, prefix.length, suggestions!.items[0]!, suggestions!.prefix)
+    expect(applied.lines[0]).toContain('autocomplete.ts#L')
+    expect(applied.lines[0]).not.toContain('L#L')
+  })
 })
