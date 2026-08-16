@@ -87,6 +87,8 @@ export class TuiPresenter {
   private started = false
   /** The live interaction overlay, when one is asking. */
   private overlay: { handle: OverlayHandle } | undefined
+  /** External halt sink: the runner resolves its drive loop here. */
+  private haltHandler: ((outcome: unknown) => void) | undefined
 
   constructor(
     terminal: Terminal,
@@ -153,6 +155,21 @@ export class TuiPresenter {
   /** True while an interaction overlay modal is asking. */
   get interactionPending(): boolean {
     return this.overlay !== undefined
+  }
+
+  /**
+   * Register the runner's halt sink. The runner resolves its input loop
+   * here when a command (e.g. session switch) wants to end the current
+   * drive without a Ctrl+C quit.
+   * @param handler - receives the halt payload the command produced.
+   */
+  setHaltHandler(handler: (outcome: unknown) => void): void {
+    this.haltHandler = handler
+  }
+
+  /** Request a halt of the current drive loop with an arbitrary payload. */
+  halt(outcome: unknown): void {
+    this.haltHandler?.(outcome)
   }
 
   /**

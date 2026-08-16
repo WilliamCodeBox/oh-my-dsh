@@ -26,6 +26,7 @@ import type {} from '@williamcodebox/omd-user-approval'
 // session event shapes ride their packages' merges.
 import type {} from '@williamcodebox/omd-user-questions'
 import type {} from '@williamcodebox/omd-commands'
+import type {} from '@williamcodebox/omd-session-persistence'
 import { parseCommand } from '@williamcodebox/omd-commands'
 // Empty type imports carry the Loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
@@ -40,7 +41,7 @@ import { Keymap } from './keymap.ts'
 export const name = 'tui-runner'
 
 /** Core services required before the interactive session can start. */
-export const inject = ['agentDefaultModel', 'agents', 'sessions', 'userQuestions', 'commands']
+export const inject = ['agentDefaultModel', 'agents', 'sessions', 'userQuestions', 'commands', 'sessionPersistence']
 
 /** Plugin config: startup values resolved from the injected provider service. */
 export interface Config {
@@ -245,7 +246,7 @@ function submitLine(agent: Agent, line: string): void {
 }
 
 /** How the input loop ended, and with which exit code. */
-type InputOutcome = { kind: 'quit'; code: number } | { kind: 'hard-exit'; code: number }
+type InputOutcome = { kind: 'quit'; code: number } | { kind: 'hard-exit'; code: number } | { kind: 'switch'; resumeId: SessionId }
 
 /**
  * Drive the presenter path: the pi-tui editor submits lines and the Ctrl+C
@@ -260,28 +261,39 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
     const registry = new KeybindingRegistry()
     registry.register({
       key: '\x1b[5~',
+      display: 'PgUp',
       description: 'page back through the transcript',
       handler: () => { presenter.pageTranscript(-1) },
     })
-  registry.register({
-    key: '\x1b[5;2~',
-    description: 'page back through the transcript',
-    handler: () => { presenter.pageTranscript(-1) },
-  })
-  registry.register({
-    key: '\x1b[6;2~',
-    description: 'page forward; end-following resumes at the bottom',
-    handler: () => { presenter.pageTranscript(1) },
-  })
-  registry.register({
-    key: '?',
-    description: 'show this keybinding help',
-    handler: () => { presenter.showHelp(registry.list().map(binding => ({ key: binding.key, description: binding.description }))) },
-  })
-  registry.register({
-    key: '\x03',
-    description: 'clear input / cancel / quit (three-step)',
-    handler: () => {
+    registry.register({
+      key: '\x1b[5;2~',
+      display: 'Shift+PgUp',
+      description: 'page back through the transcript',
+      handler: () => { presenter.pageTranscript(-1) },
+    })
+    registry.register({
+      key: '\x1b[6~',
+      display: 'PgDn',
+      description: 'page forward; end-following resumes at the bottom',
+      handler: () => { presenter.pageTranscript(1) },
+    })
+    registry.register({
+      key: '\x1b[6;2~',
+      display: 'Shift+PgDn',
+      description: 'page forward; end-following resumes at the bottom',
+      handler: () => { presenter.pageTranscript(1) },
+    })
+    registry.register({
+      key: '?',
+      display: '?',
+      description: 'show this keybinding help',
+      handler: () => { presenter.showHelp(registry.list().map(binding => ({ key: binding.display ?? binding.key, description: binding.description }))) },
+    })
+    registry.register({
+      key: '\x03',
+      display: 'Ctrl+C',
+      description: 'clear input / cancel / quit (three-step)',
+      handler: () => {
       // While an interaction modal is asking, Ctrl+C resolves the modal's
       // cancel binding instead of driving the quit machine: the modal owns
       // the key until the user decides.
@@ -306,6 +318,12 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
       }
       return true
     },
+    })
+    presenter.setHaltHandler((outcome) => {
+      const payload = outcome as { resumeId?: unknown }
+      if (typeof payload.resumeId === 'string') {
+        resolve({ kind: 'switch', resumeId: SessionId(payload.resumeId) })
+      }
     })
     presenter.onKey((data) => {
       return registry.dispatch(data)
@@ -445,12 +463,12 @@ async function driveInput(
  * drive the surface, and request exit. The presenter is stopped before the
  * graceful flush so the user's shell returns even while persistence drains.
  */
-async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource | undefined): Promise<void> {
+async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSource | undefined, resumeId: SessionId | undefined): Promise<{ kind: 'switch'; resumeId: SessionId } | { kind: 'exit'; code: number }> {
   await ctx.get('loader')?.await()
   const agents = ctx.get('agents')
   const defaultModel = ctx.get('agentDefaultModel')
   const sessions = ctx.get('sessions')
-  if (agents === undefined || defaultModel === undefined || sessions === undefined) return
+  if (agents === undefined || defaultModel === undefined || sessions === undefined) return { kind: 'exit', code: 1 }
 
   const selection = config.model !== undefined ? parseModel(config.model) : defaultModel.currentSelection()
   // The mutable ref lets /model switch the next prompt's model at runtime;
@@ -458,8 +476,8 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
   const selectionRef: ModelSelectionRef = { current: selection, assembled: undefined }
   const agentOptions = { provider: selection.provider, model: selection.model }
   const setup = installSelection(selectionRef)
-  const handle = config.resume !== undefined
-    ? await agents.resume({ resumeSessionId: SessionId(config.resume), agentOptions, setup })
+  const handle = resumeId !== undefined
+    ? await agents.resume({ resumeSessionId: resumeId, agentOptions, setup })
     : await agents.create({
       sessionId: SessionId(`session-${randomUUID()}`),
       meta: { cwd: config.workspace ?? process.cwd() },
@@ -533,6 +551,32 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
         selectionRef.current = parsed
         notice.text = `model ${parsed.provider}/${parsed.model}`
       }
+      return
+    }
+    if (line === '/sessions' || line.startsWith('/sessions ')) {
+      // List persisted sessions and switch to the picked one: the drive loop
+      // halts with the resume id and the outer loop rebuilds the agent.
+      void (async () => {
+        const persistence = ctx.sessionPersistence
+        if (persistence === undefined || presenter === undefined) {
+          notice.text = 'sessions unavailable'
+          return
+        }
+        const listed = await persistence.list()
+        if (listed.length === 0) {
+          notice.text = 'no sessions yet'
+          return
+        }
+        const options = listed.map(session => ({
+          value: session.id,
+          label: `${session.id}  ${new Date(session.createdAt).toLocaleString()}${session.cwd === undefined ? '' : `  ${session.cwd}`}`,
+        }))
+        const picked = await presenter.askQuestions([{ id: 'session', question: 'Resume session', options }])
+        const answer = picked.answers[0]
+        if (answer !== undefined && answer.selected.length === 1) {
+          presenter.halt({ resumeId: answer.selected[0] })
+        }
+      })()
       return
     }
     if (parseCommand(line) !== undefined && commands !== undefined) {
@@ -616,11 +660,15 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
 
     if (outcome.kind === 'hard-exit') {
       io.hardExit(outcome.code)
-      return
+      return { kind: 'exit', code: outcome.code }
     }
     await sessions.flush(agent.session)
     await handle.dispose()
+    if (outcome.kind === 'switch') {
+      return { kind: 'switch', resumeId: outcome.resumeId }
+    }
     io.exit(outcome.code)
+    return { kind: 'exit', code: outcome.code }
   } catch (error) {
     commandAbort.abort()
     offEvents()
@@ -652,7 +700,20 @@ export function apply(ctx: Context, config: Config): void {
   // presenter's terminal owns them, so a pipe source must never mount there
   // (it would also mis-decode pi-tui's utf8-encoded data events).
   const input = internals.isTTY ? undefined : internals.createInput()
-  void run(ctx, config, io, input).catch((error: unknown) => {
+  // Session switching loops the runner: /sessions halts the drive, the outer
+  // loop resumes the picked session, and the presenter restarts fresh.
+  const runLoop = async (): Promise<void> => {
+    let resumeId = config.resume !== undefined ? SessionId(config.resume) : undefined
+    for (;;) {
+      const result = await runOnce(ctx, config, io, input, resumeId)
+      if (result.kind === 'switch') {
+        resumeId = result.resumeId
+        continue
+      }
+      return
+    }
+  }
+  void runLoop().catch((error: unknown) => {
     // Report before the crash restore: the restore path hard-exits.
     io.stderr.write(`omd: ${error instanceof Error ? error.message : String(error)}\n`)
     crash()

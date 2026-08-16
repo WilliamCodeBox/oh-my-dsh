@@ -12,6 +12,8 @@
 export interface Keybinding {
   /** Raw key data that triggers the binding (e.g. `\x1b[5~` for PgUp). */
   readonly key: string
+  /** Human-readable key name for help surfaces; defaults to `key`. */
+  readonly display?: string
   /** Short human-readable description shown in the help overlay. */
   readonly description: string
   /** Runs when the key is pressed; return false to let later bindings see it. */

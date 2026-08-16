@@ -40,6 +40,9 @@
     },
     {
       "path": "../../boot/cmdline"
+    },
+    {
+      "path": "../../session/session-persistence"
     }
   ]
 }

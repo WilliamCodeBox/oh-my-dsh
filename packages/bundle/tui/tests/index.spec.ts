@@ -578,6 +578,23 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('reports /sessions as unavailable without a persistence service', async () => {
+    // The built-in session switch needs ctx.sessionPersistence; without the
+    // service the command fails soft via the status notice instead of
+    // crashing the drive loop.
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    terminal.send('/sessions')
+    terminal.send('\r')
+    await tick()
+    expect(terminal.writes.join('')).toContain('sessions unavailable')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
   it('rejects an approval prompt by selecting the second option', async () => {
     const test = await bench([], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
