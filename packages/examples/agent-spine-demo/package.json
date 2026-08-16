@@ -1,0 +1,100 @@
+{
+  "name": "@williamcodebox/omd-agent-spine-demo",
+  "description": "The default executor-less/UI-less agent spine with fallback session titles, provider-routed retry, and optional persisted goals",
+  "version": "0.1.0-rc.6",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
+    "directory": "packages/examples/agent-spine-demo"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@williamcodebox/cordis-plugin-timer": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-loop": "workspace:^",
+    "@williamcodebox/omd-goal": "workspace:^",
+    "@williamcodebox/omd-goal-round-driver": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-home-paths": "workspace:^",
+    "@williamcodebox/omd-llm-retry": "workspace:^",
+    "@williamcodebox/omd-scope": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-session-title": "workspace:^",
+    "@williamcodebox/omd-skill": "workspace:^",
+    "@williamcodebox/omd-skill-filesystem": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-jobs-local": "workspace:^",
+    "@williamcodebox/omd-shell-env": "workspace:^",
+    "@williamcodebox/omd-tool-bash": "workspace:^",
+    "@williamcodebox/omd-tool-goal": "workspace:^",
+    "@williamcodebox/omd-tool-skill": "workspace:^",
+    "@williamcodebox/omd-tool-jobs": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/omd-agent-instructions": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
+  },
+  "devDependencies": {
+    "@williamcodebox/cordis-plugin-timer": "workspace:^",
+    "@williamcodebox/omd-agent": "workspace:^",
+    "@williamcodebox/omd-agent-loop": "workspace:^",
+    "@williamcodebox/omd-shell-env": "workspace:^",
+    "@williamcodebox/omd-bash-local": "workspace:^",
+    "@williamcodebox/omd-bash-sandbox": "workspace:^",
+    "@williamcodebox/omd-fs-local": "workspace:^",
+    "@williamcodebox/omd-fs-observation-policy": "workspace:^",
+    "@williamcodebox/omd-fs-sandbox": "workspace:^",
+    "@williamcodebox/omd-goal": "workspace:^",
+    "@williamcodebox/omd-goal-round-driver": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-llm": "workspace:^",
+    "@williamcodebox/omd-home-paths": "workspace:^",
+    "@williamcodebox/omd-llm-retry": "workspace:^",
+    "@williamcodebox/omd-subprocess-local": "workspace:^",
+    "@williamcodebox/omd-sandbox-local": "workspace:^",
+    "@williamcodebox/omd-sandbox-policy": "workspace:^",
+    "@williamcodebox/omd-scope": "workspace:^",
+    "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-session-title": "workspace:^",
+    "@williamcodebox/omd-skill": "workspace:^",
+    "@williamcodebox/omd-skill-filesystem": "workspace:^",
+    "@williamcodebox/omd-system-prompt": "workspace:^",
+    "@williamcodebox/omd-jobs": "workspace:^",
+    "@williamcodebox/omd-jobs-local": "workspace:^",
+    "@williamcodebox/omd-tool-bash": "workspace:^",
+    "@williamcodebox/omd-tool-fs": "workspace:^",
+    "@williamcodebox/omd-tool-goal": "workspace:^",
+    "@williamcodebox/omd-tool-skill": "workspace:^",
+    "@williamcodebox/omd-tool-jobs": "workspace:^",
+    "@williamcodebox/omd-tools": "workspace:^",
+    "@williamcodebox/omd-agent-instructions": "workspace:^",
+    "@williamcodebox/node-addon-landlock-run": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
+  },
+  "dependencies": {
+    "@williamcodebox/schemastery": "workspace:^"
+  }
+}

@@ -1,0 +1,38 @@
+# Test-only composition: create one goal through a Loader-mounted step consumer.
+- id: cli-mock-llm
+  name: '../cli-mock-llm.ts'
+
+# Managed child-process groups for the bash executor (spawn/kill/output plumbing).
+- id: subprocess
+  name: '@williamcodebox/omd-subprocess-local'
+
+- id: bash
+  name: '@williamcodebox/omd-bash-local'
+
+- id: goal
+  name: '@williamcodebox/omd-goal'
+  config:
+    defaultMaxGoalRounds: 11
+
+- id: seed-goal
+  name: './seed-goal.ts'
+
+- id: agent-spine
+  name: '@williamcodebox/omd-agent-spine-demo'
+  config:
+    agents:
+      - id: main
+        provider: cli-mock
+        model: cli-mock
+        cwd: !!js process.cwd()
+    persona: 'Test the persisted goal domain.'
+    workspaceContext: false
+
+- id: persistence
+  name: '@williamcodebox/omd-session-persistence-jsonl'
+  config:
+    root: './.sessions'
+    compression: none
+
+- id: checkpoint-policy
+  name: '@williamcodebox/omd-session-checkpoint-policy'

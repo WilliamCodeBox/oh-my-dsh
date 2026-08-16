@@ -1,0 +1,16 @@
+# Keyless replay overlay for the tui profile: disable the real DeepSeek
+# adapter and mount the replay adapter under the same provider/model identity
+# the profile defaults to, so the assembled app replays a recorded transcript
+# without a key. Applied with `omd --profile tui --patch <this file>`.
+- id: llm-deepseek
+  disabled: true
+
+- insert:
+    - id: llm-replay
+      name: '@williamcodebox/omd-llm-replay'
+      config:
+        providers:
+          - id: deepseek-official
+            models:
+              - id: deepseek-v4-flash
+                contextWindow: 128000
