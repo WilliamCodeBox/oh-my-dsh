@@ -47,7 +47,10 @@
     "@williamcodebox/omd-cmdline": "workspace:^",
     "@williamcodebox/omd-tui-renderer": "workspace:^",
     "@williamcodebox/schemastery": "workspace:^",
-    "commander": "^15.0.0"
+    "commander": "^15.0.0",
+    "@williamcodebox/omd-lsp-stdio": "workspace:^",
+    "typescript-language-server": "^5.3.0",
+    "typescript": "^5.7.2"
   },
   "peerDependencies": {
     "@williamcodebox/cordis-plugin-loader": "workspace:^",

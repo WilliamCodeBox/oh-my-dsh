@@ -417,6 +417,16 @@
         fetch: false
         searchTimeoutMs: 60000
 
+    # Language-server seam and model-facing lsp tool (every mode). The stdio
+    # provider with concrete servers is mounted per profile (tui ships a
+    # bundled typescript-language-server); without a provider the lsp tool
+    # returns the structured LSP_UNAVAILABLE error rather than changing schema.
+    - id: lsp
+      name: '@williamcodebox/omd-lsp'
+
+    - id: tool-lsp
+      name: '@williamcodebox/omd-tool-lsp'
+
     # ── rows every mode mounts, whose values each overlay may state ──────────────
 
     # The tool registry. Presentation mode is a deployment choice; omitting it here

@@ -1210,6 +1210,9 @@ importers:
       '@williamcodebox/omd-llm-retry':
         specifier: workspace:^
         version: link:../../llm/llm-retry
+      '@williamcodebox/omd-lsp':
+        specifier: workspace:^
+        version: link:../../lsp/lsp
       '@williamcodebox/omd-permission-presets':
         specifier: workspace:^
         version: link:../../interaction/permission-presets
@@ -1309,6 +1312,9 @@ importers:
       '@williamcodebox/omd-tool-jobs':
         specifier: workspace:^
         version: link:../../jobs/tool-jobs
+      '@williamcodebox/omd-tool-lsp':
+        specifier: workspace:^
+        version: link:../../lsp/tool-lsp
       '@williamcodebox/omd-tool-pwsh':
         specifier: workspace:^
         version: link:../../shell/tool-pwsh
@@ -1413,6 +1419,9 @@ importers:
       '@williamcodebox/omd-cmdline':
         specifier: workspace:^
         version: link:../../boot/cmdline
+      '@williamcodebox/omd-lsp-stdio':
+        specifier: workspace:^
+        version: link:../../lsp/lsp-stdio
       '@williamcodebox/omd-tui-renderer':
         specifier: workspace:^
         version: link:../../interaction/tui-renderer
@@ -1422,6 +1431,12 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      typescript-language-server:
+        specifier: ^5.3.0
+        version: 5.3.0
     devDependencies:
       '@williamcodebox/cordis':
         specifier: workspace:^
@@ -7974,6 +7989,25 @@ importers:
         specifier: workspace:^
         version: link:../web
 
+  packages/web/web-search-tavily:
+    dependencies:
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@williamcodebox/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@williamcodebox/omd-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@williamcodebox/omd-launch-environment':
+        specifier: workspace:^
+        version: link:../../util/launch-environment
+      '@williamcodebox/omd-web':
+        specifier: workspace:^
+        version: link:../web
+
   packages/workflow/tool-ralph:
     dependencies:
       '@williamcodebox/schemastery':
@@ -13317,6 +13351,11 @@ packages:
   typescript-language-server@5.3.0:
     resolution: {integrity: sha512-5puofxZHgFdAYtfNpmwCAvgtaYgg8wrUnH30m7Ze3QuguId5RNRadKASpOpyDxTyUdAF51FjhTdjntLw/EuWcQ==}
     engines: {node: '>=20'}
+    hasBin: true
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
     hasBin: true
 
   typescript@6.0.3:
@@ -18773,6 +18812,8 @@ snapshots:
     dependencies:
       vscode-jsonrpc: 5.0.1
       vscode-languageserver-protocol: 3.18.2
+
+  typescript@5.9.3: {}
 
   typescript@6.0.3: {}
 

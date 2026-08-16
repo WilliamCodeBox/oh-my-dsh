@@ -2740,6 +2740,32 @@ export interface Config {
 
 Source: [`packages/web/web-search-perplexity/src/index.ts:32`](../packages/web/web-search-perplexity/src/index.ts)
 
+<a id="williamcodeboxomd-web-search-tavily"></a>
+
+## `@williamcodebox/omd-web-search-tavily`
+
+Requires: `web`
+
+```ts config-catalog
+/** Plugin config (all optional — `apply` fills env-var and constant defaults). */
+export interface Config {
+  /** Tavily API key. Falls back to `$TAVILY_API_KEY`. Empty → provider unavailable. */
+  apiKey?: string
+  /** Endpoint base; `/search` is appended. Defaults to the public API. */
+  baseURL?: string
+  /** Retrieval depth sent as Tavily's `search_depth`. Defaults to `basic`. */
+  searchDepth?: 'basic' | 'advanced'
+  /** Default result count when a request carries no `maxResults`. Omitted = none. */
+  numResults?: number
+  /** Whether Tavily synthesizes an `answer` beside the results. Defaults to false. */
+  includeAnswer?: boolean
+  /** Maximum characters of each result's full text kept as the snippet. Defaults to 400. */
+  snippetLimit?: number
+}
+```
+
+Source: [`packages/web/web-search-tavily/src/index.ts:39`](../packages/web/web-search-tavily/src/index.ts)
+
 <a id="williamcodeboxomd-workflow-worker-thread"></a>
 
 ## `@williamcodebox/omd-workflow-worker-thread`

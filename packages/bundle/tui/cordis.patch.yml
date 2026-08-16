@@ -29,3 +29,24 @@
         workspace: !!js ctx.tuiStartup.workspace ?? process.cwd()
         model: !!js ctx.tuiStartup.model
         permission: !!js ctx.tuiStartup.permission
+
+    # Bundled TypeScript/JavaScript language server: ships in the tarball via
+    # typescript-language-server (pure JS). Native servers (clangd,
+    # rust-analyzer, gopls) are host-provided: add a row under a user
+    # cordis.patch.yml servers key pointing at the system binary.
+    - id: lsp-stdio
+      name: '@williamcodebox/omd-lsp-stdio'
+      config:
+        servers:
+          typescript:
+            command: typescript-language-server
+            args: ['--stdio']
+            extensionToLanguage:
+              '.ts': typescript
+              '.tsx': typescriptreact
+              '.js': javascript
+              '.jsx': javascriptreact
+              '.mts': typescript
+              '.cts': typescript
+              '.mjs': javascript
+              '.cjs': javascript

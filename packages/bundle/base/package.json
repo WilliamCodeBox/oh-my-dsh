@@ -115,7 +115,9 @@
     "@williamcodebox/omd-web": "workspace:^",
     "@williamcodebox/omd-web-search-deepseek": "workspace:^",
     "@williamcodebox/omd-workflow-worker-thread": "workspace:^",
-    "@williamcodebox/omd-agent-instructions": "workspace:^"
+    "@williamcodebox/omd-agent-instructions": "workspace:^",
+    "@williamcodebox/omd-lsp": "workspace:^",
+    "@williamcodebox/omd-tool-lsp": "workspace:^"
   },
   "peerDependencies": {
     "@williamcodebox/omd-invariants": "workspace:^",

@@ -1,0 +1,49 @@
+{
+  "name": "@williamcodebox/omd-web-search-tavily",
+  "description": "Tavily-backed search provider for the oh-my-dsh web capability seam (ctx.web)",
+  "version": "0.1.0-rc.6",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamCodeBox/oh-my-dsh.git",
+    "directory": "packages/web/web-search-tavily"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@williamcodebox/omd-launch-environment": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-web": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
+  },
+  "dependencies": {
+    "@williamcodebox/schemastery": "workspace:^"
+  },
+  "devDependencies": {
+    "@williamcodebox/omd-launch-environment": "workspace:^",
+    "@williamcodebox/omd-invariants": "workspace:^",
+    "@williamcodebox/omd-web": "workspace:^",
+    "@williamcodebox/cordis": "workspace:^"
+  }
+}
