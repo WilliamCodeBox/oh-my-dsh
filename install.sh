@@ -29,6 +29,11 @@ if [ -z "$VERSION" ]; then
   echo "omd: could not resolve the latest release tag" >&2
   exit 1
 fi
+# Release tags are `omd-v<version>`; accept a bare version for pinning.
+case "$VERSION" in
+  omd-v*) : ;;
+  *) VERSION="omd-v$VERSION" ;;
+esac
 
 DEST="${OMD_HOME:-$HOME/.local/share/omd}"
 TMP="$(mktemp -d)"
