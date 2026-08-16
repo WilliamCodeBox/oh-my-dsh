@@ -18,9 +18,6 @@ importers:
       '@agentclientprotocol/sdk':
         specifier: 0.25.1
         version: 0.25.1(zod@4.4.3)
-      '@williamcodebox/omd-tool-session-query':
-        specifier: workspace:^
-        version: link:packages/session-query/tool-session-query
       '@stylistic/eslint-plugin':
         specifier: ^5.10.0
         version: 5.10.0(eslint@10.5.0(jiti@2.7.0))
@@ -48,6 +45,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
+      '@williamcodebox/omd-tool-session-query':
+        specifier: workspace:^
+        version: link:packages/session-query/tool-session-query
       '@yarnpkg/cli-dist':
         specifier: 4.17.1
         version: 4.17.1
@@ -129,6 +129,9 @@ importers:
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../vendor/cordis
+      '@williamcodebox/cordis-plugin-group':
+        specifier: workspace:^
+        version: link:../../vendor/group
       '@williamcodebox/cordis-plugin-hmr':
         specifier: workspace:^
         version: link:../../vendor/hmr
@@ -141,33 +144,132 @@ importers:
       '@williamcodebox/cordis-plugin-timer':
         specifier: workspace:^
         version: link:../../vendor/timer
+      '@williamcodebox/omd-agent':
+        specifier: workspace:^
+        version: link:../../packages/core/agent
+      '@williamcodebox/omd-agent-default-model':
+        specifier: workspace:^
+        version: link:../../packages/core/agent-default-model
       '@williamcodebox/omd-agent-instructions':
         specifier: workspace:^
         version: link:../../packages/context/agent-instructions
+      '@williamcodebox/omd-agent-presets':
+        specifier: workspace:^
+        version: link:../../packages/preset/agent-presets
       '@williamcodebox/omd-agent-tool-presentation':
         specifier: workspace:^
         version: link:../../packages/core/agent-tool-presentation
+      '@williamcodebox/omd-anonymous-user-id':
+        specifier: workspace:^
+        version: link:../../packages/identity/anonymous-user-id
+      '@williamcodebox/omd-api-gateway':
+        specifier: workspace:^
+        version: link:../../packages/api/gateway
+      '@williamcodebox/omd-api-remotes':
+        specifier: workspace:^
+        version: link:../../packages/api/remotes
       '@williamcodebox/omd-app-boot':
         specifier: workspace:^
         version: link:../../packages/boot/app-boot
+      '@williamcodebox/omd-atomic-write':
+        specifier: workspace:^
+        version: link:../../packages/util/atomic-write
+      '@williamcodebox/omd-attachment':
+        specifier: workspace:^
+        version: link:../../packages/attachment/attachment
       '@williamcodebox/omd-base':
         specifier: workspace:^
         version: link:../../packages/bundle/base
+      '@williamcodebox/omd-bash-local':
+        specifier: workspace:^
+        version: link:../../packages/shell/bash-local
+      '@williamcodebox/omd-brand':
+        specifier: workspace:^
+        version: link:../../packages/util/brand
+      '@williamcodebox/omd-client-connection':
+        specifier: workspace:^
+        version: link:../../packages/client/connection
+      '@williamcodebox/omd-client-locale':
+        specifier: workspace:^
+        version: link:../../packages/client/locale
+      '@williamcodebox/omd-client-modules':
+        specifier: workspace:^
+        version: link:../../packages/client/modules
+      '@williamcodebox/omd-client-runtime':
+        specifier: workspace:^
+        version: link:../../packages/client/runtime
+      '@williamcodebox/omd-client-schema-form':
+        specifier: workspace:^
+        version: link:../../packages/client/schema-form
       '@williamcodebox/omd-client-ui-agent-preset':
         specifier: workspace:^
         version: link:../../packages/client/ui-agent-preset
+      '@williamcodebox/omd-client-ui-attachment':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-attachment
+      '@williamcodebox/omd-client-ui-commands':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-commands
+      '@williamcodebox/omd-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-conversation
       '@williamcodebox/omd-client-ui-cordis':
         specifier: workspace:^
         version: link:../../packages/extensions/ui-cordis
+      '@williamcodebox/omd-client-ui-directory-picker-browse':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-directory-picker-browse
+      '@williamcodebox/omd-client-ui-directory-picker-native':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-directory-picker-native
+      '@williamcodebox/omd-client-ui-input-trigger':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-input-trigger
+      '@williamcodebox/omd-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-primitives
+      '@williamcodebox/omd-client-ui-settings':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-settings
+      '@williamcodebox/omd-client-ui-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-sidebar
+      '@williamcodebox/omd-client-ui-slots':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-slots
+      '@williamcodebox/omd-client-ui-theme':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-theme
+      '@williamcodebox/omd-client-ui-tool':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-tool
+      '@williamcodebox/omd-client-ui-workspace':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-workspace
+      '@williamcodebox/omd-client-web-react':
+        specifier: workspace:^
+        version: link:../../packages/client/web-react
       '@williamcodebox/omd-cmdline':
         specifier: workspace:^
         version: link:../../packages/boot/cmdline
+      '@williamcodebox/omd-code-runtime':
+        specifier: workspace:^
+        version: link:../../packages/code-runtime/code-runtime
       '@williamcodebox/omd-command-compact':
         specifier: workspace:^
         version: link:../../packages/compaction/command-compact
+      '@williamcodebox/omd-command-feedback':
+        specifier: workspace:^
+        version: link:../../packages/feedback/command-feedback
       '@williamcodebox/omd-command-goal':
         specifier: workspace:^
         version: link:../../packages/goal/command-goal
+      '@williamcodebox/omd-commands':
+        specifier: workspace:^
+        version: link:../../packages/interaction/commands
+      '@williamcodebox/omd-compaction':
+        specifier: workspace:^
+        version: link:../../packages/compaction/compaction
       '@williamcodebox/omd-compaction-basic':
         specifier: workspace:^
         version: link:../../packages/compaction/compaction-basic
@@ -177,6 +279,15 @@ importers:
       '@williamcodebox/omd-cordis-client-runner':
         specifier: workspace:^
         version: link:../../packages/extensions/cordis-client-runner
+      '@williamcodebox/omd-cordis-host-runner':
+        specifier: workspace:^
+        version: link:../../packages/extensions/cordis-host-runner
+      '@williamcodebox/omd-credentials':
+        specifier: workspace:^
+        version: link:../../packages/credentials/credentials
+      '@williamcodebox/omd-fs':
+        specifier: workspace:^
+        version: link:../../packages/fs/fs
       '@williamcodebox/omd-fs-local':
         specifier: workspace:^
         version: link:../../packages/fs/fs-local
@@ -192,15 +303,48 @@ importers:
       '@williamcodebox/omd-home-paths':
         specifier: workspace:^
         version: link:../../packages/util/home-paths
+      '@williamcodebox/omd-host-directory-picker-browse':
+        specifier: workspace:^
+        version: link:../../packages/host/directory-picker-browse
+      '@williamcodebox/omd-host-directory-picker-native':
+        specifier: workspace:^
+        version: link:../../packages/host/directory-picker-native
+      '@williamcodebox/omd-host-plugin-inventory':
+        specifier: workspace:^
+        version: link:../../packages/host/plugin-inventory
+      '@williamcodebox/omd-host-webserver':
+        specifier: workspace:^
+        version: link:../../packages/host/webserver
+      '@williamcodebox/omd-invariants':
+        specifier: workspace:^
+        version: link:../../packages/runtime-diagnostics/invariants
+      '@williamcodebox/omd-jobs':
+        specifier: workspace:^
+        version: link:../../packages/jobs/jobs
       '@williamcodebox/omd-jobs-local':
         specifier: workspace:^
         version: link:../../packages/jobs/jobs-local
       '@williamcodebox/omd-launch-environment':
         specifier: workspace:^
         version: link:../../packages/util/launch-environment
+      '@williamcodebox/omd-llm':
+        specifier: workspace:^
+        version: link:../../packages/llm/llm
+      '@williamcodebox/omd-llm-retry':
+        specifier: workspace:^
+        version: link:../../packages/llm/llm-retry
       '@williamcodebox/omd-mcp-client':
         specifier: workspace:^
         version: link:../../packages/mcp/mcp-client
+      '@williamcodebox/omd-message-feedback':
+        specifier: workspace:^
+        version: link:../../packages/feedback/message-feedback
+      '@williamcodebox/omd-output-retention':
+        specifier: workspace:^
+        version: link:../../packages/util/output-retention
+      '@williamcodebox/omd-permission-presets':
+        specifier: workspace:^
+        version: link:../../packages/interaction/permission-presets
       '@williamcodebox/omd-persona':
         specifier: workspace:^
         version: link:../../packages/preset/persona
@@ -213,21 +357,84 @@ importers:
       '@williamcodebox/omd-pwsh-sandbox':
         specifier: workspace:^
         version: link:../../packages/shell/pwsh-sandbox
+      '@williamcodebox/omd-sandbox':
+        specifier: workspace:^
+        version: link:../../packages/sandbox/sandbox
+      '@williamcodebox/omd-sandbox-policy':
+        specifier: workspace:^
+        version: link:../../packages/sandbox/sandbox-policy
       '@williamcodebox/omd-schedule':
         specifier: workspace:^
         version: link:../../packages/schedule/schedule
+      '@williamcodebox/omd-scope':
+        specifier: workspace:^
+        version: link:../../packages/core/scope
+      '@williamcodebox/omd-session':
+        specifier: workspace:^
+        version: link:../../packages/core/session
+      '@williamcodebox/omd-session-persistence':
+        specifier: workspace:^
+        version: link:../../packages/session/session-persistence
       '@williamcodebox/omd-session-projection':
         specifier: workspace:^
         version: link:../../packages/session/session-projection
+      '@williamcodebox/omd-session-projection-cache':
+        specifier: workspace:^
+        version: link:../../packages/session/session-projection-cache
+      '@williamcodebox/omd-session-query':
+        specifier: workspace:^
+        version: link:../../packages/session-query/session-query
       '@williamcodebox/omd-session-reference':
         specifier: workspace:^
         version: link:../../packages/context/session-reference
+      '@williamcodebox/omd-session-stats':
+        specifier: workspace:^
+        version: link:../../packages/session/session-stats
+      '@williamcodebox/omd-session-telemetry':
+        specifier: workspace:^
+        version: link:../../packages/session/session-telemetry
+      '@williamcodebox/omd-session-title':
+        specifier: workspace:^
+        version: link:../../packages/session/session-title
+      '@williamcodebox/omd-session-title-llm':
+        specifier: workspace:^
+        version: link:../../packages/session/session-title-llm
+      '@williamcodebox/omd-settings':
+        specifier: workspace:^
+        version: link:../../packages/settings/settings
+      '@williamcodebox/omd-shell':
+        specifier: workspace:^
+        version: link:../../packages/shell/shell
+      '@williamcodebox/omd-shell-env':
+        specifier: workspace:^
+        version: link:../../packages/shell/shell-env
       '@williamcodebox/omd-skill':
         specifier: workspace:^
         version: link:../../packages/skill/skill
       '@williamcodebox/omd-skill-filesystem':
         specifier: workspace:^
         version: link:../../packages/skill/skill-filesystem
+      '@williamcodebox/omd-spill':
+        specifier: workspace:^
+        version: link:../../packages/spill/spill
+      '@williamcodebox/omd-storage':
+        specifier: workspace:^
+        version: link:../../packages/storage/storage
+      '@williamcodebox/omd-storage-domain':
+        specifier: workspace:^
+        version: link:../../packages/storage/storage-domain
+      '@williamcodebox/omd-subagent':
+        specifier: workspace:^
+        version: link:../../packages/subagent/subagent
+      '@williamcodebox/omd-subagent-in-process-driver':
+        specifier: workspace:^
+        version: link:../../packages/subagent/subagent-in-process-driver
+      '@williamcodebox/omd-subprocess':
+        specifier: workspace:^
+        version: link:../../packages/subprocess/subprocess
+      '@williamcodebox/omd-system-prompt':
+        specifier: workspace:^
+        version: link:../../packages/core/system-prompt
       '@williamcodebox/omd-terminal':
         specifier: workspace:^
         version: link:../../packages/terminal/terminal
@@ -237,6 +444,9 @@ importers:
       '@williamcodebox/omd-time-context':
         specifier: workspace:^
         version: link:../../packages/context/time-context
+      '@williamcodebox/omd-timeout':
+        specifier: workspace:^
+        version: link:../../packages/util/timeout
       '@williamcodebox/omd-tmux-context':
         specifier: workspace:^
         version: link:../../packages/context/tmux-context
@@ -294,15 +504,39 @@ importers:
       '@williamcodebox/omd-tool-workflow':
         specifier: workspace:^
         version: link:../../packages/workflow/tool-workflow
+      '@williamcodebox/omd-tools':
+        specifier: workspace:^
+        version: link:../../packages/core/tools
       '@williamcodebox/omd-tui':
         specifier: workspace:^
         version: link:../../packages/bundle/tui
+      '@williamcodebox/omd-typert-protocol':
+        specifier: workspace:^
+        version: link:../../packages/typert/protocol
+      '@williamcodebox/omd-typert-registry':
+        specifier: workspace:^
+        version: link:../../packages/typert/registry
+      '@williamcodebox/omd-user-approval':
+        specifier: workspace:^
+        version: link:../../packages/interaction/user-approval
+      '@williamcodebox/omd-user-questions':
+        specifier: workspace:^
+        version: link:../../packages/interaction/user-questions
+      '@williamcodebox/omd-web':
+        specifier: workspace:^
+        version: link:../../packages/web/web
       '@williamcodebox/omd-web-app':
         specifier: workspace:^
         version: link:../../packages/bundle/web-app
+      '@williamcodebox/omd-workflow':
+        specifier: workspace:^
+        version: link:../../packages/workflow/workflow
       '@williamcodebox/omd-workflow-worker-thread':
         specifier: workspace:^
         version: link:../../packages/workflow/workflow-worker-thread
+      '@williamcodebox/schemastery':
+        specifier: link:../../vendor/schemastery
+        version: link:../../vendor/schemastery
       commander:
         specifier: ^15.0.0
         version: 15.0.0
@@ -313,21 +547,15 @@ importers:
         specifier: ^0.1.4
         version: 0.1.4
     devDependencies:
-      '@williamcodebox/omd-agent':
-        specifier: workspace:^
-        version: link:../../packages/core/agent
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@williamcodebox/omd-host-apiproxy':
         specifier: workspace:^
         version: link:../../packages/host/apiproxy
       '@williamcodebox/omd-host-frontend-static':
         specifier: workspace:^
         version: link:../../packages/host/frontend-static
-      '@williamcodebox/omd-host-webserver':
-        specifier: workspace:^
-        version: link:../../packages/host/webserver
-      '@williamcodebox/omd-llm':
-        specifier: workspace:^
-        version: link:../../packages/llm/llm
       '@williamcodebox/omd-llm-mock-server':
         specifier: workspace:^
         version: link:../../packages/test-support/llm-mock-server
@@ -337,24 +565,6 @@ importers:
       '@williamcodebox/omd-loader-smoke':
         specifier: workspace:^
         version: link:../../packages/test-support/loader-smoke
-      '@williamcodebox/omd-session':
-        specifier: workspace:^
-        version: link:../../packages/core/session
-      '@williamcodebox/omd-settings':
-        specifier: workspace:^
-        version: link:../../packages/settings/settings
-      '@williamcodebox/omd-subagent':
-        specifier: workspace:^
-        version: link:../../packages/subagent/subagent
-      '@williamcodebox/omd-system-prompt':
-        specifier: workspace:^
-        version: link:../../packages/core/system-prompt
-      '@williamcodebox/omd-tools':
-        specifier: workspace:^
-        version: link:../../packages/core/tools
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       execa:
         specifier: ^10.0.0
         version: 10.0.0
@@ -371,6 +581,18 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
     devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.0
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ~18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.0.0
+        version: 4.7.0(vite@6.4.3(@types/node@22.20.0)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0))
       '@williamcodebox/cordis-plugin-group':
         specifier: workspace:^
         version: link:../../vendor/group
@@ -392,18 +614,6 @@ importers:
       '@williamcodebox/omd-pwsh-local':
         specifier: workspace:^
         version: link:../../packages/shell/pwsh-local
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.20.0
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
-      '@types/react-dom':
-        specifier: ~18.3.0
-        version: 18.3.7(@types/react@18.3.31)
-      '@vitejs/plugin-react':
-        specifier: ^4.0.0
-        version: 4.7.0(vite@6.4.3(@types/node@22.20.0)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0))
       fflate:
         specifier: ^0.8.2
         version: 0.8.3
@@ -752,12 +962,12 @@ importers:
 
   native/landlock-run:
     devDependencies:
-      '@williamcodebox/node-addon-landlock-run':
-        specifier: workspace:*
-        version: link:packages/entry
       '@types/node':
         specifier: ^26.0.1
         version: 26.1.2
+      '@williamcodebox/node-addon-landlock-run':
+        specifier: workspace:*
+        version: link:packages/entry
       tsx:
         specifier: ^4.20.6
         version: 4.22.4
@@ -935,6 +1145,9 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
     devDependencies:
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -965,9 +1178,6 @@ importers:
       '@williamcodebox/omd-system-prompt':
         specifier: workspace:^
         version: link:../../core/system-prompt
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
 
   packages/boot/cmdline:
     devDependencies:
@@ -1537,6 +1747,9 @@ importers:
         specifier: ^8.21.0
         version: 8.21.0
     devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1546,9 +1759,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
 
   packages/client/hmr:
     dependencies:
@@ -1584,6 +1794,9 @@ importers:
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1605,9 +1818,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -1675,6 +1885,9 @@ importers:
         specifier: ~4.4.7
         version: 4.4.7(@types/react@18.3.31)(immer@10.2.0)(react@18.3.1)
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1693,9 +1906,6 @@ importers:
       '@williamcodebox/omd-typert-registry':
         specifier: workspace:^
         version: link:../../typert/registry
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/schema-form:
     dependencies:
@@ -1712,6 +1922,9 @@ importers:
 
   packages/client/ui-agent-preset:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1748,9 +1961,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -1773,18 +1983,18 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
     devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
       '@types/react':
         specifier: ~18.3.1
         version: 18.3.31
       '@types/react-dom':
         specifier: ~18.3.0
         version: 18.3.7(@types/react@18.3.31)
+      '@williamcodebox/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@williamcodebox/omd-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
 
   packages/client/ui-commands:
     dependencies:
@@ -1792,6 +2002,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1828,9 +2041,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -1847,6 +2057,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1928,9 +2141,6 @@ importers:
       '@williamcodebox/omd-tools':
         specifier: workspace:^
         version: link:../../core/tools
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -1941,6 +2151,9 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -1968,9 +2181,6 @@ importers:
       '@williamcodebox/omd-system-prompt':
         specifier: workspace:^
         version: link:../../core/system-prompt
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/ui-directory-picker-browse:
     dependencies:
@@ -1978,6 +2188,12 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2002,12 +2218,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2017,6 +2227,12 @@ importers:
 
   packages/client/ui-directory-picker-native:
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2032,12 +2248,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2047,6 +2257,12 @@ importers:
 
   packages/client/ui-goal:
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2080,12 +2296,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2099,6 +2309,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2120,9 +2333,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2133,6 +2343,9 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2157,12 +2370,12 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/ui-layout:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2181,15 +2394,18 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
 
   packages/client/ui-message-feedback:
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2226,12 +2442,6 @@ importers:
       '@williamcodebox/omd-typert-protocol':
         specifier: workspace:^
         version: link:../../typert/protocol
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2241,6 +2451,9 @@ importers:
 
   packages/client/ui-model-selection:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2277,9 +2490,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -2289,6 +2499,9 @@ importers:
 
   packages/client/ui-permission-presets:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2334,15 +2547,15 @@ importers:
       '@williamcodebox/omd-permission-presets':
         specifier: workspace:^
         version: link:../../interaction/permission-presets
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
 
   packages/client/ui-plan:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2376,9 +2589,6 @@ importers:
       '@williamcodebox/omd-plan-mode':
         specifier: workspace:^
         version: link:../../plan/plan-mode
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2446,18 +2656,18 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
     devDependencies:
-      '@williamcodebox/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@williamcodebox/omd-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
       '@types/react':
         specifier: ~18.3.1
         version: 18.3.31
       '@types/react-dom':
         specifier: ~18.3.0
         version: 18.3.7(@types/react@18.3.31)
+      '@williamcodebox/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@williamcodebox/omd-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
 
   packages/client/ui-settings:
     dependencies:
@@ -2465,6 +2675,9 @@ importers:
         specifier: workspace:^
         version: link:../connection
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2489,9 +2702,6 @@ importers:
       '@williamcodebox/omd-settings':
         specifier: workspace:^
         version: link:../../settings/settings
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2508,6 +2718,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2544,15 +2757,15 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
 
   packages/client/ui-settings-models:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2589,15 +2802,18 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
 
   packages/client/ui-settings-plugin-inventory:
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2625,12 +2841,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2644,6 +2854,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2677,9 +2890,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2690,6 +2900,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2714,15 +2927,18 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
 
   packages/client/ui-skill:
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2756,12 +2972,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2771,15 +2981,15 @@ importers:
 
   packages/client/ui-slots:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/ui-subagent:
     dependencies:
@@ -2787,6 +2997,9 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2820,9 +3033,6 @@ importers:
       '@williamcodebox/omd-token-meter':
         specifier: workspace:^
         version: link:../../llm/token-meter
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/ui-theme:
     dependencies:
@@ -2839,6 +3049,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2869,9 +3082,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2882,6 +3092,12 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2915,12 +3131,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@testing-library/react':
-        specifier: ^16.1.0
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2937,6 +3147,12 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ~18.3.0
+        version: 18.3.7(@types/react@18.3.31)
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2970,12 +3186,6 @@ importers:
       '@williamcodebox/omd-tools':
         specifier: workspace:^
         version: link:../../core/tools
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
-      '@types/react-dom':
-        specifier: ~18.3.0
-        version: 18.3.7(@types/react@18.3.31)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -3007,6 +3217,9 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -3031,9 +3244,6 @@ importers:
       '@williamcodebox/omd-user-questions':
         specifier: workspace:^
         version: link:../../interaction/user-questions
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/ui-workflow-run:
     dependencies:
@@ -3041,6 +3251,9 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -3074,9 +3287,6 @@ importers:
       '@williamcodebox/omd-workflow':
         specifier: workspace:^
         version: link:../../workflow/workflow
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/client/ui-workspace:
     dependencies:
@@ -3084,6 +3294,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -3111,9 +3324,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -3148,6 +3358,12 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ~18.3.0
+        version: 18.3.7(@types/react@18.3.31)
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -3163,12 +3379,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
-      '@types/react-dom':
-        specifier: ~18.3.0
-        version: 18.3.7(@types/react@18.3.31)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -3185,15 +3395,15 @@ importers:
         specifier: 1.2.0
         version: 1.2.0(react@18.3.1)
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
 
   packages/code-runtime/code-runtime:
     devDependencies:
@@ -3877,6 +4087,9 @@ importers:
       '@williamcodebox/cordis-plugin-timer':
         specifier: workspace:^
         version: link:../../../vendor/timer
+      '@williamcodebox/node-addon-landlock-run':
+        specifier: workspace:^
+        version: link:../../../native/landlock-run/packages/entry
       '@williamcodebox/omd-agent':
         specifier: workspace:^
         version: link:../../core/agent
@@ -3973,9 +4186,6 @@ importers:
       '@williamcodebox/omd-tools':
         specifier: workspace:^
         version: link:../../core/tools
-      '@williamcodebox/node-addon-landlock-run':
-        specifier: workspace:^
-        version: link:../../../native/landlock-run/packages/entry
 
   packages/examples/jsonrpc-demo:
     dependencies:
@@ -3992,6 +4202,9 @@ importers:
 
   packages/extensions/cordis-client-runner:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -4019,9 +4232,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -4101,6 +4311,9 @@ importers:
 
   packages/extensions/ui-cordis:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -4137,9 +4350,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -4365,12 +4575,12 @@ importers:
 
   packages/fs/tool-fs-search:
     dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
       '@vscode/ripgrep':
         specifier: ^1.18.0
         version: 1.18.0
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
     devDependencies:
       '@williamcodebox/cordis':
         specifier: workspace:^
@@ -5331,12 +5541,12 @@ importers:
 
   packages/llm/llm-pi-ai:
     dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
       '@earendil-works/pi-ai':
         specifier: ^0.82.1
         version: 0.82.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(ws@8.21.0)(zod@4.4.3)
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
     devDependencies:
       '@williamcodebox/cordis':
         specifier: workspace:^
@@ -5558,16 +5768,22 @@ importers:
 
   packages/mcp/mcp-client:
     dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.0
         version: 1.29.0(zod@4.4.3)
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
       zod:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@modelcontextprotocol/server-everything':
+        specifier: ^2026.7.4
+        version: 2026.7.4
+      '@modelcontextprotocol/server-filesystem':
+        specifier: ^2026.7.4
+        version: 2026.7.10(zod@4.4.3)
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -5586,12 +5802,6 @@ importers:
       '@williamcodebox/omd-tools':
         specifier: workspace:^
         version: link:../../core/tools
-      '@modelcontextprotocol/server-everything':
-        specifier: ^2026.7.4
-        version: 2026.7.4
-      '@modelcontextprotocol/server-filesystem':
-        specifier: ^2026.7.4
-        version: 2026.7.10(zod@4.4.3)
 
   packages/plan/plan-mode:
     dependencies:
@@ -5737,12 +5947,12 @@ importers:
 
   packages/sandbox/sandbox-local:
     dependencies:
-      '@williamcodebox/omd-sandbox-windows-acl':
-        specifier: workspace:^
-        version: link:../sandbox-windows-acl
       '@williamcodebox/node-addon-landlock-run':
         specifier: workspace:^
         version: link:../../../native/landlock-run/packages/entry
+      '@williamcodebox/omd-sandbox-windows-acl':
+        specifier: workspace:^
+        version: link:../sandbox-windows-acl
       '@williamcodebox/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
@@ -5930,6 +6140,9 @@ importers:
 
   packages/session-query/session-log-export:
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -5966,9 +6179,6 @@ importers:
       '@williamcodebox/omd-session':
         specifier: workspace:^
         version: link:../../core/session
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -6267,9 +6477,6 @@ importers:
 
   packages/session/session-telemetry-otel:
     dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -6288,6 +6495,9 @@ importers:
       '@opentelemetry/sdk-logs':
         specifier: ^0.220.0
         version: 0.220.0(@opentelemetry/api@1.9.1)
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
     devDependencies:
       '@williamcodebox/cordis':
         specifier: workspace:^
@@ -6509,6 +6719,9 @@ importers:
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+      '@williamcodebox/node-addon-landlock-run':
+        specifier: workspace:^
+        version: link:../../../native/landlock-run/packages/entry
       '@williamcodebox/omd-bash-local':
         specifier: workspace:^
         version: link:../bash-local
@@ -6530,9 +6743,6 @@ importers:
       '@williamcodebox/omd-subprocess-local':
         specifier: workspace:^
         version: link:../../subprocess/subprocess-local
-      '@williamcodebox/node-addon-landlock-run':
-        specifier: workspace:^
-        version: link:../../../native/landlock-run/packages/entry
 
   packages/shell/pwsh-local:
     dependencies:
@@ -7198,6 +7408,9 @@ importers:
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
+      '@openai/codex':
+        specifier: 0.147.0
+        version: 0.147.0
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -7234,9 +7447,6 @@ importers:
       '@williamcodebox/omd-timeout':
         specifier: workspace:^
         version: link:../../util/timeout
-      '@openai/codex':
-        specifier: 0.147.0
-        version: 0.147.0
 
   packages/subagent/subagent-dsh-sdk:
     dependencies:
@@ -7772,6 +7982,12 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1)(vite@8.0.16(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
     devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ~18.3.0
+        version: 18.3.7(@types/react@18.3.31)
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -7790,12 +8006,6 @@ importers:
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
-      '@types/react-dom':
-        specifier: ~18.3.0
-        version: 18.3.7(@types/react@18.3.31)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -8044,16 +8254,19 @@ importers:
 
   packages/web/tool-web:
     dependencies:
-      '@williamcodebox/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
       '@joplin/turndown-plugin-gfm':
         specifier: ^1.0.67
         version: 1.0.67
+      '@williamcodebox/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
       turndown:
         specifier: ^7.2.4
         version: 7.2.4
     devDependencies:
+      '@types/turndown':
+        specifier: ^5.0.6
+        version: 5.0.6
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -8093,9 +8306,6 @@ importers:
       '@williamcodebox/omd-web-search-exa':
         specifier: workspace:^
         version: link:../web-search-exa
-      '@types/turndown':
-        specifier: ^5.0.6
-        version: 5.0.6
 
   packages/web/web:
     dependencies:
@@ -8720,6 +8930,9 @@ importers:
 
   vendor/cordis:
     dependencies:
+      '@standard-schema/spec':
+        specifier: ^1.1.0
+        version: 1.1.0
       '@williamcodebox/cordis-plugin-include':
         specifier: workspace:^
         version: link:../include
@@ -8729,9 +8942,6 @@ importers:
       '@williamcodebox/cosmokit':
         specifier: link:../cosmokit
         version: link:../cosmokit
-      '@standard-schema/spec':
-        specifier: ^1.1.0
-        version: 1.1.0
 
   vendor/cosmokit: {}
 
@@ -8822,12 +9032,12 @@ importers:
 
   vendor/schemastery:
     dependencies:
-      '@williamcodebox/cosmokit':
-        specifier: link:../cosmokit
-        version: link:../cosmokit
       '@standard-schema/spec':
         specifier: ^1.1.0
         version: 1.1.0
+      '@williamcodebox/cosmokit':
+        specifier: link:../cosmokit
+        version: link:../cosmokit
 
   vendor/timer:
     dependencies:
