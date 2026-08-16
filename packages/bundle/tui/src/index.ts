@@ -17,7 +17,7 @@ import type {} from '@williamcodebox/omd-agent-default-model'
 import { createUserMessage } from '@williamcodebox/omd-llm'
 import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, SessionEvent } from '@williamcodebox/omd-session'
-import { TuiPresenter, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme } from '@williamcodebox/omd-tui-renderer'
+import { TuiPresenter, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme, workspaceAutocomplete } from '@williamcodebox/omd-tui-renderer'
 import type {} from '@williamcodebox/omd-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
@@ -259,12 +259,12 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
     presenter.onKey((data) => {
       if (data === '\x1b[5~' || data === '\x1b[5;2~') {
         // PgUp (and Shift+PgUp): page back through the transcript history.
-        presenter.scrollTranscript(-10)
+        presenter.pageTranscript(-1)
         return true
       }
       if (data === '\x1b[6~' || data === '\x1b[6;2~') {
         // PgDn (and Shift+PgDn): page forward; end-following resumes at the bottom.
-        presenter.scrollTranscript(10)
+        presenter.pageTranscript(1)
         return true
       }
       if (data !== '\x03') return false
@@ -514,10 +514,16 @@ async function run(ctx: Context, config: Config, io: TuiIo, input: InputSource |
     // Query the terminal's scheme before raw mode owns stdin; the dark
     // theme is the fallback when the terminal reports nothing.
     const scheme = await detectTerminalScheme(process.stdin, io.stdout)
+    // @-file and slash-command completion over the workspace directory.
+    const descriptors = commands?.list(agent) ?? []
+    const autocomplete = workspaceAutocomplete(
+      descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
+      config.workspace ?? process.cwd(),
+    )
     presenter = new TuiPresenter(internals.createTerminal(), transcript, {
       onSubmit: dispatchLine,
       statusLine,
-    }, themeForScheme(scheme))
+    }, themeForScheme(scheme), autocomplete)
     activePresenter = presenter
   }
 

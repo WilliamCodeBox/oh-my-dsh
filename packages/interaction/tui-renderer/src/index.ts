@@ -15,10 +15,10 @@ export type {
   AssistantItem, CompactionNote, ToolItem, ToolResult, TranscriptItem, TranscriptState,
   TurnItem, UserItem,
 } from './transcript.ts'
-export { formatItem, formatStatus } from './format.ts'
+export { contextBar, formatItem, formatStatus } from './format.ts'
 export { needsSanitize, sanitizeText } from './sanitize.ts'
 export { StatusRow, TranscriptView } from './transcript-view.ts'
-export { TuiPresenter, processTerminal } from './presenter.ts'
+export { TuiPresenter, processTerminal, workspaceAutocomplete } from './presenter.ts'
 export type { PresenterOptions } from './presenter.ts'
 export { darkTheme, lightTheme, themeForScheme } from './theme.ts'
 export type { BgToken, ColorToken, SemanticTheme, ThemePalette } from './theme.ts'

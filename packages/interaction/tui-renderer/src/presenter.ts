@@ -20,6 +20,8 @@ import {
   TuiAltScreen,
   VStack,
   isViewportTUI,
+  truncateToWidth,
+  type AutocompleteProvider,
   type OverlayHandle,
   type SelectItem,
   type Terminal,
@@ -33,12 +35,27 @@ import type {
 } from '@williamcodebox/omd-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
+import { contextBar } from './format.ts'
 import { StatusRow, TranscriptView } from './transcript-view.ts'
+import { WorkspaceAutocomplete } from './autocomplete.ts'
 import { darkTheme, type SemanticTheme } from './theme.ts'
 
 /** The production terminal: real process stdin/stdout streams. */
 export function processTerminal(): Terminal {
   return new ProcessTerminal()
+}
+
+/**
+ * Build the editor's completion provider: slash commands plus `@`-file
+ * fuzzy completion over a base directory. No external `fd` binary required.
+ * @param commands - available slash commands (name + optional description).
+ * @param basePath - the workspace directory file completion searches.
+ */
+export function workspaceAutocomplete(
+  commands: readonly { name: string; description?: string }[],
+  basePath: string,
+): AutocompleteProvider {
+  return new WorkspaceAutocomplete(commands, basePath)
 }
 
 /** Presenter callbacks the runner supplies. */
@@ -70,17 +87,19 @@ export class TuiPresenter {
 
   constructor(
     terminal: Terminal,
-    transcript: Transcript,
-    options: PresenterOptions,
+    private readonly transcript: Transcript,
+    private readonly options: PresenterOptions,
     private readonly theme: SemanticTheme = darkTheme,
+    autocomplete?: AutocompleteProvider,
   ) {
     this.tui = new TuiAltScreen(terminal)
     if (!isViewportTUI(this.tui)) {
       throw new Error('tui-renderer: the presenter requires a viewport TUI')
     }
     const view = new TranscriptView(transcript, this.theme)
-    const status = new StatusRow(options.statusLine, text => this.theme.fg('dim', text))
+    const status = new StatusRow(width => this.renderStatus(width))
     this.editor = new Editor(this.tui, this.theme.editor)
+    if (autocomplete !== undefined) this.editor.setAutocompleteProvider(autocomplete)
     this.editor.onSubmit = (line) => {
       options.onSubmit(line)
       this.editor.addToHistory(line)
@@ -279,6 +298,39 @@ export class TuiPresenter {
   scrollTranscript(lines: number): void {
     this.transcriptScroll.scrollBy(lines)
     this.tui.requestRender()
+  }
+
+  /**
+   * Page the transcript viewport by one visible page; positive pages
+   * toward the end.
+   * @param dir - 1 pages forward (toward the end), -1 pages back.
+   */
+  pageTranscript(dir: 1 | -1): void {
+    const rows = this.tui.terminal.rows
+    this.transcriptScroll.scrollBy(dir * Math.max(1, rows - 4))
+    this.tui.requestRender()
+  }
+
+  /**
+   * Assemble the status row: the runner's left text (dim), a context-window
+   * progress bar (threshold-colored), and the resolved model (muted).
+   * Truncated to the viewport width.
+   */
+  private renderStatus(width: number): string {
+    const left = this.options.statusLine()
+    if (left === '') return ''
+    const parts = [this.theme.fg('dim', left)]
+    const ctx = this.transcript.state.context
+    const total = this.transcript.state.usage.inputTokens + this.transcript.state.usage.outputTokens
+    if (ctx?.contextWindow !== undefined && total > 0) {
+      const ratio = total / ctx.contextWindow
+      const token = ratio > 0.9 ? 'error' : ratio > 0.7 ? 'warning' : 'dim'
+      parts.push(this.theme.fg(token, contextBar(ratio, 10)))
+    }
+    if (ctx !== undefined) {
+      parts.push(this.theme.fg('muted', `${ctx.provider}/${ctx.model}`))
+    }
+    return truncateToWidth(parts.join('  '), width)
   }
 
   /** Current editor text, for the Ctrl+C empty-input decision. */

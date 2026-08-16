@@ -13,6 +13,13 @@ import { sanitizeText } from './sanitize.ts'
 /** Cap for one tool card's arguments line; longer payloads read from the result. */
 const TOOL_ARGS_CAP = 300
 
+/** Progress bar of `width` cells with a percentage label (pure characters). */
+export function contextBar(ratio: number, width: number): string {
+  const clamped = Math.min(1, Math.max(0, ratio))
+  const filled = Math.round(clamped * width)
+  return `${'█'.repeat(filled)}${'░'.repeat(width - filled)} ${Math.round(clamped * 100)}%`
+}
+
 /** Truncate one line to a cap with an explicit remainder note. */
 export function capped(line: string, cap: number): string {
   return line.length <= cap ? line : `${line.slice(0, cap)} …(+${line.length - cap})`

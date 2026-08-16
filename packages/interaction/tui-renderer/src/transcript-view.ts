@@ -147,16 +147,12 @@ export class TranscriptView implements Component {
 
 /** Render a dynamic status row, re-read before every render. */
 export class StatusRow implements Component {
-  constructor(
-    private readonly read: () => string,
-    private readonly style?: (text: string) => string,
-  ) {}
+  constructor(private readonly read: (width: number) => string) {}
 
   invalidate(): void {}
 
-  render(_width: number): string[] {
-    const text = this.read()
-    if (text === '') return []
-    return [this.style === undefined ? text : this.style(text)]
+  render(width: number): string[] {
+    const text = this.read(width)
+    return text === '' ? [] : [text]
   }
 }
