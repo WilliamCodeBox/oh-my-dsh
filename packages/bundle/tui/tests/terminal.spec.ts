@@ -14,15 +14,26 @@ describe('CtrlCController', () => {
   it('does not arm the force-exit window from a clear-input press', () => {
     const controller = new CtrlCController(now)
     expect(controller.press(false, false)).toBe('clear-input')
-    expect(controller.press(false, true)).toBe('quit')
+    // A clear-input press disarms; the next empty-line press only confirms.
+    expect(controller.press(false, true)).toBe('confirm-quit')
   })
 
   it('cancels a running turn on the first press with an empty line', () => {
     expect(new CtrlCController(now).press(true, true)).toBe('cancel')
   })
 
-  it('quits on the first press when idle with an empty line', () => {
-    expect(new CtrlCController(now).press(false, true)).toBe('quit')
+  it('confirms before quitting when idle: first press hints, second quits', () => {
+    const controller = new CtrlCController(now)
+    expect(controller.press(false, true)).toBe('confirm-quit')
+    expect(controller.press(false, true)).toBe('quit')
+  })
+
+  it('re-arms the idle confirmation after the window expires', () => {
+    let t = 0
+    const controller = new CtrlCController(() => t)
+    expect(controller.press(false, true)).toBe('confirm-quit')
+    t = 2_001
+    expect(controller.press(false, true)).toBe('confirm-quit')
   })
 
   it('force-exits on a second press inside the window', () => {

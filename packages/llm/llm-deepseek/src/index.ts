@@ -23,6 +23,7 @@ import { getOrCreateAnonymousUserId, type AnonymousUserId } from '@williamcodebo
 import {
   DEFAULT_CONTEXT_WINDOW,
   DEFAULT_MAX_TOKENS,
+  DEFAULT_REQUEST_TIMEOUT_MS,
   DEFAULT_STREAM_IDLE_TIMEOUT_MS,
   DeepSeekAdapter,
 } from './adapter.ts'
@@ -31,6 +32,7 @@ import type { DeepSeekCatalogModel, DeepSeekConnectionOptions } from './adapter.
 export {
   DEFAULT_CONTEXT_WINDOW,
   DEFAULT_MAX_TOKENS,
+  DEFAULT_REQUEST_TIMEOUT_MS,
   DEFAULT_STREAM_IDLE_TIMEOUT_MS,
   DeepSeekAdapter,
 } from './adapter.ts'
@@ -76,6 +78,9 @@ export interface Config {
   models?: DeepSeekCatalogModel[]
   /** Maximum provider idle time while one stream read is outstanding (default five minutes). */
   streamIdleTimeoutMs?: number
+  /** Maximum time to first response byte, connect included (default two
+   * minutes); a stalled request errors `TIMEOUT` and retries per `retryPolicy`. */
+  requestTimeoutMs?: number
   /** Provider-owned model-request retry policy; omission uses normal defaults. */
   retryPolicy?: RetryPolicyConfig
 }
@@ -97,6 +102,7 @@ export const Config: z<Config> = z.object({
   defaultContextWindow: z.number().step(1).min(1).default(DEFAULT_CONTEXT_WINDOW),
   models: z.array(catalogModel).default(DEFAULT_MODELS),
   streamIdleTimeoutMs: z.number().min(Number.MIN_VALUE).max(MAX_TIMER_DELAY_MS).default(DEFAULT_STREAM_IDLE_TIMEOUT_MS),
+  requestTimeoutMs: z.number().min(Number.MIN_VALUE).max(MAX_TIMER_DELAY_MS).default(DEFAULT_REQUEST_TIMEOUT_MS),
   retryPolicy: RetryPolicySchema,
 })
 
@@ -180,6 +186,14 @@ export function resolveAdapterOptions(config: Config, environment?: LaunchEnviro
       `llm-deepseek: streamIdleTimeoutMs must be a positive finite number no greater than ${MAX_TIMER_DELAY_MS}`,
     )
   }
+  const requestTimeoutMs = config.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
+  if (!Number.isFinite(requestTimeoutMs)
+    || requestTimeoutMs <= 0
+    || requestTimeoutMs > MAX_TIMER_DELAY_MS) {
+    throw new Error(
+      `llm-deepseek: requestTimeoutMs must be a positive finite number no greater than ${MAX_TIMER_DELAY_MS}`,
+    )
+  }
   return {
     apiKeyEnv: credentialRef(config.apiKeyEnv ?? DEFAULT_API_KEY_ENV),
     baseURL: config.baseURL
@@ -193,6 +207,7 @@ export function resolveAdapterOptions(config: Config, environment?: LaunchEnviro
     defaultContextWindow: config.defaultContextWindow ?? DEFAULT_CONTEXT_WINDOW,
     models: resolveModels(config.models),
     streamIdleTimeoutMs,
+    requestTimeoutMs,
     retryPolicy: resolveRetryPolicy(config.retryPolicy, 'llm-deepseek: retryPolicy'),
   }
 }

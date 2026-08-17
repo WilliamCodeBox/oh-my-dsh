@@ -1,9 +1,15 @@
 -- turn 1 completed --
+
 > review the fold model change
+
 The fold model keeps append-origin events only.
+
 tool fs.read {"path":"transcript.ts"}
   -> ok
+
 command /permission read-only
   -> preset read-only
+
 -- turn 2 aborted --
+
 > stop here

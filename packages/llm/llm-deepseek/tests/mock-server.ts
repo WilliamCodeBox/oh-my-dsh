@@ -6,6 +6,7 @@ export type Behavior =
   | { kind: 'sse'; events: string[]; delayMs?: number }
   | { kind: 'http-error'; status: number; body: string; contentType?: string; headers?: Record<string, string> }
   | { kind: 'close-early'; events: string[] }
+  | { kind: 'silent' }
 
 export interface MockServer {
   url: string
@@ -21,7 +22,10 @@ const servers: Server[] = []
 
 /** Close every server opened since the last call; run from each spec's afterEach. */
 export async function closeMockServers(): Promise<void> {
-  await Promise.all(servers.splice(0).map(server => new Promise(resolve => server.close(resolve))))
+  await Promise.all(servers.splice(0).map(server => new Promise<void>((resolve) => {
+    server.closeAllConnections()
+    server.close(() => { resolve() })
+  })))
 }
 
 /** A minimal complete text generation, reused by request-shape assertions. */
@@ -55,6 +59,9 @@ export async function mockServer(script: Behavior[]): Promise<MockServer> {
         response.end(behavior.body)
         return
       }
+      // silent: never write headers, so the client's connect/TTFB deadline is
+      // the only bound on the outstanding request.
+      if (behavior.kind === 'silent') return
       response.writeHead(200, { 'content-type': 'text/event-stream' })
       const write = (index: number): void => {
         if (index >= behavior.events.length) {

@@ -565,6 +565,47 @@ describe('DeepSeekAdapter against a mock server', () => {
     }
   })
 
+  it('errors TIMEOUT when the provider never sends the first response byte', async () => {
+    vi.useFakeTimers()
+    const server = await mockServer([{ kind: 'silent' }])
+    const ctx = await harness(server.url, { requestTimeoutMs: 200 })
+    const drain = assemble(ctx, {
+      model: 'deepseek-v4-flash',
+      messages: [createUserMessage({
+        content: [{ type: 'text', text: 'hi' }],
+        source: { kind: 'plugin', plugin: 'test' },
+      })],
+    })
+    // The deadline fires without the provider writing a single byte.
+    await vi.advanceTimersByTimeAsync(200)
+    const result = await drain
+    expect(result.finish.kind).toBe('error')
+    const failure = (result.finish as { kind: 'error'; failure: { message: string; code: string } }).failure
+    expect(failure.code).toBe('TIMEOUT')
+    expect(failure.message).toContain('did not respond within 200ms')
+  })
+
+  it('maps a caller abort during the first-byte wait to ABORTED, not TIMEOUT', async () => {
+    vi.useFakeTimers()
+    const server = await mockServer([{ kind: 'silent' }])
+    const ctx = await harness(server.url, { requestTimeoutMs: 200 })
+    const controller = new AbortController()
+    const drain = assemble(ctx, {
+      model: 'deepseek-v4-flash',
+      messages: [createUserMessage({
+        content: [{ type: 'text', text: 'hi' }],
+        source: { kind: 'plugin', plugin: 'test' },
+      })],
+      signal: controller.signal,
+    })
+    const settled = expect(drain).resolves.toMatchObject({
+      finish: { kind: 'aborted', failure: { code: 'ABORTED' } },
+    })
+    controller.abort()
+    await vi.advanceTimersByTimeAsync(0)
+    await settled
+  })
+
   it('keeps an idle provider read alive through SSE comments', async () => {
     vi.useFakeTimers()
     const encoder = new TextEncoder()
@@ -1040,6 +1081,24 @@ describe('plugin registration and config', () => {
       baseURL: 'http://127.0.0.1:1',
       streamIdleTimeoutMs: MAX_TIMER_DELAY_MS + 1,
     })).rejects.toThrow(/streamIdleTimeoutMs/)
+  })
+
+  it('rejects invalid request-timeout bounds for direct and plugin composition', async () => {
+    expect(() => resolveAdapterOptions({ requestTimeoutMs: Number.POSITIVE_INFINITY }))
+      .toThrow(/requestTimeoutMs.*positive finite/)
+    expect(() => resolveAdapterOptions({ requestTimeoutMs: MAX_TIMER_DELAY_MS + 1 }))
+      .toThrow(/requestTimeoutMs.*no greater/)
+
+    const ctx = new Context()
+    await ctx.plugin(LlmRuntime)
+    await expect(ctx.plugin(LlmDeepSeek, {
+      baseURL: 'http://127.0.0.1:1',
+      requestTimeoutMs: 0,
+    })).rejects.toThrow(/requestTimeoutMs/)
+    await expect(ctx.plugin(LlmDeepSeek, {
+      baseURL: 'http://127.0.0.1:1',
+      requestTimeoutMs: MAX_TIMER_DELAY_MS + 1,
+    })).rejects.toThrow(/requestTimeoutMs/)
   })
 
   it('rejects invalid nested retryPolicy before registering the provider', async () => {

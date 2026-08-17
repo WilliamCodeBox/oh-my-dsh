@@ -20,6 +20,7 @@ The package root exposes the Cordis plugin contract and `DeepSeekAdapter`; wire 
     reasoningEffort: high    # optional; off | high | max — omitted ⇒ high
     maxTokens: 256000        # optional positive per-request output cap; this is the default
     streamIdleTimeoutMs: 300000 # optional; positive finite Node timer delay; five-minute default
+    requestTimeoutMs: 120000    # optional; time-to-first-byte bound; two-minute default
     retryPolicy:             # optional; omission uses bounded normal defaults
       mode: always           # normal | always
       backoff:
@@ -46,6 +47,8 @@ The same exact-model result exposes ordered `off`, `high`, and `max` efforts und
 `thinking: disabled` is a deployment lock that publishes only `off` with `off` as its default. Omitting `reasoningEffort` or configuring it as `off` is valid; configuring `high` or `max` fails plugin loading, and a direct per-request attempt to enable thinking fails before network I/O. A request with `GenerateOptions.purpose: 'session-title'` also forces thinking disabled and omits the already-resolved effort, reserving its bounded output for visible title text without changing conversation or compaction defaults.
 
 `streamIdleTimeoutMs` bounds each outstanding provider read, including the initial `fetch`, without counting time the consumer spends between chunks. DeepSeek SSE comments rearm an outstanding read as transport activity but never become `StreamChunk` values or session-log events. One stable abort signal reaches the request and body reader for the whole call; expiry stops the transport and throws `LlmError('TIMEOUT')`, while an earlier caller abort throws `LlmError('ABORTED')`. The adapter makes exactly one provider request per `stream()` call; it registers the configured policy as provider metadata, and `dsh-llm-retry` separately executes it at durable agent-step boundaries.
+
+`requestTimeoutMs` bounds the connect + first-response-byte phase separately from the stream reads: a provider that never returns headers errors `LlmError('TIMEOUT')` after the budget instead of holding the turn until the stream watchdog or the caller gives up. The deadline is released once headers arrive, so a slow body keeps the longer `streamIdleTimeoutMs` bound. `TIMEOUT` is in the default retryable set, so `dsh-llm-retry` converts a stalled first byte into a bounded retry with backoff.
 
 ## Dynamic configuration (settings + credentials)
 

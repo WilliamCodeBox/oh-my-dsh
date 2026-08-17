@@ -10,7 +10,8 @@
  * - With a {@link SemanticTheme} the view renders real components: user
  *   messages on a full-width background box, assistant messages through the
  *   Markdown component (width-aware, streamed via setText), and tool calls
- *   as state-colored cards (pending/success/error backgrounds).
+ *   as structured cards with a state-colored leading bar plus the settled
+ *   outcome and diffs. Items are separated by one blank line in both paths.
  *
  * @module @williamcodebox/omd-tui-renderer
  */
@@ -19,7 +20,7 @@ import { Box, Markdown, Text, type Component } from '@earendil-works/pi-tui'
 import type { Transcript, TranscriptItem, ToolItem } from './transcript.ts'
 import { capped, formatItem, sanitizedLines } from './format.ts'
 import { sanitizeText } from './sanitize.ts'
-import type { SemanticTheme } from './theme.ts'
+import type { ColorToken, SemanticTheme } from './theme.ts'
 import type { JsonValue } from '@williamcodebox/omd-session'
 
 /** Per-item-kind line stylers; each maps one sanitized display line. */
@@ -181,27 +182,42 @@ function diffCardLines(diff: DiffLike, theme: SemanticTheme): string[] {
   return lines
 }
 
-/** One tool card: state-colored background, title + settled outcome + diffs. */
+/** State color per tool card state: the leading bar reads pending/success/error. */
+const TOOL_STATE_TOKEN: Readonly<Record<'pending' | 'success' | 'error', ColorToken>> = {
+  pending: 'accent',
+  success: 'success',
+  error: 'error',
+}
+
+/**
+ * One tool card: a state-colored leading bar plus structured lines — title
+ * with dimmed args, the settled outcome, and any embedded file diffs. The
+ * bar (not a full-width background) keeps the card readable on any terminal
+ * background while the state color still reads at a glance.
+ */
 function toolCardFor(item: ToolItem, theme: SemanticTheme): Component {
-  const bgFn = item.result === undefined
-    ? (text: string) => theme.bg('toolPendingBg', text)
-    : item.result.error !== undefined
-      ? (text: string) => theme.bg('toolErrorBg', text)
-      : (text: string) => theme.bg('toolSuccessBg', text)
-  const card = new Box(1, 1, bgFn)
+  const state = item.result === undefined
+    ? 'pending'
+    : item.result.error !== undefined ? 'error' : 'success'
+  const bar = theme.fg(TOOL_STATE_TOKEN[state], '▌')
+  const pipe = theme.fg('dim', '│')
+  const card = new Box(0, 0)
   const args = item.args.trim()
-  const title = `tool ${item.name}${args === '' ? '' : ` ${capped(args, 300)}`}`
-  card.addChild(new Text(sanitizeText(title), 1, 0, bgFn))
+  const title = `tool ${theme.fg('toolTitle', sanitizeText(item.name))}`
+    + (args === '' ? '' : ` ${theme.fg('dim', sanitizeText(capped(args, 300)))}`)
+  card.addChild(new Text(`${bar} ${title}`, 0, 0))
   if (item.result !== undefined) {
     const outcome = item.result.error === undefined
-      ? new Text('  ✓ ok', 1, 0, bgFn)
-      : new Text(theme.fg('error', `  ✗ error ${sanitizeText(item.result.error.name)}`), 1, 0)
-    card.addChild(outcome)
+      ? `${pipe} ${theme.fg('success', '✓ ok')}`
+      : `${pipe} ${theme.fg('error', `✗ error ${sanitizeText(item.result.error.name)}`)}`
+    card.addChild(new Text(outcome, 0, 0))
     const diffs = diffsFromMetaValue(item.result.meta)
     if (diffs !== undefined) {
       const diffText: string[] = []
       for (const diff of diffs) diffText.push(...diffCardLines(diff, theme))
-      if (diffText.length > 0) card.addChild(new Text(diffText.join('\n'), 1, 0, bgFn))
+      if (diffText.length > 0) {
+        card.addChild(new Text(diffText.map(line => `${pipe} ${line}`).join('\n'), 0, 0))
+      }
     }
   }
   return card
@@ -237,6 +253,7 @@ export class TranscriptView implements Component {
     if (this.semantic === undefined) {
       const lines: string[] = []
       for (const item of this.transcript.state.items) {
+        if (lines.length > 0) lines.push('')
         lines.push(...sanitizedLines(item))
       }
       return lines
@@ -244,6 +261,7 @@ export class TranscriptView implements Component {
     const lines: string[] = []
     const theme = this.semantic
     for (const item of this.transcript.state.items) {
+      if (lines.length > 0) lines.push('')
       const fingerprint = fingerprintOf(item)
       let cached = this.cache.get(item)
       if (cached === undefined || cached.fingerprint !== fingerprint) {

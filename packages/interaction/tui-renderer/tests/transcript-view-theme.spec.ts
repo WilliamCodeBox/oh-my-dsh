@@ -112,15 +112,16 @@ describe('TranscriptView themed path', () => {
 
   it('colors tool cards by state: pending, success, error', () => {
     const pending = themedLines(t => foldTool(t, 2, 'fs.read', '{"path":"a"}'))
-    expect(pending.join('\n')).toContain('\x1b[48;5;236m')
+    expect(pending.join('\n')).toContain('\x1b[38;5;117m▌') // pending bar in accent
     expect(pending.join('\n')).toContain('fs.read')
+    expect(pending.join('\n')).not.toContain('ok')
 
     const success = themedLines(t => foldTool(t, 2, 'fs.read', '{"path":"a"}', {}))
-    expect(success.join('\n')).toContain('\x1b[48;5;235m')
-    expect(success.join('\n')).toContain('ok')
+    expect(success.join('\n')).toContain('\x1b[38;5;114m▌') // success bar
+    expect(success.join('\n')).toContain('✓ ok')
 
     const error = themedLines(t => foldTool(t, 2, 'fs.read', '{"path":"a"}', { error: { name: 'ENOENT', code: 'ENOENT' } }))
-    expect(error.join('\n')).toContain('\x1b[48;5;234m')
+    expect(error.join('\n')).toContain('\x1b[38;5;167m▌') // error bar
     expect(error.join('\n')).toContain('✗ error ENOENT')
     expect(error.join('\n')).toContain('\x1b[38;5;167m')
   })
@@ -129,6 +130,21 @@ describe('TranscriptView themed path', () => {
     const lines = themedLines(t => t.fold(ev('turn/start', { turn: 1 }, 1)))
     expect(lines.join('\n')).toContain('\x1b[38;5;240m')
     expect(lines.join('\n')).toContain('-- turn 1 --')
+  })
+
+  it('separates consecutive items with one blank line', () => {
+    const lines = themedLines((t) => {
+      foldUser(t, 'first', 1)
+      foldAssistant(t, 'second', 2)
+      foldTool(t, 3, 'fs.read', '{}', {})
+    })
+    // Each item boundary is a blank line, not glued-together text.
+    const assistantIndex = lines.findIndex(line => line.trim() === 'second')
+    const toolIndex = lines.findIndex(line => line.includes('fs.read'))
+    expect(assistantIndex).toBeGreaterThan(-1)
+    expect(toolIndex).toBeGreaterThan(-1)
+    expect(lines[assistantIndex - 1]!.trim()).toBe('')
+    expect(lines[toolIndex - 1]!).toBe('')
   })
 
   it('keeps rendered lines within the viewport width, including CJK', () => {
@@ -145,7 +161,8 @@ describe('TranscriptView themed path', () => {
     transcript.fold(ev('tool/call', { callId: 'c1', turn: 1, step: 1, name: 'fs.read', arguments: '{"path":"a"}' }, 1, { surfaceOp: 'append' }))
     const view = new TranscriptView(transcript, darkTheme)
     const pending = view.render(80).join('\n')
-    expect(pending).toContain('\x1b[48;5;236m') // toolPendingBg
+    expect(pending).toContain('\x1b[38;5;117m▌') // pending bar in accent
+    expect(pending).not.toContain('✓ ok')
     transcript.fold(ev('tool/result', {
       turn: 1,
       step: 1,
@@ -154,8 +171,8 @@ describe('TranscriptView themed path', () => {
       },
     }, 2, { surfaceOp: 'append' }))
     const settled = view.render(80).join('\n')
-    expect(settled).toContain('\x1b[48;5;235m') // toolSuccessBg
-    expect(settled).toContain('ok')
+    expect(settled).toContain('\x1b[38;5;114m▌') // success bar
+    expect(settled).toContain('✓ ok')
   })
 
   it('renders tool diffs with add/remove/hunk colors', () => {

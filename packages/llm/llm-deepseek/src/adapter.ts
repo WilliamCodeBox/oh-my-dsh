@@ -18,7 +18,7 @@ import type {
   StreamChunk,
 } from '@williamcodebox/omd-llm'
 import type { CredentialRef } from '@williamcodebox/omd-credentials'
-import { idleWatchdog, timeoutOf } from '@williamcodebox/omd-timeout'
+import { deadline, idleWatchdog, timeoutOf } from '@williamcodebox/omd-timeout'
 import type { AnonymousUserId } from '@williamcodebox/omd-anonymous-user-id'
 import { serializeRequest } from './serialize.ts'
 import type { RequestDefaults } from './serialize.ts'
@@ -66,6 +66,8 @@ export interface DeepSeekConnectionOptions {
   models: readonly DeepSeekCatalogModel[]
   /** Maximum provider idle time while one stream read is outstanding. */
   streamIdleTimeoutMs: number
+  /** Maximum time to first response byte (connect + provider prefill), after which the request errors as `TIMEOUT`. */
+  requestTimeoutMs: number
   /** Provider-owned model-request retry policy, already resolved. */
   retryPolicy: ResolvedRetryPolicy
 }
@@ -87,11 +89,14 @@ export interface DeepSeekAdapterOptions {
 
 /** Default maximum idle interval while an adapter stream read is outstanding. */
 export const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 300_000
+/** Default maximum time to first response byte (connect + provider prefill). */
+export const DEFAULT_REQUEST_TIMEOUT_MS = 120_000
 /** Default combined request/response context capacity. */
 export const DEFAULT_CONTEXT_WINDOW = 1_000_000
 /** Default per-request output-token cap. */
 export const DEFAULT_MAX_TOKENS = 256_000
 const STREAM_IDLE_TIMEOUT_CODE = 'LLM_STREAM_IDLE_TIMEOUT'
+const TTFB_TIMEOUT_CODE = 'LLM_TTFB_TIMEOUT'
 const OFF_REASONING_EFFORT = ReasoningEffortId('off')
 const HIGH_REASONING_EFFORT = ReasoningEffortId('high')
 const MAX_REASONING_EFFORT = ReasoningEffortId('max')
@@ -297,25 +302,42 @@ export class DeepSeekAdapter extends LlmAdapter {
     // TODO(http): adopt the Cordis HTTP service when shared transport configuration
     // outweighs its additional runtime dependencies.
     let response: Response
-    try {
-      response = await fetch(`${connection.baseURL}/chat/completions`, {
-        method: 'POST',
-        headers,
-        body: payload,
-        signal,
-      })
-    } catch (error: unknown) {
-      // The outer stream distinguishes caller cancellation and watchdog expiry.
-      if (signal.aborted) throw error
-      // fetch wraps every transport failure (DNS, refused connection, TLS,
-      // proxy) in a bare `TypeError: fetch failed` whose actionable detail
-      // lives on `cause`. Wrapping with the endpoint and chaining the cause
-      // lets `errorChain` render the full diagnosis at every reporting boundary.
-      throw new LlmError(
-        `DeepSeek API request to ${connection.baseURL} failed`,
-        'TRANSPORT',
-        { cause: error },
-      )
+    {
+      // The connect + first-byte phase gets its own deadline: a provider that
+      // never returns headers would otherwise stall the turn until the stream
+      // watchdog (which guards body reads) or the caller gives up. The block
+      // scope disposes the timer once headers arrive, so a slow body keeps the
+      // longer stream-idle bound instead of reusing the TTFB budget.
+      using ttfb = deadline(signal, connection.requestTimeoutMs, TTFB_TIMEOUT_CODE)
+      try {
+        response = await fetch(`${connection.baseURL}/chat/completions`, {
+          method: 'POST',
+          headers,
+          body: payload,
+          signal: ttfb.signal,
+        })
+      } catch (error: unknown) {
+        // The outer stream distinguishes caller cancellation and watchdog expiry.
+        if (signal.aborted) throw error
+        if (timeoutOf(ttfb.signal, TTFB_TIMEOUT_CODE) !== undefined) {
+          // `TIMEOUT` is in the default retryable set, so llm-retry converts
+          // a stalled first byte into a bounded retry instead of a hang.
+          throw new LlmError(
+            `DeepSeek API did not respond within ${connection.requestTimeoutMs}ms`,
+            'TIMEOUT',
+            { cause: error },
+          )
+        }
+        // fetch wraps every transport failure (DNS, refused connection, TLS,
+        // proxy) in a bare `TypeError: fetch failed` whose actionable detail
+        // lives on `cause`. Wrapping with the endpoint and chaining the cause
+        // lets `errorChain` render the full diagnosis at every reporting boundary.
+        throw new LlmError(
+          `DeepSeek API request to ${connection.baseURL} failed`,
+          'TRANSPORT',
+          { cause: error },
+        )
+      }
     }
 
     if (!response.ok) {

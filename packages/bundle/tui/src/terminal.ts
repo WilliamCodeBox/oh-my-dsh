@@ -7,7 +7,7 @@
  */
 
 /** Ctrl+C press outcomes from {@link CtrlCController.press}. */
-export type CtrlCAction = 'hard-exit' | 'cancel' | 'clear-input' | 'quit'
+export type CtrlCAction = 'hard-exit' | 'cancel' | 'clear-input' | 'confirm-quit' | 'quit'
 
 /**
  * The Ctrl+C key state machine. In raw mode Ctrl+C is input byte 0x03, never
@@ -18,13 +18,17 @@ export type CtrlCAction = 'hard-exit' | 'cancel' | 'clear-input' | 'quit'
  * - a press with a non-empty input line clears the line and does NOT arm the
  *   force-exit window (typing is not a hang);
  * - a press with an empty line cancels a running turn;
- * - a press with an empty line while idle quits gracefully — the runner exits
- *   130, the SIGINT convention code, through the normal shutdown path
- *   (presenter stop, flush, terminal restore), never the crash hard-exit;
- * - a second empty-line press inside the window force-exits (the hang escape).
+ * - a second empty-line press inside the window while running force-exits
+ *   (the hang escape);
+ * - a press with an empty line while idle only confirms: it returns
+ *   `confirm-quit` so the surface can hint, and a second press inside the
+ *   window quits gracefully — the runner exits 130, the SIGINT convention
+ *   code, through the normal shutdown path (presenter stop, flush, terminal
+ *   restore), never the crash hard-exit.
  */
 export class CtrlCController {
   private lastPress = 0
+  private idleArmed = false
 
   constructor(
     private readonly now: () => number = Date.now,
@@ -42,13 +46,21 @@ export class CtrlCController {
     if (!inputEmpty) {
       // Typing is not a hang: clear the line and disarm any armed window.
       this.lastPress = 0
+      this.idleArmed = false
       return 'clear-input'
     }
     const withinWindow = this.lastPress !== 0 && t - this.lastPress <= this.windowMs
     this.lastPress = t
-    if (withinWindow) return 'hard-exit'
-    if (turnRunning) return 'cancel'
-    return 'quit'
+    if (turnRunning) {
+      return withinWindow ? 'hard-exit' : 'cancel'
+    }
+    // Idle: the first press only arms; the second inside the window quits.
+    if (withinWindow && this.idleArmed) {
+      this.idleArmed = false
+      return 'quit'
+    }
+    this.idleArmed = true
+    return 'confirm-quit'
   }
 }
 

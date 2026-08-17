@@ -1,8 +1,14 @@
 -- turn 1 completed --
+
 > explain the transcript fold model
+
 The transcript folds session events.
+
 tool read {"path":"transcript.ts"}
   -> ok
+
 -- turn 2 aborted --
+
 > add a compaction note
+
 done

@@ -22,8 +22,8 @@ import type {} from '@williamcodebox/omd-agent-default-model'
 import { createUserMessage } from '@williamcodebox/omd-llm'
 import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, SessionEvent } from '@williamcodebox/omd-session'
-import { TuiPresenter, KeybindingRegistry, Transcript, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme, workspaceAutocomplete } from '@williamcodebox/omd-tui-renderer'
-import type { MetaRowData } from '@williamcodebox/omd-tui-renderer'
+import { TuiPresenter, KeybindingRegistry, Transcript, darkTheme, detectTerminalScheme, formatStatus, processTerminal, sanitizeText, themeForScheme, workspaceAutocomplete } from '@williamcodebox/omd-tui-renderer'
+import type { MetaRowData, SemanticTheme } from '@williamcodebox/omd-tui-renderer'
 import type { ReasoningEffortId } from '@williamcodebox/omd-llm'
 import { watchGitStatus, type GitStatus } from './git.ts'
 import type {} from '@williamcodebox/omd-permission-presets'
@@ -125,6 +125,30 @@ function formatCost(cost: number): string {
   if (cost >= 1) return `$${cost.toFixed(2)}`
   if (cost >= 0.01) return `$${cost.toFixed(4)}`
   return `$${cost.toFixed(6)}`
+}
+
+/**
+ * Build the running-state transient for one status row: elapsed seconds plus
+ * an escape hint, flipping to the theme's warning color once the model has
+ * been silent (no session event) past `warnSeconds` so a stalled
+ * time-to-first-byte reads as a stall, not idle.
+ * @param frame - the current spinner frame.
+ * @param elapsedSeconds - whole seconds since the turn started running.
+ * @param silentSeconds - whole seconds since the last session event.
+ * @param warnSeconds - silence threshold at which the warning appears.
+ * @param theme - theme whose `warning` role colors the stalled text.
+ * @returns the transient string (uncolored below the threshold).
+ */
+export function runningTransient(
+  frame: string,
+  elapsedSeconds: number,
+  silentSeconds: number,
+  warnSeconds: number,
+  theme: SemanticTheme,
+): string {
+  const hint = `${frame} running ${elapsedSeconds}s · esc to interrupt`
+  if (silentSeconds < warnSeconds) return hint
+  return theme.fg('warning', `${frame} running ${elapsedSeconds}s · no response ${silentSeconds}s · esc to interrupt`)
 }
 
 /** One decoded key from the pipe input source. */
@@ -281,7 +305,11 @@ type InputOutcome = { kind: 'quit'; code: number } | { kind: 'hard-exit'; code: 
  * raw-key machine owns cancel/clear/quit. The outcome resolves on a Ctrl+C
  * quit; the presenter keeps running until the caller stops it.
  */
-async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<InputOutcome> {
+async function drivePresenter(
+  presenter: TuiPresenter,
+  agent: Agent,
+  notice: { text: string },
+): Promise<InputOutcome> {
   const ctrlC = new CtrlCController()
   return await new Promise<InputOutcome>((resolve) => {
     // One registry for every raw key the presenter sees; the help overlay
@@ -340,30 +368,36 @@ async function drivePresenter(presenter: TuiPresenter, agent: Agent): Promise<In
       display: 'Ctrl+C',
       description: 'clear input / cancel / quit (three-step)',
       handler: () => {
-      // While an interaction modal is asking, Ctrl+C resolves the modal's
-      // cancel binding instead of driving the quit machine: the modal owns
-      // the key until the user decides.
-      if (presenter.interactionPending) return false
-      const action = ctrlC.press(agent.status === 'running', presenter.getInput() === '')
-      switch (action) {
-        case 'clear-input':
-          presenter.setInput('')
-          break
-        case 'cancel':
-          agent.cancel({ kind: 'user' }, { keepInbox: true })
-          break
-        case 'quit':
-          // A user interrupt quits with the SIGINT convention code; the quit
-          // is graceful (presenter stop, flush, terminal restore), not the
-          // crash-restore hard exit.
-          resolve({ kind: 'quit', code: 130 })
-          break
-        case 'hard-exit':
-          resolve({ kind: 'hard-exit', code: 130 })
-          break
-      }
-      return true
-    },
+        // While an interaction modal is asking, Ctrl+C resolves the modal's
+        // cancel binding instead of driving the quit machine: the modal owns
+        // the key until the user decides.
+        if (presenter.interactionPending) return false
+        const action = ctrlC.press(agent.status === 'running', presenter.getInput() === '')
+        switch (action) {
+          case 'clear-input':
+            presenter.setInput('')
+            break
+          case 'cancel':
+            agent.cancel({ kind: 'user' }, { keepInbox: true })
+            break
+          case 'confirm-quit':
+            // Idle: first press only hints; a second press inside the window
+            // quits. Prevents an accidental Ctrl+C from dropping the session.
+            notice.text = 'Ctrl+C again to quit'
+            presenter.requestRender()
+            break
+          case 'quit':
+            // A user interrupt quits with the SIGINT convention code; the quit
+            // is graceful (presenter stop, flush, terminal restore), not the
+            // crash-restore hard exit.
+            resolve({ kind: 'quit', code: 130 })
+            break
+          case 'hard-exit':
+            resolve({ kind: 'hard-exit', code: 130 })
+            break
+        }
+        return true
+      },
     })
     presenter.setHaltHandler((outcome) => {
       const payload = outcome as { resumeId?: unknown }
@@ -496,6 +530,10 @@ async function driveInput(
           case 'cancel':
             agent.cancel({ kind: 'user' }, { keepInbox: true })
             break
+          case 'confirm-quit':
+            // Idle: first press hints; a second press inside the window quits.
+            process.stderr.write('Ctrl+C again to quit\n')
+            break
           case 'quit':
             // A user interrupt quits with the SIGINT convention code; the
             // pipe path has no presenter to restore, so the quit is direct.
@@ -550,11 +588,18 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   // through `session/event`, so a resumed transcript starts from storage.
   for (const event of agent.session.events) transcript.fold(event)
 
+  // Running-turn timing for the transient: `runStartedAt` anchors the elapsed
+  // counter, `lastActivityAt` tracks the last durable event so a long silent
+  // time-to-first-byte reads as a stall instead of a healthy stream.
+  let runStartedAt = 0
+  let lastActivityAt = 0
+
   // The shared app-ctx pattern (api-proxy, ACP): one root listener filtered by
   // session, so subagent sessions never trace into the TUI transcript.
   const offEvents = ctx.on('session/event', (session: Session, event: SessionEvent) => {
     if (session !== agent.session) return
     transcript.fold(event)
+    if (agent.status === 'running') lastActivityAt = Date.now()
     if (activePresenter === undefined) {
       const line = traceLine(event)
       if (line !== '') io.stdout.write(sanitizeText(line) + '\n')
@@ -591,6 +636,13 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   const notice = { text: '' }
   // Spinner frame over wall-clock time; the status row re-reads per render.
   const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+  // Seconds of model silence (no session event) after which the running
+  // transient warns the turn may be stalled before its first response byte.
+  const STALL_WARN_SECONDS = 60
+  // Resolved theme for the transient's stall warning; the interactive branch
+  // replaces the dark default after the terminal reports its scheme, before
+  // any presenter render reads it.
+  let statusTheme: SemanticTheme = darkTheme
   const statusLine = (): string => {
     const base = formatStatus(transcript.state)
     let text = notice.text === '' ? base : base === '' ? notice.text : `${base} | ${notice.text}`
@@ -624,14 +676,20 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       presenter?.setProgress(running)
       if (running) {
         stopSpinner()
+        runStartedAt = Date.now()
+        lastActivityAt = runStartedAt
         spinnerTimer = setInterval(() => presenter?.requestRender(), 100)
       } else {
         stopSpinner()
       }
     }
     if (!running) return ''
-    const frame = SPINNER_FRAMES[Math.floor(Date.now() / 100) % SPINNER_FRAMES.length]
-    return `${frame} running · esc to interrupt`
+    // The modulo always indexes a valid frame; the fallback is unreachable
+    // but satisfies the unchecked-index type.
+    const frame = SPINNER_FRAMES[Math.floor(Date.now() / 100) % SPINNER_FRAMES.length] ?? '⠋'
+    const elapsed = Math.max(0, Math.floor((Date.now() - runStartedAt) / 1000))
+    const silent = Math.max(0, Math.floor((Date.now() - lastActivityAt) / 1000))
+    return runningTransient(frame, elapsed, silent, STALL_WARN_SECONDS, statusTheme)
   }
 
   /**
@@ -766,6 +824,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     // Query the terminal's scheme before raw mode owns stdin; the dark
     // theme is the fallback when the terminal reports nothing.
     const scheme = await detectTerminalScheme(process.stdin, io.stdout)
+    statusTheme = themeForScheme(scheme)
     // @-file and slash-command completion over the workspace directory.
     const descriptors = commands?.list(agent) ?? []
     const autocomplete = workspaceAutocomplete(
@@ -817,7 +876,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   try {
     presenter?.start()
     const outcome = presenter !== undefined
-      ? await drivePresenter(presenter, agent)
+      ? await drivePresenter(presenter, agent, notice)
       : await driveInput(input as InputSource, agent, dispatchLine)
 
     // Stop the presenter before the graceful flush so the shell is usable

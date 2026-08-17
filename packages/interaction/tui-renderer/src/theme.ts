@@ -1,6 +1,6 @@
 /**
  * Semantic color themes for the omd TUI. Each theme maps named roles
- * (text/muted/border/userBg/toolPendingBg/...) to 256-color palette
+ * (text/muted/border/userBg/...) to 256-color palette
  * entries, and exposes fg()/bg() helpers that wrap text in the matching
  * ANSI SGR codes. The presenter and transcript view consume semantic tokens
  * only, so swapping dark/light (or a future user-defined theme) never
@@ -41,7 +41,7 @@ export type ColorToken =
   | 'diffHunk'
 
 /** Background roles: message layering and tool-card state. */
-export type BgToken = 'userBg' | 'toolPendingBg' | 'toolSuccessBg' | 'toolErrorBg'
+export type BgToken = 'userBg'
 
 /** One theme's palette: 256-color index per semantic role. */
 export interface ThemePalette {
@@ -74,9 +74,9 @@ export interface SemanticTheme {
 }
 
 /**
- * Dark palette: low-saturation backgrounds for state cards (a green-tinted
- * dark for success, red-tinted dark for errors) so status reads without
- * glare on dark terminals.
+ * Dark palette: text roles tuned for dark terminals; state reads through the
+ * foreground roles (success/error/warning/accent) that color the tool-card
+ * bars and outcomes.
  */
 const DARK_PALETTE: ThemePalette = {
   fg: {
@@ -106,13 +106,10 @@ const DARK_PALETTE: ThemePalette = {
   },
   bg: {
     userBg: 237,
-    toolPendingBg: 236,
-    toolSuccessBg: 235,
-    toolErrorBg: 234,
   },
 }
 
-/** Light palette: pastel backgrounds mirroring the dark roles. */
+/** Light palette: pastel roles mirroring the dark foregrounds. */
 const LIGHT_PALETTE: ThemePalette = {
   fg: {
     text: 0,
@@ -141,9 +138,6 @@ const LIGHT_PALETTE: ThemePalette = {
   },
   bg: {
     userBg: 255,
-    toolPendingBg: 254,
-    toolSuccessBg: 194,
-    toolErrorBg: 253,
   },
 }
 

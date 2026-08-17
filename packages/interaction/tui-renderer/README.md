@@ -22,7 +22,12 @@ Transcript material is **append-origin surface events only**. The session surfac
 | Export | Role |
 |---|---|
 | `./transcript` | The `Transcript` fold model and the `textOf` block-text extractor. |
-| `./presenter` | `TuiPresenter` — the pi-tui alternate-screen surface (scroll viewport, status row, editor) plus the `processTerminal()` production backend. |
+| `./presenter` | `TuiPresenter` — the pi-tui alternate-screen surface (scroll viewport, status row, meta row, editor) plus the `processTerminal()` production backend and `workspaceAutocomplete()`. |
+| `./transcript-view` | `TranscriptView`/`StatusRow` — themed rendering of folded items (user background cards, assistant Markdown, state-colored tool cards with diffs, one blank line between items) and the dynamic status row. |
+| `./meta-row` | `MetaRow`/`renderMetaRow` — the input-context row (model/thinking, cwd/git, context bar). |
+| `./theme` | `darkTheme`/`lightTheme`/`themeForScheme` — semantic 256-color themes (foreground roles, user background, markdown and editor sub-themes). |
+| `./scheme` | `detectTerminalScheme` — terminal color-scheme query for theme selection. |
+| `./keybindings` | `KeybindingRegistry` — presenter raw-key dispatch used by the runner. |
 | `./sanitize` | `sanitizeText`/`needsSanitize` display sanitizer for untrusted model and tool text. |
 | `./format` | `formatItem`/`formatStatus` display formatting for folded items and the status row. |
 | `./invariant` | Package-owned invariant companion (no runtime invariant; the fold is a projection, and the session layer owns event validation). |
@@ -37,7 +42,6 @@ None; the model folds no request prefix.
 
 ## Known Limitations and Deferred Work
 
-- **Plain-text presenter** — the transcript renders as sanitized plain lines with no markdown rendering, diff cards, colors, or theming; the theme and card milestones build on the `TuiPresenter` seam.
-- **No interaction adapters** — approval prompts, question pickers, and slash commands are later milestones; the presenter exposes the editor and raw-key listener they mount on.
+- **Interaction overlays are single-slot** — one approval or question modal at a time; further requests queue behind the live modal and mount on its close.
 - **Visible text only** — chunk accumulation keeps `text-delta` content; reasoning deltas and tool-call content blocks are not accumulated separately (the assembled `assistant/message` is retained for renderers that need the full block structure).
 - **No ordering validation** — the fold trusts the session layer's sequence order; out-of-order events are folded as received.

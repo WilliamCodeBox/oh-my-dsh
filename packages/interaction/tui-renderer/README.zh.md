@@ -22,7 +22,12 @@
 | 导出 | 职责 |
 |---|---|
 | `./transcript` | `Transcript` 折叠模型与 `textOf` 块文本提取器。 |
-| `./presenter` | `TuiPresenter` — pi-tui 备用屏幕表面（滚动视口、状态行、编辑器）与 `processTerminal()` 生产后端。 |
+| `./presenter` | `TuiPresenter` — pi-tui 备用屏幕表面（滚动视口、状态行、meta 行、编辑器）、`processTerminal()` 生产后端与 `workspaceAutocomplete()`。 |
+| `./transcript-view` | `TranscriptView`/`StatusRow` — 折叠条目的主题化渲染（user 背景卡片、assistant Markdown、带 diff 的状态色工具卡、条目间一空行分隔）与动态状态行。 |
+| `./meta-row` | `MetaRow`/`renderMetaRow` — 输入上下文行（model/thinking、cwd/git、上下文条）。 |
+| `./theme` | `darkTheme`/`lightTheme`/`themeForScheme` — 语义 256 色主题（前景角色、user 背景、markdown 与编辑器子主题）。 |
+| `./scheme` | `detectTerminalScheme` — 主题选择的终端配色方案查询。 |
+| `./keybindings` | `KeybindingRegistry` — runner 使用的 presenter 原始按键分发。 |
 | `./sanitize` | 面向不可信模型/工具文本的 `sanitizeText`/`needsSanitize` 展示净化器。 |
 | `./format` | 折叠条目与状态行的 `formatItem`/`formatStatus` 展示格式化。 |
 | `./invariant` | 包内不变量伴生插件（无运行时不变量；折叠是投影，事件校验由 session 层负责）。 |
@@ -37,7 +42,6 @@
 
 ## 已知限制与延期工作
 
-- **纯文本 presenter**——转录以净化后的纯文本行渲染，无 markdown 渲染、diff 卡片、颜色或主题；主题与卡片里程碑构建在 `TuiPresenter` seam 之上。
-- **无交互适配器**——审批提示、问题选择器与斜杠命令属后续里程碑；presenter 已暴露它们挂载所需的编辑器与原始按键监听。
+- **交互浮层为单槽**——同时只有一个审批或问题模态；后续请求在活跃模态后排队，待其关闭后挂载。
 - **仅可见文本**——chunk 累积保留 `text-delta` 内容；reasoning delta 与工具调用内容块不单独累积（保留装配后的 `assistant/message`，供需要完整块结构的渲染器使用）。
 - **无顺序校验**——折叠信任 session 层的序列顺序；乱序事件按收到顺序折叠。

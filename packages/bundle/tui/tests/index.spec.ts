@@ -12,9 +12,9 @@ import CommandRuntime from '@williamcodebox/omd-commands'
 import { CallId, createAssistantMessage, createToolResultMessage, MessageId } from '@williamcodebox/omd-llm'
 import SessionStore from '@williamcodebox/omd-session'
 import type { Session, UserMessage } from '@williamcodebox/omd-session'
-import { apply, Config, internals, StdinInputSource } from '../src/index.ts'
+import { apply, Config, internals, runningTransient, StdinInputSource } from '../src/index.ts'
 import { Keymap } from '../src/keymap.ts'
-import { textOf } from '@williamcodebox/omd-tui-renderer'
+import { darkTheme, textOf } from '@williamcodebox/omd-tui-renderer'
 import type { InputSource, TuiKey } from '../src/index.ts'
 
 const originalInternals = { ...internals }
@@ -242,6 +242,7 @@ describe('tui runner', () => {
         { kind: 'char', char: 'i' },
         { kind: 'submit' },
         { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
       ],
       {},
       { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'hello back') } },
@@ -307,6 +308,7 @@ describe('tui runner', () => {
         { kind: 'backspace' },
         { kind: 'submit' },
         { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
       ],
       {},
       { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'ok') } },
@@ -353,6 +355,7 @@ describe('tui runner', () => {
         { kind: 'char', char: 'z' },
         { kind: 'submit' },
         { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
       ],
       {},
       { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'ok') } },
@@ -375,6 +378,7 @@ describe('tui runner', () => {
         { kind: 'submit' },
         { kind: 'down' }, { kind: 'down' },
         { kind: 'char', char: '!' }, { kind: 'submit' },
+        { kind: 'ctrl-c' },
         { kind: 'ctrl-c' },
       ],
       {},
@@ -411,6 +415,7 @@ describe('tui runner', () => {
       [
         { kind: 'char', char: 'x' },
         { kind: 'submit' },
+        { kind: 'ctrl-c' },
         { kind: 'ctrl-c' },
       ],
       {},
@@ -472,6 +477,7 @@ describe('tui runner', () => {
         { kind: 'char', char: 'x' },
         { kind: 'submit' },
         { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
       ],
       {},
       {
@@ -498,6 +504,7 @@ describe('tui runner', () => {
       [
         { kind: 'char', char: 'x' },
         { kind: 'submit' },
+        { kind: 'ctrl-c' },
         { kind: 'ctrl-c' },
       ],
       {},
@@ -549,6 +556,7 @@ describe('tui runner', () => {
     terminal.send('hello')
     terminal.send('\r')
     terminal.send('\x03')
+    terminal.send('\x03')
     const result = await runPromise
     // Ctrl+C quits with the SIGINT convention code; the presenter still
     // stopped and restored the terminal before the graceful flush.
@@ -587,6 +595,7 @@ describe('tui runner', () => {
     terminal.send('x')
     terminal.send('\x7f') // backspace clears the line so Ctrl+C quits
     terminal.send('\x03')
+    terminal.send('\x03')
     const result = await runPromise
     expect(result.code).toBe(130)
     expect(test.recorded.followup).toHaveLength(0)
@@ -613,6 +622,7 @@ describe('tui runner', () => {
     terminal.send('\r')
     expect(await request).toBe('allowed-once')
     terminal.send('\x03')
+    terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
@@ -637,6 +647,7 @@ describe('tui runner', () => {
     }, { surfaceOp: 'append' })
     await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('$') })
     terminal.send('\x03')
+    terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
@@ -660,7 +671,8 @@ describe('tui runner', () => {
 await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor updated') }, { timeout: 10000 })
     // The editor session suspended and resumed the presenter.
     expect(terminal.started).toBe(true)
-    // The edited draft is non-empty: clear it, then quit.
+    // The edited draft is non-empty: clear it, then confirm, then quit.
+    terminal.send('\x03')
     terminal.send('\x03')
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
@@ -677,6 +689,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     await new Promise(resolve => setTimeout(resolve, 200))
     expect(test.recorded.followup).toHaveLength(0)
     terminal.send('\x03')
+    terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   })
@@ -692,6 +705,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     terminal.send('bare')
     terminal.send('\r')
     await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('model must be provider/model') })
+    terminal.send('\x03')
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
@@ -711,6 +725,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     await tick()
     expect(terminal.writes.join('')).toContain('sessions unavailable')
     terminal.send('\x03')
+    terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
@@ -729,6 +744,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     terminal.send('\r') // enter on Reject
     expect(await request).toBe('rejected')
     terminal.send('\x03')
+    terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
@@ -746,13 +762,15 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     await tick()
     terminal.send('\x03')
     expect(await request).toBe('cancelled')
+    // The modal-cancel press already left idle; confirm, then quit.
+    terminal.send('\x03')
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
 
   it('fails an approval closed on the pipe path without a presenter', async () => {
-    const test = await bench([{ kind: 'ctrl-c' }], {}, {
+    const test = await bench([{ kind: 'ctrl-c' }, { kind: 'ctrl-c' }], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
     })
     const runPromise = test.run()
@@ -773,6 +791,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
       [
         { kind: 'char', char: '/' }, { kind: 'char', char: 'p' }, { kind: 'char', char: 'i' }, { kind: 'char', char: 'n' },
         { kind: 'char', char: 'g' }, { kind: 'submit' },
+        { kind: 'ctrl-c' },
         { kind: 'ctrl-c' },
       ],
       {},
@@ -799,6 +818,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
         { kind: 'char', char: '/' }, { kind: 'char', char: 'n' }, { kind: 'char', char: 'o' }, { kind: 'char', char: 'p' },
         { kind: 'char', char: 'e' }, { kind: 'submit' },
         { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
       ],
       {},
       {},
@@ -824,12 +844,13 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     terminal.send('\r')
     expect(await answer).toEqual({ answers: [{ id: 'q1', selected: ['read-only'] }] })
     terminal.send('\x03')
+    terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
 
   it('keeps questions at NO_PROVIDER on the pipe path', async () => {
-    const test = await bench([{ kind: 'ctrl-c' }], {}, {})
+    const test = await bench([{ kind: 'ctrl-c' }, { kind: 'ctrl-c' }], {}, {})
     const runPromise = test.run()
     await vi.waitFor(() => { expect(test.recorded.agent).toBeDefined() })
     const service = test.ctx.get('userQuestions') as UserQuestionService
@@ -860,6 +881,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     const rendered = terminal.writes.join('')
     expect(rendered).toContain('seed question')
     expect(rendered).toContain('seed answer')
+    terminal.send('\x03')
     terminal.send('\x03')
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
@@ -906,7 +928,7 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     internals.stdout = { write: () => true }
     internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
     internals.hardExit = () => {}
-    internals.createInput = () => new ScriptedInput([{ kind: 'ctrl-c' }])
+    internals.createInput = () => new ScriptedInput([{ kind: 'ctrl-c' }, { kind: 'ctrl-c' }])
     apply(ctx, new Config({ permission: 'danger-full-access' }))
     // Ctrl+C quits with the SIGINT convention code; the preset still applied
     // before the input loop started.
@@ -1161,4 +1183,17 @@ describe('Keymap', () => {
     expect(keymap.push('\x1b')).toEqual([])
     expect(keymap.flush()).toEqual([{ kind: 'escape' }])
   })
+})
+
+it('shows elapsed time in the running transient and warns in warning color past the stall threshold', () => {
+  // Below the silence threshold the transient is plain and color-free.
+  expect(runningTransient('⠋', 12, 3, 60, darkTheme))
+    .toBe('⠋ running 12s · esc to interrupt')
+  // At or past the threshold the whole transient flips to the warning role
+  // and names the silence so a stalled request reads as a stall, not idle.
+  const stalled = runningTransient('⠋', 95, 61, 60, darkTheme)
+  expect(stalled).toContain('running 95s')
+  expect(stalled).toContain('no response 61s')
+  expect(stalled).toContain('\x1b[38;5;179m') // warning=179 in the dark palette
+  expect(runningTransient('⠋', 95, 60, 60, darkTheme)).toContain('no response 60s')
 })

@@ -15,8 +15,6 @@ describe('darkTheme', () => {
 
   it('wraps text in the background SGR of each background token', () => {
     expect(darkTheme.bg('userBg', 'x')).toBe('\x1b[48;5;237mx\x1b[0m')
-    expect(darkTheme.bg('toolPendingBg', 'x')).toBe('\x1b[48;5;236mx\x1b[0m')
-    expect(darkTheme.bg('toolErrorBg', 'x')).toBe('\x1b[48;5;234mx\x1b[0m')
   })
 
   it('builds markdown styles from the palette', () => {
@@ -36,7 +34,7 @@ describe('lightTheme', () => {
   it('differs from the dark palette on key roles', () => {
     expect(lightTheme.fg('text', 'x')).not.toBe(darkTheme.fg('text', 'x'))
     expect(lightTheme.bg('userBg', 'x')).not.toBe(darkTheme.bg('userBg', 'x'))
-    expect(lightTheme.bg('toolSuccessBg', 'x')).toBe('\x1b[48;5;194mx\x1b[0m')
+    expect(lightTheme.fg('success', 'x')).toBe('\x1b[38;5;28mx\x1b[0m')
   })
 })
 
