@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { TrajectoryTable } from '../src/client/TrajectoryTable.tsx'
-import type { TrajectoryTurnModel } from '../src/client/layout.ts'
+import type { TrajectoryTurnModel } from '@williamcodebox/omd-client-trajectory-model'
 
 afterEach(() => {
   cleanup()

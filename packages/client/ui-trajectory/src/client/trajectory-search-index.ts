@@ -1,8 +1,7 @@
 /** Incremental full-text index for the trajectory ledger. */
 
-import type { TrajectoryTurnModel } from './layout.ts'
-import type { TrajectoryCellProps } from './trajectory-record.ts'
-import { trajectoryRecordId } from './trajectory-record.ts'
+import type { TrajectoryCellProps, TrajectoryTurnModel } from '@williamcodebox/omd-client-trajectory-model'
+import { trajectoryRecordId } from '@williamcodebox/omd-client-trajectory-model'
 import { trajectoryPreviewText } from './trajectory-preview.ts'
 
 interface SearchEntry {

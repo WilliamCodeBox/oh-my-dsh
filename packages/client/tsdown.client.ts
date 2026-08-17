@@ -30,7 +30,7 @@ const CSS_VIRTUAL_SUFFIX = '.mjs'
  * Everything else under @williamcodebox/* is either a module-table entry
  * (external) or a leak the purity gate rejects.
  */
-export const INLINE_SAFE = /^@williamcodebox\/omd-(host-apiproxy|session|llm|tools|brand)(\/|$)/
+export const INLINE_SAFE = /^@williamcodebox\/omd-(host-apiproxy|session|llm|tools|brand|client-trajectory-model)(\/|$)/
 
 /**
  * Vendored framework libraries: rescoped into @williamcodebox, so the gate below

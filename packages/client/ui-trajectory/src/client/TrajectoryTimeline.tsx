@@ -5,14 +5,16 @@ import {
   type PointerEvent,
 } from 'react'
 import { Tooltip } from '@williamcodebox/omd-client-ui-primitives'
-import type { TrajectoryTurnModel } from './layout.ts'
-import type { AssistantMetricDetail, TrajectoryCellKind, TrajectoryCellProps } from './trajectory-record.ts'
 import {
   deriveTrajectoryTimeline,
   formatTimelineOffset,
+  type AssistantMetricDetail,
+  type TrajectoryCellKind,
+  type TrajectoryCellProps,
   type TrajectoryTimelineMode,
   type TrajectoryTimeRange,
-} from './timeline.ts'
+  type TrajectoryTurnModel,
+} from '@williamcodebox/omd-client-trajectory-model'
 import css from './TrajectoryTimeline.module.css'
 
 const MINIMUM_DRAG_PX = 3

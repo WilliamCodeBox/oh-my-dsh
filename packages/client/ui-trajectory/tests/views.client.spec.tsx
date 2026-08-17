@@ -35,14 +35,13 @@ import type { LocaleKeysOf } from '@williamcodebox/omd-client-ui-slots'
 import { zh, type TrajectoryKey } from '../src/client/locales.ts'
 import { apply, inject } from '@williamcodebox/omd-client-ui-trajectory/client'
 import { apply as nodeApply } from '@williamcodebox/omd-client-ui-trajectory'
-import type { TrajectoryTurnModel } from '../src/client/layout.ts'
+import { deriveTrajectoryTimeline, type TrajectoryTurnModel } from '@williamcodebox/omd-client-trajectory-model'
 import { TrajectoryTimeline } from '../src/client/TrajectoryTimeline.tsx'
 import {
   TrajectoryView, type TrajectoryViewInjected,
 } from '../src/client/TrajectoryView.tsx'
 import { createTrajectoryDurationStore } from '../src/client/duration-store.ts'
 import type { TrajectorySnapshot } from '../src/client/trajectory-contract.ts'
-import { deriveTrajectoryTimeline } from '../src/client/timeline.ts'
 
 const SID = 's1' as SessionId
 const sessionSnapshots = new WeakMap<SlotRegistry, SnapshotStore<ConversationSnapshot>>()

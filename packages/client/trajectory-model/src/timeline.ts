@@ -1,6 +1,6 @@
 /** Operation-sequence and recorded-time projections for the trajectory overview. */
 
-import type { TrajectoryTurnModel } from './layout.ts'
+import type { TrajectoryTurnModel } from './layout-model.ts'
 import { formatDurationMillis } from './trajectory-record.ts'
 import type { TrajectoryCellKind, TrajectoryCellProps } from './trajectory-record.ts'
 

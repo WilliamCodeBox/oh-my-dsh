@@ -177,6 +177,7 @@
       "@williamcodebox/omd-client-ui-primitives": ["./packages/client/ui-primitives/src"],
       "@williamcodebox/omd-client-schema-form": ["./packages/client/schema-form/src"],
       "@williamcodebox/omd-client-schema-form/invariant": ["./packages/client/schema-form/src/invariant.ts"],
+      "@williamcodebox/omd-client-trajectory-model": ["./packages/client/trajectory-model/src"],
       "@williamcodebox/omd-client-web-react": ["./packages/client/web-react/src"],
       "@williamcodebox/omd-client-connection": ["./packages/client/connection/src"],
       "@williamcodebox/omd-api-remotes": ["./packages/api/remotes/src"],

@@ -1,7 +1,7 @@
 /** Measurable virtual-row grouping and durable identity contracts. */
 
 import { describe, expect, it } from 'vitest'
-import type { TrajectoryCellProps } from '../src/client/trajectory-record.ts'
+import type { TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
 import {
   groupTrajectoryVirtualRows, trajectoryVirtualRecordKey,
   type VirtualizableTrajectoryRecord,

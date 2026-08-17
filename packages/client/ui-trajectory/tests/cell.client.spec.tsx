@@ -10,7 +10,7 @@ import {
   TrajectoryCell,
   type TrajectoryCellKind,
 } from '../src/client/TrajectoryCell.tsx'
-import { formatDurationMillis } from '../src/client/trajectory-record.ts'
+import { formatDurationMillis } from '@williamcodebox/omd-client-trajectory-model'
 
 afterEach(cleanup)
 

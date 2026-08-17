@@ -16,14 +16,14 @@ import { TrajectoryToolbar } from './TrajectoryToolbar.tsx'
 import { TrajectoryTimeline } from './TrajectoryTimeline.tsx'
 import {
   appendTrajectoryPartialLayout, deriveTrajectoryLayout,
-  type TrajectoryTurnModel,
 } from './layout.ts'
 import {
+  trajectoryRecordId,
   trajectoryTimelineFocusIndexes,
   type TrajectoryTimelineMode,
   type TrajectoryTimeRange,
-} from './timeline.ts'
-import { trajectoryRecordId } from './trajectory-record.ts'
+  type TrajectoryTurnModel,
+} from '@williamcodebox/omd-client-trajectory-model'
 import { TrajectorySearchIndex } from './trajectory-search-index.ts'
 import { EMPTY_TRAJECTORY_SNAPSHOT } from './trajectory-snapshot-builder.ts'
 import css from './views.module.css'

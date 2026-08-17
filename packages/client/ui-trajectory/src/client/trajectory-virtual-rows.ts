@@ -1,7 +1,7 @@
 /** Pure projection from trajectory records to measurable virtual ledger rows. */
 
-import type { TrajectoryCellProps } from './trajectory-record.ts'
-import { trajectoryRecordId } from './trajectory-record.ts'
+import type { TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
+import { trajectoryRecordId } from '@williamcodebox/omd-client-trajectory-model'
 
 const CONTENT_ROW_HEIGHT = 30
 const COLLAPSED_SUMMARY_HEIGHT = 20

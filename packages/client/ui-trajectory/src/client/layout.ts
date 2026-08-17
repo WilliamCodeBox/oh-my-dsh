@@ -16,21 +16,12 @@ import type {
 import type {
   TrajectoryCellProps,
   TrajectorySourceBlock,
-} from './trajectory-record.ts'
-import { formatElapsedSeconds } from './trajectory-record.ts'
-
-/** One Message or Step group inside a turn. */
-export interface TrajectoryGroupModel {
-  title: string
-  description?: string
-  cells: readonly TrajectoryCellProps[]
-}
-
-/** One sticky turn, or a standalone compaction section between turns. */
-export interface TrajectoryTurnModel {
-  turn: number | null
-  groups: readonly TrajectoryGroupModel[]
-}
+} from '@williamcodebox/omd-client-trajectory-model'
+import { formatElapsedSeconds } from '@williamcodebox/omd-client-trajectory-model'
+import type {
+  TrajectoryGroupModel,
+  TrajectoryTurnModel,
+} from '@williamcodebox/omd-client-trajectory-model'
 
 /** Snapshot slice the trajectory view folds. */
 export interface TrajectoryLayoutInput {

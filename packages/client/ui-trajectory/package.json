@@ -46,6 +46,7 @@
   "license": "MIT",
   "dependencies": {
     "@tanstack/react-virtual": "^3.14.9",
+    "@williamcodebox/omd-client-trajectory-model": "workspace:^",
     "diff": "^9.0.0"
   },
   "peerDependencies": {

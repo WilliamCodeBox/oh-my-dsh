@@ -24,6 +24,9 @@
       "path": "../runtime"
     },
     {
+      "path": "../trajectory-model"
+    },
+    {
       "path": "../../core/agent"
     },
     {

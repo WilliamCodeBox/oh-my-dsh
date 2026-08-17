@@ -1871,6 +1871,15 @@ importers:
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
 
+  packages/client/trajectory-model:
+    devDependencies:
+      '@williamcodebox/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@williamcodebox/omd-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+
   packages/client/ui-agent-preset:
     devDependencies:
       '@types/react':
@@ -3094,6 +3103,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.14.9
         version: 3.14.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@williamcodebox/omd-client-trajectory-model':
+        specifier: workspace:^
+        version: link:../trajectory-model
       diff:
         specifier: ^9.0.0
         version: 9.0.0

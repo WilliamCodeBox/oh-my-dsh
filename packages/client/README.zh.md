@@ -14,6 +14,7 @@ omd web GUI 的浏览器侧：shell 启动、浏览器与宿主通信、共享 U
 | [`hmr/`](hmr/README.md) | 在开发期间刷新客户端插件。 |
 | [`locale/`](locale/README.md) | 提供本地化偏好与消息词典。 |
 | [`schema-form/`](schema-form/README.md) | 为设置编辑器提供 schema 驱动的草稿处理。 |
+| [`trajectory-model/`](trajectory-model/README.md) | 提供 trajectory 消费端共享的框架中立 record/layout/timeline 模型。 |
 | [`test-runtime/`](../test-support/client-runtime/README.md) | 为客户端功能包提供共享的仓库测试支持。 |
 | [`ui-slots/`](ui-slots/README.md) | 定义 UI 功能注册和组合扩展 slot 的方式。 |
 | [`ui-theme/`](ui-theme/README.md) | 应用所选颜色主题。 |

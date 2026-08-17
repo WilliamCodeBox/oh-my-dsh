@@ -16,15 +16,22 @@ import { structuredPatch } from 'diff'
 import type {
   AssistantRequestConfig, ConversationPromptSnapshot,
 } from '@williamcodebox/omd-client-runtime/client'
-import type {
-  AssistantMetricDetail, TrajectoryCellKind, TrajectoryCellProps, TrajectorySourceBlock,
-} from './trajectory-record.ts'
-import { formatElapsedSeconds, trajectoryRecordId } from './trajectory-record.ts'
+import {
+  detailTabsFor,
+  formatElapsedSeconds,
+  trajectoryRecordId,
+  type AssistantMetricDetail,
+  type DetailTab,
+  type DetailTabItem,
+  type TrajectoryCellKind,
+  type TrajectoryCellProps,
+  type TrajectorySourceBlock,
+  type TrajectoryTurnModel,
+} from '@williamcodebox/omd-client-trajectory-model'
 import {
   groupTrajectoryVirtualRows, trajectoryVirtualRecordKey,
 } from './trajectory-virtual-rows.ts'
 import type { TrajectoryVirtualRow } from './trajectory-virtual-rows.ts'
-import type { TrajectoryTurnModel } from './layout.ts'
 import { trajectoryPreviewText } from './trajectory-preview.ts'
 import css from './TrajectoryTable.module.css'
 
@@ -152,26 +159,7 @@ function useStableVirtualRowStructure(
   return structure
 }
 
-type DetailTab =
-  | 'system-prompt'
-  | 'tools'
-  | 'overview'
-  | 'rendered'
-  | 'raw'
-  | 'source'
-  | 'input'
-  | 'output'
-  | 'schema'
-  | 'options'
-  | 'usage'
-  | 'timing'
-  | 'diff'
 type RecordState = 'complete' | 'running' | 'error'
-
-interface DetailTabItem {
-  id: DetailTab
-  label: string
-}
 
 interface ParentRecords {
   message?: TableRecord
@@ -206,14 +194,6 @@ const TOOL_REQUEST_MIN_WIDTH = 180
 const TOOL_REQUEST_MAX_WIDTH = 480
 const DEFAULT_TOOL_REQUEST_SHARE = 0.36
 const DEFAULT_TOOL_REQUEST_OFFSET = 56
-const SYSTEM_PROMPT_TABS: readonly DetailTabItem[] = [
-  { id: 'system-prompt', label: 'System Prompt' },
-  { id: 'tools', label: 'Tools' },
-]
-const SYSTEM_UPDATE_TABS: readonly DetailTabItem[] = [
-  { id: 'diff', label: 'Diff' },
-  ...SYSTEM_PROMPT_TABS,
-]
 const REQUEST_TABS: readonly DetailTabItem[] = [
   { id: 'overview', label: 'Summary' },
   { id: 'options', label: 'Options' },
@@ -889,37 +869,6 @@ function markdownSource(record: TableRecord): string | undefined {
     return record.cell.outputDetail
   }
   return undefined
-}
-
-function detailTabs(record: TableRecord): readonly DetailTabItem[] {
-  if (record.cell.kind === 'system') {
-    return record.cell.previousPromptDetail === undefined
-      ? SYSTEM_PROMPT_TABS
-      : SYSTEM_UPDATE_TABS
-  }
-  if (record.cell.kind === 'compacted') {
-    return [
-      { id: 'overview', label: 'Summary' },
-      { id: 'raw', label: 'Raw Output' },
-    ]
-  }
-  if (isMarkdownRecord(record)) {
-    return [
-      { id: 'overview', label: 'Summary' },
-      { id: 'rendered', label: 'Preview' },
-      { id: 'raw', label: 'Raw' },
-      ...(record.cell.messageSource === undefined
-        ? []
-        : [{ id: 'source', label: 'Source' } as const]),
-    ]
-  }
-  return [
-    { id: 'overview', label: 'Summary' },
-    ...(record.cell.inputDetail ? [{ id: 'input', label: 'Payload' } as const] : []),
-    ...(record.cell.outputDetail ? [{ id: 'output', label: 'Result' } as const] : []),
-    { id: 'schema', label: 'Schema' },
-    { id: 'timing', label: 'Timing' },
-  ]
 }
 
 function recordDisplayText(cell: TrajectoryCellProps): string {
@@ -1917,7 +1866,7 @@ export function TrajectoryTable({
     : selectedRequestRecords[0]?.section
   const selectedTabs = selectedRequest !== null
     ? REQUEST_TABS.filter(tab => tab.id !== 'options' || selectedRequestOptions !== undefined)
-    : selected === undefined ? [] : detailTabs(selected)
+    : selected === undefined ? [] : detailTabsFor(selected.cell)
   const selectedParents: ParentRecords = selected === undefined
     ? {}
     : parentRecords(allRecords, selected)
@@ -1970,7 +1919,7 @@ export function TrajectoryTable({
     setSelectedRequest(null)
     setSelectedRecordId(record === undefined ? null : trajectoryRecordId(record.cell))
     if (record === undefined) return
-    const tabs = detailTabs(record)
+    const tabs = detailTabsFor(record.cell)
     const available = new Set(tabs.map(tab => tab.id))
     const recent = [...tabHistory.current].reverse().find(tab => available.has(tab))
     setActiveTab(recent ?? tabs[0]?.id ?? 'overview')

@@ -14,6 +14,7 @@ The browser side of the omd web GUI: shell boot, browser-host communication, sha
 | [`hmr/`](hmr/README.md) | Refreshes client plugins during development. |
 | [`locale/`](locale/README.md) | Provides localization preferences and message dictionaries. |
 | [`schema-form/`](schema-form/README.md) | Provides schema-backed draft handling for settings editors. |
+| [`trajectory-model/`](trajectory-model/README.md) | Provides the framework-neutral trajectory record/layout/timeline model shared by trajectory consumers. |
 | [`test-runtime/`](../test-support/client-runtime/README.md) | Provides shared repository test support for client feature packages. |
 | [`ui-slots/`](ui-slots/README.md) | Defines how UI features register and compose extension slots. |
 | [`ui-theme/`](ui-theme/README.md) | Applies the selected color theme. |

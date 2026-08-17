@@ -1,8 +1,5 @@
 /** Shared trajectory record data and formatting contracts. */
 
-import type { HTMLAttributes } from 'react'
-import type { ConversationPromptSnapshot } from '@williamcodebox/omd-client-runtime/client'
-
 /** Closed set of trajectory record kinds. */
 export type TrajectoryCellKind =
   | 'system'
@@ -33,8 +30,34 @@ export interface TrajectorySourceBlock {
   toolName?: string
 }
 
-/** Data and optional presentation attributes for one trajectory record. */
-export interface TrajectoryCellProps extends HTMLAttributes<HTMLDivElement> {
+/** Provider/model and sampling configuration from the effective request header. */
+export interface TrajectoryRequestConfig {
+  provider: string
+  model: string
+  purpose?: string
+  thinking?: string
+  reasoningEffort?: string
+  temperature?: number
+  maxTokens?: number
+  stop?: readonly string[]
+}
+
+/** Call-time model-visible tool schema for the details panel. */
+export interface TrajectoryToolSchema {
+  name: string
+  description: string
+  parameters: Record<string, unknown>
+}
+
+/** Complete system-prompt/tool-catalog state introduced by a SYSTEM record. */
+export interface TrajectoryPromptSnapshot {
+  config: TrajectoryRequestConfig
+  system: string
+  tools: readonly TrajectoryToolSchema[]
+}
+
+/** Pure data contract for one trajectory record; DOM presentation attributes are composed by consumers. */
+export interface TrajectoryCellProps {
   /** 1-based record index shown as `#N`. */
   index: number
   /** Projection-stable identity when no single source event owns the record lifecycle. */
@@ -56,9 +79,9 @@ export interface TrajectoryCellProps extends HTMLAttributes<HTMLDivElement> {
   /** Full request/message content for the details panel. */
   inputDetail?: string
   /** Complete system-prompt/tool-catalog state introduced by a SYSTEM record. */
-  promptDetail?: ConversationPromptSnapshot
+  promptDetail?: TrajectoryPromptSnapshot
   /** System-prompt/tool-catalog state replaced by a SYSTEM update. */
-  previousPromptDetail?: ConversationPromptSnapshot
+  previousPromptDetail?: TrajectoryPromptSnapshot
   /** Full assistant/tool result content for the details panel. */
   outputDetail?: string
   /** Full assistant reasoning content for the details panel. */

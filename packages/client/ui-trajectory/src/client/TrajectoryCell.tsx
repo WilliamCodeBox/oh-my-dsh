@@ -1,18 +1,19 @@
 // Legacy standalone trajectory cell retained for direct consumers and specs.
 
+import type { HTMLAttributes } from 'react'
 import {
   formatElapsedSeconds,
   type TrajectoryCellKind,
   type TrajectoryCellProps,
-} from './trajectory-record.ts'
+} from '@williamcodebox/omd-client-trajectory-model'
 import css from './TrajectoryCell.module.css'
 
-export { formatElapsedSeconds }
+export { formatElapsedSeconds } from '@williamcodebox/omd-client-trajectory-model'
 export type {
   AssistantMetricDetail,
   TrajectoryCellKind,
   TrajectoryCellProps,
-} from './trajectory-record.ts'
+} from '@williamcodebox/omd-client-trajectory-model'
 
 /** Display label per kind (matches the design tags). */
 const KIND_LABEL: Record<TrajectoryCellKind, string> = {
@@ -34,6 +35,9 @@ const TAG_CLASS: Record<TrajectoryCellKind, string | undefined> = {
   tool: css.tagTool,
   subtool: css.tagSubtool,
 }
+
+/** Legacy standalone cell props: shared record data plus consumer-composed DOM attributes. */
+type TrajectoryCellDomProps = TrajectoryCellProps & HTMLAttributes<HTMLDivElement>
 
 /**
  * Render one trajectory step cell.
@@ -64,7 +68,7 @@ export function TrajectoryCell({
   selected = false,
   className,
   ...rest
-}: TrajectoryCellProps) {
+}: TrajectoryCellDomProps) {
   const rootClass = [
     css.root,
     selected ? css.selected : undefined,

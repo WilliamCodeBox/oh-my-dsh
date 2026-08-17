@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-trajectory-shared-model-extraction.md
+2026-08-18-trajectory-shared-model-extraction.md: b9255e8f9d3af88ab4cbfa55644cd09e6185b508
+2026-08-18-trajectory-shared-model-extraction.zh.md: 475efcc2e0582cd09703ee3e40afbd888a3eca0d
