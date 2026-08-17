@@ -1,6 +1,10 @@
-# TUI input meta row: model, thinking, cwd, git, context
+# Agent Note: TUI input meta row — model, thinking, cwd, git, context
 
-## Context
+Status: implemented
+
+English | [中文](2026-08-16-tui-input-meta-row.zh.md)
+
+## Problem
 
 User requested the oh-my-pi input-area design: a line above the input
 editor carrying the current LLM model, thinking level, working directory,
@@ -10,7 +14,7 @@ meta row) and seven industry products (Claude Code, Codex CLI, opencode,
 Gemini CLI, crush, goose, Cursor). User approved: full five-element row,
 2s git polling.
 
-## Change
+## Decision
 
 `packages/interaction/tui-renderer/src/meta-row.ts` — new: `MetaRow`
 component + `renderMetaRow()` compose three segments — left
@@ -36,24 +40,26 @@ status row drops the model and context bar (they moved to the meta row);
 `formatStatus` keeps running facts only. /model, /thinking, /sessions join
 slash completion.
 
-Tests: `meta-row.spec.ts` (composition, thresholds, truncation, empty,
-window label), formatStatus model removal, status-bar/keybindings updates.
-160 pass.
+## Alternatives considered
 
-## Verification
+- **pi footer / oh-my-pi powerline segments / opencode prompt meta row** —
+  reviewed as references; the three-segment row (model-left, cwd/git-center,
+  context-right) was chosen for truncation semantics that never drop the
+  context bar.
+- **fs.watch for git worktree changes** — rejected in favor of 2s polling:
+  `git status` is cheap on typical repos, and a watcher would need to
+  distinguish porcelain changes HEAD moves miss.
+
+## Consequences
 
 - vitest tui-renderer + bundle: 160 tests pass (10 new since the review
-  round).
-- tsc clean on both packages; eslint clean.
+  round); tsc clean on both packages; eslint clean.
 - PTY run of the source TUI: the meta row shows
   `deepseek-official/deepseek-v4-flash  ~/work/oh-my-dsh  ⎇ main +1 *8 ?4`
   with real git worktree counts; `/thinking medium` adds `⟳ medium`; the
   context bar appears once a turn finalizes usage.
-
-## Notes
-
 - The context bar needs finalized usage (transcript totals accumulate on
-  assistant/message); streaming input-token display is future work.
-- Thinking-level border color (pi's dual channel) is deferred: the meta row
+  assistant/message); streaming input-token display is future work, and the
+  thinking-level border color (pi's dual channel) is deferred — the row
   already shows the level as text, and the border needs per-level palette
   mapping that depends on adapter-specific effort ids.

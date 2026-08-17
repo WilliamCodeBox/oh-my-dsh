@@ -1,4 +1,8 @@
-# TUI P1：状态栏、分页与工作区补全
+# Agent Note: TUI P1 — 状态栏、分页与工作区补全
+
+Status: implemented
+
+[English](2026-08-16-tui-p1-status-bar-completion.md) | 中文
 
 ## 背景
 
@@ -14,15 +18,13 @@ P0 已交付语义主题与组件渲染。P1（已批准方案：状态栏、滚
 
 `packages/bundle/tui/src/index.ts` — PgUp/PgDn 改为分页而非固定 10 行；presenter 收到由 `commands.list(agent)` 在工作区目录上构建的补全 provider。
 
-测试：`tests/status-bar.spec.ts` — contextBar 字形/夹取、状态栏组合与阈值色、分页、斜杠与 `@` 补全及 applyCompletion token 替换。
+## 备选方案
 
-## 验证
+- **pi-tui 的 CombinedAutocompleteProvider + 外部 `fd` 二进制** — 否决：开箱即用安装不能依赖系统二进制；readdir 实现保持分发零额外依赖。
+- **PgUp/PgDn 固定 10 行滚动** — 否决，改用按终端高度视口分页，更符合分页键的用户预期。
 
-- vitest tui-renderer + bundle：140 测试通过（新增 10）。
-- 两包 tsc 干净；改动文件 eslint 干净。
+## 影响
+
+- vitest tui-renderer + bundle：140 测试通过（新增 10）；两包 tsc 干净；改动文件 eslint 干净。
 - 源码 TUI 的 PTY 实测：`@p` 弹出 30 项文件建议列表（相对显示路径），Tab 应用首个建议（`@THIRD_PARTY_NOTICES.md`），列表显示 `(1/30)` 滚动指示。
-
-## 备注
-
-- `@` 补全直接遍历工作区树（node:fs），无需 fd 二进制——保持开箱即用分发零额外依赖。
 - P1 的多行输入与鼠标支持留待后续；pi-tui 的 Editor 已支持多行文本（反斜杠前缀换行），方案的鼠标项暂缓。

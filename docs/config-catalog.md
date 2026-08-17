@@ -386,7 +386,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/code-runtime/code-runtime-worker-thread/src/index.ts:25`](../packages/code-runtime/code-runtime-worker-thread/src/index.ts)
+Source: [`packages/code-runtime/code-runtime-worker-thread/src/index.ts:41`](../packages/code-runtime/code-runtime-worker-thread/src/index.ts)
 
 <a id="williamcodeboxomd-compaction-basic"></a>
 
@@ -708,6 +708,9 @@ export interface Config {
   models?: DeepSeekCatalogModel[]
   /** Maximum provider idle time while one stream read is outstanding (default five minutes). */
   streamIdleTimeoutMs?: number
+  /** Maximum time to first response byte, connect included (default two
+   * minutes); a stalled request errors `TIMEOUT` and retries per `retryPolicy`. */
+  requestTimeoutMs?: number
   /** Provider-owned model-request retry policy; omission uses normal defaults. */
   retryPolicy?: RetryPolicyConfig
 }
@@ -729,7 +732,7 @@ export interface DeepSeekCatalogModel {
 
 Depends on: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
 
-Source: [`packages/llm/llm-deepseek/src/index.ts:62`](../packages/llm/llm-deepseek/src/index.ts)
+Source: [`packages/llm/llm-deepseek/src/index.ts:64`](../packages/llm/llm-deepseek/src/index.ts)
 
 <a id="williamcodeboxomd-llm-pi-ai"></a>
 
@@ -1856,6 +1859,59 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-claude-code/src/index.ts:32`](../packages/subagent/subagent-claude-code/src/index.ts)
 
+<a id="williamcodeboxomd-subagent-cli"></a>
+
+## `@williamcodebox/omd-subagent-cli`
+
+Requires: `subagents` · `subprocess`
+
+```ts config-catalog
+/** Config: how to spawn and drive the child CLI agent process. */
+export interface Config {
+  /** Provider name on `ctx.subagents` (default `cli`). */
+  providerName: string
+  /** The executable to spawn for each run (the child coding agent). */
+  command: string
+  /** Arguments passed to {@link command}, excluding the prompt itself. */
+  args: string[]
+  /**
+   * How the task prompt is delivered: `positional-tail` appends it as one
+   * trailing argument (e.g. `pi -p "<prompt>"`); `stdin` writes it to the
+   * child's stdin (e.g. `opencode run` reading the message from stdin).
+   */
+  promptStrategy: PromptStrategy
+  /**
+   * Working directory override for the child process. Must be non-empty; a
+   * relative path resolves against the harness launch directory at load, and
+   * the result must be an existing directory. When omitted, each child
+   * inherits its delegating parent session's cwd — and starting one from a
+   * parent session that has no cwd fails.
+   */
+  cwd?: string
+  /**
+   * Extra environment variables for the child process — e.g. the child
+   * agent's own `DEEPSEEK_API_KEY` or `ANTHROPIC_API_KEY`. Forwarded on top
+   * of a credential-scrubbed copy of the parent env, so an explicit key here
+   * reaches the child while ambient secrets do not leak implicitly.
+   */
+  env: Record<string, string>
+  /**
+   * Grace period (ms) for the child's EOF-driven quiesce on dispose — its
+   * window to flush persistence and tear down its own nested subprocesses
+   * before the parent escalates to a signal. Must not exceed
+   * `MAX_TIMER_DELAY_MS`.
+   */
+  disposeEofGraceMs?: number
+  /** Termination-escalation grace (ms); must not exceed `MAX_TIMER_DELAY_MS`. */
+  disposeGraceMs?: number
+}
+
+/** How the task prompt reaches the child. */
+export type PromptStrategy = 'positional-tail' | 'stdin'
+```
+
+Source: [`packages/subagent/subagent-cli/src/index.ts:27`](../packages/subagent/subagent-cli/src/index.ts)
+
 <a id="williamcodeboxomd-subagent-codex"></a>
 
 ## `@williamcodebox/omd-subagent-codex`
@@ -2527,7 +2583,7 @@ Source: [`packages/core/tools/src/index.ts:654`](../packages/core/tools/src/inde
 
 ## `@williamcodebox/omd-tui`
 
-Requires: `agentDefaultModel` · `agents` · `sessions` · `userQuestions` · `commands`
+Requires: `agentDefaultModel` · `agents` · `sessions` · `userQuestions` · `commands` · `sessionPersistence`
 
 ```ts config-catalog
 /** Plugin config: startup values resolved from the injected provider service. */
@@ -2540,10 +2596,14 @@ export interface Config {
   model?: string
   /** Permission preset applied at session creation. */
   permission?: string
+  /** USD per input token for the session cost display; absent hides the cost. */
+  costPerInputToken?: number
+  /** USD per output token for the session cost display; absent hides the cost. */
+  costPerOutputToken?: number
 }
 ```
 
-Source: [`packages/bundle/tui/src/index.ts:46`](../packages/bundle/tui/src/index.ts)
+Source: [`packages/bundle/tui/src/index.ts:55`](../packages/bundle/tui/src/index.ts)
 
 <a id="williamcodeboxomd-typert-loader"></a>
 

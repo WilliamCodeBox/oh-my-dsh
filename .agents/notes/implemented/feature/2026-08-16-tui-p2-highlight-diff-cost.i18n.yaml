@@ -1,2 +1,6 @@
-en: 2026-08-16-tui-p2-highlight-diff-cost.md
-zh: 2026-08-16-tui-p2-highlight-diff-cost.zh.md
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-16-tui-p2-highlight-diff-cost.md
+2026-08-16-tui-p2-highlight-diff-cost.md: f31e5f7a339e47ba7ace30637d0fca347c3e43f4
+2026-08-16-tui-p2-highlight-diff-cost.zh.md: 1a8a154943448c5e77dc9d4894c4e84882ff13f2

@@ -1,6 +1,6 @@
 # `@williamcodebox/omd-tui`
 
-English | [中文](README.zh.md)
+[English](README.md) | 中文
 
 The dsh interactive terminal surface bundle. [`cordis.patch.yml`](cordis.patch.yml) rides directly over [`dsh-base`](../base/README.md): it supplies the coding persona, disables HMR, and inserts this package's `tui-startup` provider plus the `tui-runner` glue plugin. It mounts no Host, HTTP server, Web runtime, or browser plugin.
 

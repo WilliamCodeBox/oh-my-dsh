@@ -1,2 +1,6 @@
-en: 2026-08-16-tui-p1-revised-session-model-keys.md
-zh: 2026-08-16-tui-p1-revised-session-model-keys.zh.md
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-16-tui-p1-revised-session-model-keys.md
+2026-08-16-tui-p1-revised-session-model-keys.md: 0d2a35d5f8739d752590a1128f9fc1eecd714383
+2026-08-16-tui-p1-revised-session-model-keys.zh.md: e4f2b82f19e3d275d5884bd0bc386b79186c0922

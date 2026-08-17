@@ -71,7 +71,6 @@ const GROUP_ORDER = [
   'bash',
   'pty',
   'sandbox',
-  'e2b',
   'fs',
   'skill',
   'compact',
@@ -353,14 +352,6 @@ const SERVICE_ROLES: ServiceRole[] = [
     title: 'Same-session goal domain',
     mode: 'core',
     note: 'Folds revisioned objective state from the session log and keeps live continuation activation process-local.',
-  },
-  {
-    key: 'e2b',
-    pkg: 'e2b',
-    title: 'E2B sandbox lifecycle owner',
-    mode: 'core',
-    consumers: ['fs-e2b', 'subprocess-e2b'],
-    note: 'Owns one shared E2B SDK handle, remote working directory, and final sandbox disposition so both fundamental E2B providers inhabit the same Linux runtime.',
   },
   {
     key: 'subprocess',
@@ -713,14 +704,6 @@ const APP_EXAMPLES = [
     label: 'examples/headless-agent',
     config: 'examples/headless-agent/cordis.yml',
     summary: 'The headless snapshot composition combines the real DeepSeek adapter and coding capabilities with one explicitly configured persisted top-level agent; its JSONL driver is test-only.',
-  },
-  {
-    id: 'acp',
-    rel: 'examples/acp-agent/composition.md',
-    title: 'ACP Automation App Composition',
-    label: 'examples/acp-agent',
-    config: 'examples/acp-agent/cordis.yml',
-    summary: 'The ACP demo exposes fresh baseline-prompt agent sessions to programmatic clients over JSON-RPC stdio, with no stdout logger, human UI, or pre-created agent.',
   },
 ]
 

@@ -26,7 +26,7 @@ const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta
  * process behavior, not a timeout kill.
  */
 const POSIX_TUI_PTY_DRIVER = String.raw`
-import errno, fcntl, json, os, pty, select, signal, struct, sys, termios, time
+import errno, fcntl, json, os, pty, re, select, signal, struct, sys, termios, time
 node, launch_args_json, launch_env_json, cwd, actions_json, expected_exit, timeout_seconds = sys.argv[1:]
 env = os.environ.copy()
 env.update(json.loads(launch_env_json))
@@ -40,12 +40,16 @@ if pid == 0:
     os.chdir(cwd)
     os.execvpe(node, [node, *json.loads(launch_args_json)], env)
 
+# The themed presenter wraps styled cells in per-character SGR, so a literal
+# waitFor like the editor border never appears as raw bytes; match markers
+# against the ANSI-stripped transcript, keep the raw stream for byte asserts.
+ansi_re = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
 output = bytearray()
 deadline = time.monotonic() + float(timeout_seconds)
 status = None
 for action in actions:
     if "waitFor" in action:
-        while time.monotonic() < deadline and action["waitFor"].encode() not in output:
+        while time.monotonic() < deadline and action["waitFor"].encode() not in ansi_re.sub("", output.decode("utf-8", "replace")).encode():
             ready, _, _ = select.select([fd], [], [], 0.05)
             if ready:
                 try:
@@ -60,7 +64,7 @@ for action in actions:
             if waited == pid:
                 status = candidate
                 break
-        if action["waitFor"].encode() not in output:
+        if action["waitFor"].encode() not in ansi_re.sub("", output.decode("utf-8", "replace")).encode():
             sys.stderr.write(f"marker {action['waitFor']!r} never appeared\n")
             sys.exit(124)
     if "resize" in action:
@@ -188,17 +192,21 @@ describe.skipIf(process.platform === 'win32')('tui profile PTY case (real Loader
         // A terminal resize must re-layout without corrupting the surface.
         { resize: { cols: 120, rows: 40 } },
         // Give the keyless turn time to fail fast and settle, then quit on an
-        // empty, idle prompt. Ctrl+C quits with the SIGINT convention code
-        // through the normal shutdown path.
+        // empty, idle prompt. Idle Ctrl+C confirms on the first press and
+        // quits on the second (exit 130, SIGINT convention) through the
+        // normal shutdown path.
         { delayMs: 9000, send: '\x03' },
-      ], 130)
-      // The typed line was rendered by the editor (not just echoed).
+        { send: '\x03' },
+      ], 130, 2 * LOADER_SMOKE_TEST_TIMEOUT_MS)
+      // Source-mode boots of the full base+tui tree are slow on developer
+      // machines (tsx import graph), so the PTY driver gets double the default
+      // process budget before its marker/deadline logic trips.
       expect(output).toContain('hello')
       // The alternate screen was restored on quit.
       expect(output).toContain('\u001b[?1049l')
       // No fatal load or runner error text reached the terminal.
       expect(output).not.toContain('omd: ')
     },
-    LOADER_SMOKE_TEST_TIMEOUT_MS,
+    2 * LOADER_SMOKE_TEST_TIMEOUT_MS,
   )
 })

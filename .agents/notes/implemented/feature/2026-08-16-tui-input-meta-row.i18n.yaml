@@ -1,2 +1,6 @@
-en: 2026-08-16-tui-input-meta-row.md
-zh: 2026-08-16-tui-input-meta-row.zh.md
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-16-tui-input-meta-row.md
+2026-08-16-tui-input-meta-row.md: c7a6372ca223185cab14e3165badaeb180742e76
+2026-08-16-tui-input-meta-row.zh.md: dc19772e9e422d05001d6375a9532aa05ec56db7

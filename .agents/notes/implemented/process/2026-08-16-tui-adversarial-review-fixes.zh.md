@@ -1,10 +1,16 @@
-# TUI 对抗式审查修复（背靠背）
+# Agent Note: TUI 对抗式审查修复（背靠背）
+
+Status: implemented
+
+[English](2026-08-16-tui-adversarial-review-fixes.md) | 中文
 
 ## 背景
 
 三个独立 reviewer 对全量 TUI 面做背靠背对抗式审查（正确性/生命周期、健壮性/安全、性能/UX）。发现交叉比对：多 agent 独立发现的（lcsDiff 上限、git 轮询、/editor 错误路径）视为最高置信。全部 P1 已修；P2 记入 note。
 
-## 修复（13 项）
+## 变更
+
+十三项修复：
 
 1. lcsDiff O(n·m) 无上限 → 行数上限（每侧 1500）+ 超大 diff 线性 add/remove 退化（两个 reviewer 独立确认）。
 2. git 轮询任何瞬时失败即永久停止 → readGitStatus 区分非仓库（停止）与瞬时 status 失败（抛出）；watcher 退避重试并保留上次快照（三个 reviewer）。
@@ -22,13 +28,13 @@
 
 另：/model 要求 provider/model 分隔符（fail loud）；overlay 标题净化；工具指纹不再哈希完整 result 文本。
 
-测试：overlay 排队（两个审批顺序）、keybinding 抛错包含、空提交守卫、/model 校验、超大 diff 退化、git watcher 重复轮询。178 通过。
+## 备选方案
 
-## 验证
+- **只修最高置信（多 reviewer）发现** — 否决：每个 P1 发现都可复现且修复便宜；推迟任一项都会在交付表面留下已知缺陷。
+- **推倒重做而非定点修复** — 否决：背靠背审查发现的是缺陷而非结构问题；定点修复保留了已审查的架构。
 
-- vitest tui-renderer + bundle：178 测试通过（新增 7）。
-- 两包 tsc 干净；eslint 干净。
+## 影响
 
-## 备注
-
+- vitest tui-renderer + bundle：178 测试通过（新增 7）；两包 tsc 干净；eslint 干净。
+- 对抗流程捕获了单轮审查遗漏的真实缺陷（无界 LCS、raw 模式搁浅、ANSI 注入、O(n²) 流式）；交叉比对提供了置信度排序。
 - P2 发现推迟：symlink 目录处理、更深指纹陈旧、大仓库 git porcelain 成本、context 条语义（会话累计 usage vs 单请求 window——clamp 条为文档化行为）、$EDITOR shell 引号。

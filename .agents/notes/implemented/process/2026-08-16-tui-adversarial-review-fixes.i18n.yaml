@@ -1,2 +1,6 @@
-en: 2026-08-16-tui-adversarial-review-fixes.md
-zh: 2026-08-16-tui-adversarial-review-fixes.zh.md
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-16-tui-adversarial-review-fixes.md
+2026-08-16-tui-adversarial-review-fixes.md: 5baa6eb1e1a335e69b6e2765965fdeb63bc0ca8d
+2026-08-16-tui-adversarial-review-fixes.zh.md: 20db1297e541cba6de7d927230e87e760511bfd6

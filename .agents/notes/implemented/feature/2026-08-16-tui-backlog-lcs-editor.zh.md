@@ -1,4 +1,8 @@
-# TUI backlog：LCS diff 排序、/editor 集成
+# Agent Note: TUI backlog — LCS diff 排序与 /editor 集成
+
+Status: implemented
+
+[English](2026-08-16-tui-backlog-lcs-editor.md) | 中文
 
 ## 背景
 
@@ -12,12 +16,13 @@ P2 note 的 backlog 项：正式 unified diff 排序（工具卡片查看器此�
 
 测试：LCS 顺序断言（ctx → del → add → ctx 序列）、/editor 挂起–替换–恢复周期（fake 终端）。171 通过。
 
-## 验证
+## 备选方案
 
-- vitest tui-renderer + bundle：171 测试通过（新增 2）。
-- tsc 干净；eslint 干净。
+- **/editor 用 pi-tui 的 preserveScreen** — 否决：编辑器会话是完整终端交接而非 TUI 接管；stop/start 恢复时 transcript 重绘，无内容丢失。
+- **工具卡查看器用 Myers diff** — 推迟：O(n·m) LCS 表有界（diff 是文件规模）；超大 diff 出现时可换 Myers。
 
-## 备注
+## 影响
 
-- LCS 表为 O(n·m) 内存；diff 是文件规模，有界。超大 diff 可后续换 Myers。
-- /editor 用 stop/start 而非 pi-tui 的 preserveScreen（编辑器会话是完整终端交接而非 TUI 接管）；恢复时 transcript 重绘，无内容丢失。
+- vitest tui-renderer + bundle：171 测试通过（新增 2）；tsc 与 eslint 干净。
+- 工具卡 diff 现按 unified 顺序阅读，而非先新增后删除。
+- /editor 支持 `$VISUAL`/`$EDITOR`/`vi`（shell 启用以支持 `code -w`），所有失败路径均恢复 presenter。

@@ -2,6 +2,8 @@
 
 Status: implemented
 
+English | [中文](2026-08-17-tui-stall-resilience-and-tool-cards.zh.md)
+
 ## Problem
 
 A TUI session freeze surfaced two gaps. The parent session's final LLM request

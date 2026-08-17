@@ -1,6 +1,10 @@
-# TUI adversarial review fixes (back-to-back)
+# Agent Note: TUI adversarial review fixes (back-to-back)
 
-## Context
+Status: implemented
+
+English | [中文](2026-08-16-tui-adversarial-review-fixes.zh.md)
+
+## Problem
 
 Three independent reviewers ran back-to-back adversarial reviews over the
 full TUI surface (correctness/lifecycle, robustness/security,
@@ -9,7 +13,9 @@ agents independently (lcsDiff bounds, git polling, /editor error paths)
 were treated as highest confidence. All P1 findings fixed; P2 backlog
 recorded in the note.
 
-## Fixes (13)
+## Decision
+
+The thirteen fixes:
 
 1. lcsDiff O(n·m) unbounded → line cap (1500/side) with a linear
    add/remove fallback for oversized diffs (two reviewers independently).
@@ -50,17 +56,22 @@ Also: /model requires the provider/model separator (fail loud);
 overlay title/detail sanitization; tool-fingerprint no longer hashes full
 result text.
 
-Tests: overlay queue (two approvals in sequence), keybinding throw
-containment, empty-submit guard, /model validation, oversized-diff
-degradation, git watcher repeated polling. 178 pass.
+## Alternatives considered
 
-## Verification
+- **Fix only the highest-confidence (multi-reviewer) findings** — rejected:
+  every P1 finding was reproducible and cheap to fix; deferring any of them
+  would leave a known defect in the shipped surface.
+- **Sweeping redesign instead of targeted fixes** — rejected: the back-to-back
+  reviews found defects, not structural flaws; targeted fixes preserved the
+  reviewed architecture.
 
-- vitest tui-renderer + bundle: 178 tests pass (7 new).
-- tsc clean on both packages; eslint clean.
+## Consequences
 
-## Notes
-
+- vitest tui-renderer + bundle: 178 tests pass (7 new); tsc clean on both
+  packages; eslint clean.
+- The adversarial process caught real defects (unbounded LCS, stranded raw
+  mode, ANSI injection, O(n²) streaming) that single-pass review missed;
+  cross-comparison gave confidence ranking.
 - P2 findings deferred: symlink directory handling, deeper fingerprint
   staleness, git porcelain cost on huge repos, context-bar semantics
   (session-cumulative usage vs per-request window — clamped bar is the

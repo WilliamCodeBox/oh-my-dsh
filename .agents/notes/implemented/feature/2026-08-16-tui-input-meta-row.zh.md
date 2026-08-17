@@ -1,4 +1,8 @@
-# TUI 输入元信息行：模型、思考、目录、git、context
+# Agent Note: TUI 输入元信息行 — 模型、思考、目录、git、context
+
+Status: implemented
+
+[English](2026-08-16-tui-input-meta-row.md) | 中文
 
 ## 背景
 
@@ -14,15 +18,13 @@
 
 `packages/bundle/tui/src/index.ts` — meta 数据源读取 selection ref（模型/思考）、显示 cwd（~ 折叠）、轮询的 git 状态、transcript context 用量。`/thinking <level>` 更新 `selectionRef.current.reasoningEffort`（显示为 `⟳ level`）。状态行移除模型与 context 条（移到 meta 行）；`formatStatus` 只保留运行事实。/model、/thinking、/sessions 加入斜杠补全。
 
-测试：`meta-row.spec.ts`（组合、阈值、截断、空数据、窗口标签）、formatStatus 去模型、status-bar/keybindings 更新。160 通过。
+## 备选方案
 
-## 验证
+- **pi footer / oh-my-pi powerline 分段 / opencode prompt meta 行** — 作为参考研究；最终选择三段式（左模型、中目录/git、右 context），其截断语义保证 context 条永不消失。
+- **git 工作树变化用 fs.watch** — 否决，改用 2s 轮询：典型仓库上 `git status` 很廉价，且 watcher 需区分 HEAD 移动捕捉不到的 porcelain 变化。
 
-- vitest tui-renderer + bundle：160 测试通过（审查轮后新增 10）。
-- 两包 tsc 干净；eslint 干净。
+## 影响
+
+- vitest tui-renderer + bundle：160 测试通过（审查轮后新增 10）；两包 tsc 干净；eslint 干净。
 - 源码 TUI 的 PTY 实测：meta 行显示 `deepseek-official/deepseek-v4-flash  ~/work/oh-my-dsh  ⎇ main +1 *8 ?4`（真实 git 工作树计数）；`/thinking medium` 添加 `⟳ medium`；context 条在 turn 最终化 usage 后出现。
-
-## 备注
-
-- context 条需要最终化 usage（transcript 总量在 assistant/message 时累加）；流式 input-token 显示留待后续。
-- 思考等级边框色（pi 的双通道）推迟：meta 行已用文字显示等级，边框色需要依赖 adapter 特定 effort id 的逐级调色板。
+- context 条需要最终化 usage（transcript 总量在 assistant/message 时累加）；流式 input-token 显示留待后续，思考等级边框色（pi 的双通道）推迟——行内已用文字显示等级，边框色需要依赖 adapter 特定 effort id 的逐级调色板。

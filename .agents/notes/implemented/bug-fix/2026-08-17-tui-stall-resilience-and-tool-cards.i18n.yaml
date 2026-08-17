@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-17-tui-stall-resilience-and-tool-cards.md
-2026-08-17-tui-stall-resilience-and-tool-cards.md: 15b44592d6db310a3162b069d5ab0625b94d1d83
-2026-08-17-tui-stall-resilience-and-tool-cards.zh.md: 9920072086709ca3dcf4ccc1b223f2b18eaa7934
+2026-08-17-tui-stall-resilience-and-tool-cards.md: 0e03def077bba64ee4c7fb5c83e00dd9143524ef
+2026-08-17-tui-stall-resilience-and-tool-cards.zh.md: 56fa99b017230b53482ef43ae3ad4b61f38e755a

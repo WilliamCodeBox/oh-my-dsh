@@ -2,6 +2,8 @@
 
 Status: implemented
 
+[English](2026-08-17-tui-stall-resilience-and-tool-cards.md) | 中文
+
 ## Problem
 
 一次 TUI 会话卡死暴露了两个缺口。父会话最后一次 LLM 请求停在"等待首个字节"阶段：会话日志止于 `step/start`，之后既无 chunk、无错误、也无 `turn/end`，用户强杀了终端。状态行没有任何信息能区分"提供方停滞"与"正常的长思考"——唯一的 transient 是转圈，唯一的时限是五分钟的流空闲看门狗，比任何用户愿意等待的时间都长。另外，工具卡片渲染成近黑背景框（`toolPendingBg` 236 / `toolSuccessBg` 235 / `toolErrorBg` 234 在深色终端背景下几乎不可见），无前景色、无边框，标题与参数挤在一行；相邻转录条目之间也没有任何垂直分隔。

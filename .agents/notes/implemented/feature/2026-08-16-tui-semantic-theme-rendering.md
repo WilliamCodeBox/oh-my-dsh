@@ -1,6 +1,10 @@
-# TUI semantic theme and component rendering
+# Agent Note: TUI semantic theme and component rendering
 
-## Context
+Status: implemented
+
+English | [中文](2026-08-16-tui-semantic-theme-rendering.zh.md)
+
+## Problem
 
 The `omd --profile tui` surface rendered as a line tracer: 4 ANSI foreground
 colors, no Markdown, no width awareness, and an identity default theme kept
@@ -13,7 +17,7 @@ layering; Markdown rendering; tool-call cards with state backgrounds;
 width-aware CJK-safe rendering. Snapshot policy: keep the identity default
 path for fixtures, assert behavior structurally on the themed path.
 
-## Change
+## Decision
 
 `packages/interaction/tui-renderer/src/theme.ts` — new: `SemanticTheme`
 (fg/bg wrappers over 256-color SGR), `darkTheme`/`lightTheme`, and
@@ -40,25 +44,24 @@ dims the status row.
 `packages/bundle/tui/src/index.ts` — queries the terminal scheme and passes
 `themeForScheme(...)` to the presenter.
 
-Tests: `tests/theme.spec.ts` (SGR generation per token, markdown/editor
-sub-themes, scheme resolution) and `tests/transcript-view-theme.spec.ts`
-(background layering, Markdown bold/code, streaming setText, tool-card
-states, CJK width fit, control-char sanitization).
+## Alternatives considered
 
-## Verification
+- **A single hardcoded color set for every surface** — rejected for semantic
+  tokens: dark/light palettes (derived from the terminal when it reports one)
+  keep the renderer theme-agnostic and CJK-safe.
+- **Themed rendering as the only path** — rejected: the identity default path
+  stays for snapshot fixtures and the pipe surface, keeping their bytes
+  stable; the themed path asserts behavior structurally.
 
-- `vitest` tui-renderer + bundle: 130 tests pass (14 new).
-- `tsc` for both packages clean; eslint clean on changed files.
+## Consequences
+
+- `vitest` tui-renderer + bundle: 130 tests pass (14 new); `tsc` for both
+  packages clean; eslint clean on changed files.
 - PTY run of the source TUI: rendered a real turn; raw byte stream contains
   `\x1b[48;5;237m` (user background), other 256-color fg/bg, and the editor
   accent border. The `?997` scheme query reaches the terminal (pyte lacks the
   report handler; the terminal answers).
-
-## Notes
-
-- Markdown/card rendering lives on the themed path only; the identity path
-  keeps the snapshot and pipe surfaces byte-stable.
-- P1 (status-bar progress bars, slash commands, mouse) and P2 (syntax
-  highlighting, IME, OSC 133) remain from the approved plan.
-- The `theme!` non-null assertion is avoided by narrowing after the
-  identity-early-return; keep that shape.
+- Markdown/card rendering lives on the themed path only. P1 (status-bar
+  progress bars, slash commands, mouse) and P2 (syntax highlighting, IME,
+  OSC 133) remain from the approved plan. The `theme!` non-null assertion is
+  avoided by narrowing after the identity-early-return; keep that shape.

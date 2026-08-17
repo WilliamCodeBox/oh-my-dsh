@@ -17,9 +17,9 @@
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/WilliamCodeBox/oh-my-dsh/main/install.sh | sh
-# 受限网络：
+# restricted networks:
 GH_PROXY=https://gh-proxy.com/ sh install.sh
-# 指定版本或安装目录：
+# pin a version or override the install dir:
 sh install.sh 0.1.0-rc.6
 OMD_HOME=/opt/omd sh install.sh
 ```
@@ -27,8 +27,8 @@ OMD_HOME=/opt/omd sh install.sh
 ## 使用
 
 ```sh
-omd                                   # 交互式 TUI（默认 profile）
-omd --profile headless "修复 README.md 里的错别字"
+omd                                   # interactive TUI (default profile)
+omd --profile headless "fix the typo in README.md"
 omd --profile tui --resume <session-id>
 ```
 
@@ -38,12 +38,12 @@ omd --profile tui --resume <session-id>
 ## 仓库布局
 
 ```
-packages/    插件包（@williamcodebox/omd-*、vendored cordis）
-apps/        launcher（omd CLI）
-scripts/     发布与分发工具
-vendor/      vendored Cordis 框架源码
-docs/        架构与子系统文档
-examples/    可运行 cordis.yml 示例
+packages/    plugin packages (@williamcodebox/omd-*, vendored cordis)
+apps/        launcher (omd CLI)
+scripts/     release and distribution tooling
+vendor/      vendored Cordis framework sources
+docs/        architecture and subsystem documentation
+examples/    runnable cordis.yml leaves
 ```
 
 ## 许可证

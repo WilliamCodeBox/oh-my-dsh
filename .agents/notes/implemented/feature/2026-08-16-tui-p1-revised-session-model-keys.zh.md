@@ -1,4 +1,8 @@
-# TUI P1 修正版：模型切换、瞬态状态行、键位注册表、会话切换
+# Agent Note: TUI P1 修正版 — 模型切换、瞬态状态行、键位注册表、会话切换
+
+Status: implemented
+
+[English](2026-08-16-tui-p1-revised-session-model-keys.md) | 中文
 
 ## 背景
 
@@ -17,15 +21,13 @@
 - /sessions 经 ctx.sessionPersistence.list() 列出持久化会话，通过问题弹窗选择；drive 以 resume id 终止，外层循环重建 agent（apply 内 runOnce + switch 循环）。
 - 无 persistence 服务时 fail-soft：'sessions unavailable' 提示。
 
-测试：键位注册表分发/opt-out/列表、瞬态组合、帮助 overlay 开/关、/sessions fail-soft。157 通过。
+## 备选方案
 
-## 验证
+- **现在就加 OSC 133/7 prompt 标记** — 否决：在 alt-screen 内会与 pi-tui 自身渲染交错，语义跳转绑定需先有框架支持。
+- **斜杠命令在 dispatchLine 内联执行** — 否决，改用命令运行时：运行时提供已落定的命令卡片与会话切换所需的 drive halt seam（`setHaltHandler`）。
 
-- vitest tui-renderer + bundle：157 测试通过（审查后新增 9）。
-- 两包 tsc 干净；eslint 干净。
+## 影响
+
+- vitest tui-renderer + bundle：157 测试通过（审查后新增 9）；两包 tsc 干净；eslint 干净。
 - 源码 TUI 的 PTY 实测：? 打开键位帮助 overlay；/model 报告当前选择；/sessions 打开 16 项会话选择器（id/createdAt/cwd + 滚动指示）。
-
-## 备注
-
-- 键位注册表是 which-key/命令面板的基础：绑定即数据，帮助与分发器同源。
-- 会话切换在进程内重建 agent（presenter stop → resume → 全新 presenter）；管道路径保持单次运行语义。
+- 键位注册表是 which-key/命令面板的基础：绑定即数据，帮助与分发器同源。会话切换在进程内重建 agent（presenter stop → resume → 全新 presenter）；管道路径保持单次运行语义。

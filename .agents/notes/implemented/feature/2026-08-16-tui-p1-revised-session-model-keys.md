@@ -1,6 +1,10 @@
-# TUI P1 revised: model switching, transient status, keybinding registry, session switching
+# Agent Note: TUI P1 revised — model switching, transient status, keybinding registry, session switching
 
-## Context
+Status: implemented
+
+English | [中文](2026-08-16-tui-p1-revised-session-model-keys.zh.md)
+
+## Problem
 
 The adversarial plan review (opencode source + industry practice) flagged
 five P1 gaps in the TUI roadmap: session management, help/which-key, /model
@@ -9,7 +13,7 @@ covers their implementation. OSC 133/7 prompt markers are deferred: inside
 the alternate screen they would interleave with pi-tui's own rendering, and
 pi-tui's semantic jump bindings need framework support first.
 
-## Change
+## Decision
 
 `packages/interaction/tui-renderer/src/keybindings.ts` — new:
 `KeybindingRegistry` with last-wins dispatch, opt-out handlers, a display
@@ -34,20 +38,23 @@ never drops (left segments shrink first).
   and the outer loop rebuilds the agent (runOnce + switch loop in apply).
 - Fail-soft without a persistence service: 'sessions unavailable' notice.
 
-Tests: keybinding registry dispatch/opt-out/listing, transient composition,
-help overlay open/close, /sessions fail-soft. 157 pass.
+## Alternatives considered
 
-## Verification
+- **OSC 133/7 prompt markers now** — rejected: inside the alternate screen
+  they interleave with pi-tui's own rendering, and the semantic jump
+  bindings need framework support first.
+- **Slash commands executing inline in dispatchLine** — rejected for the
+  commands runtime: the runtime gives settled command cards and the drive
+  halt seam (`setHaltHandler`) that session switching needs.
 
-- vitest tui-renderer + bundle: 157 tests pass (9 new since the review).
-- tsc clean on both packages; eslint clean.
+## Consequences
+
+- vitest tui-renderer + bundle: 157 tests pass (9 new since the review);
+  tsc clean on both packages; eslint clean.
 - PTY run of the source TUI: ? opens the keybinding help overlay; /model
   reports the current selection; /sessions opens a 16-entry session picker
   with id/createdAt/cwd and scroll indicator.
-
-## Notes
-
 - The keybinding registry is the foundation for which-key/command-palette:
   bindings are data, help derives from the same source the dispatcher uses.
-- Session switch rebuilds the agent inside the process (presenter stop →
+  Session switch rebuilds the agent inside the process (presenter stop →
   resume → fresh presenter); the pipe path keeps single-run semantics.

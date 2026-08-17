@@ -30,8 +30,8 @@ try {
     ['docs/i18n/README.md', 'docs/i18n/README.zh.md'],
     ['docs/i18n/translation-rules.md', 'docs/i18n/translation-rules.zh.md'],
     [
-      '.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md',
-      '.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.zh.md',
+      '.agents/notes/implemented/bug-fix/2026-08-17-tui-stall-resilience-and-tool-cards.md',
+      '.agents/notes/implemented/bug-fix/2026-08-17-tui-stall-resilience-and-tool-cards.zh.md',
     ],
   ] as const
   const examples: TranslationExample[] = examplePaths.map(([english, chinese]) => ({

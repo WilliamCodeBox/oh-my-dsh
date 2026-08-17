@@ -154,6 +154,10 @@ flowchart LR
   cfg --> plugin_dsh_base_web_search_deepseek
   plugin_dsh_base_tool_web["tool-web<br/>@williamcodebox/omd-tool-web"]
   cfg --> plugin_dsh_base_tool_web
+  plugin_dsh_base_lsp["lsp<br/>@williamcodebox/omd-lsp"]
+  cfg --> plugin_dsh_base_lsp
+  plugin_dsh_base_tool_lsp["tool-lsp<br/>@williamcodebox/omd-tool-lsp"]
+  cfg --> plugin_dsh_base_tool_lsp
   plugin_dsh_base_tools["tools<br/>@williamcodebox/omd-tools"]
   cfg --> plugin_dsh_base_tools
   plugin_dsh_base_system_prompt["system-prompt<br/>@williamcodebox/omd-system-prompt"]
@@ -241,6 +245,8 @@ flowchart LR
 | `web` | `@williamcodebox/omd-web` |
 | `web-search-deepseek` | `@williamcodebox/omd-web-search-deepseek` |
 | `tool-web` | `@williamcodebox/omd-tool-web` |
+| `lsp` | `@williamcodebox/omd-lsp` |
+| `tool-lsp` | `@williamcodebox/omd-tool-lsp` |
 | `tools` | `@williamcodebox/omd-tools` |
 | `system-prompt` | `@williamcodebox/omd-system-prompt` |
 | `agent-loop` | `@williamcodebox/omd-agent-loop` |

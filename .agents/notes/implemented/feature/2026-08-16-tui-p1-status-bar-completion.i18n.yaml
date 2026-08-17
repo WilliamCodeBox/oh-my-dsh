@@ -1,2 +1,6 @@
-en: 2026-08-16-tui-p1-status-bar-completion.md
-zh: 2026-08-16-tui-p1-status-bar-completion.zh.md
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-16-tui-p1-status-bar-completion.md
+2026-08-16-tui-p1-status-bar-completion.md: a401850558051ce37497a23cd3d1cd9d39cf46d9
+2026-08-16-tui-p1-status-bar-completion.zh.md: 90199ab76c62c4cd117b7f22cf6670c7e7ecc616

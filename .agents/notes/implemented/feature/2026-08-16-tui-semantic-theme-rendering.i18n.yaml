@@ -1,2 +1,6 @@
-en: 2026-08-16-tui-semantic-theme-rendering.md
-zh: 2026-08-16-tui-semantic-theme-rendering.zh.md
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-16-tui-semantic-theme-rendering.md
+2026-08-16-tui-semantic-theme-rendering.md: 997dc7153905849b4f083478418f4ed6c19906a7
+2026-08-16-tui-semantic-theme-rendering.zh.md: fd094a153043d327c27ebd9066b9f3d3c0723efe

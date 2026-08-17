@@ -1,4 +1,8 @@
-# TUI 语义主题与组件渲染
+# Agent Note: TUI 语义主题与组件渲染
+
+Status: implemented
+
+[English](2026-08-16-tui-semantic-theme-rendering.md) | 中文
 
 ## 背景
 
@@ -16,16 +20,13 @@
 
 `packages/bundle/tui/src/index.ts` — 查询终端 scheme 并传 `themeForScheme(...)` 给 presenter。
 
-测试：`tests/theme.spec.ts`（各 token 的 SGR 生成、markdown/editor 子主题、scheme 解析）与 `tests/transcript-view-theme.spec.ts`（背景分层、Markdown 粗体/代码、流式 setText、工具卡状态、CJK 宽度适配、控制符净化）。
+## 备选方案
 
-## 验证
+- **所有表面共用一套硬编码颜色** — 否决，改用语义 token：dark/light 调色板（终端报告时派生）让渲染器与主题解耦且 CJK 安全。
+- **主题渲染作为唯一路径** — 否决：identity 默认路径保留给快照 fixture 与 pipe 表面，保持其字节稳定；主题路径做结构化行为断言。
 
-- `vitest` tui-renderer + bundle：130 测试通过（新增 14）。
-- 两包 `tsc` 干净；改动文件 eslint 干净。
+## 影响
+
+- `vitest` tui-renderer + bundle：130 测试通过（新增 14）；两包 `tsc` 干净；改动文件 eslint 干净。
 - 源码 TUI 的 PTY 实测：真实 turn 渲染；原始字节流含 `\x1b[48;5;237m`（用户背景）、其他 256 色 fg/bg、编辑器 accent 边框。`?997` scheme 查询到达终端（pyte 缺该报告处理，终端有应答）。
-
-## 备注
-
-- Markdown/卡片渲染只在主题路径；identity 路径保持快照与 pipe 表面字节稳定。
-- 已批准方案中的 P1（状态栏进度条、斜杠命令、鼠标）与 P2（语法高亮、IME、OSC 133）留待后续。
-- 避免 `theme!` 非空断言：identity 提前返回后的窄化直接可用，保持该形态。
+- Markdown/卡片渲染只在主题路径。已批准方案中的 P1（状态栏进度条、斜杠命令、鼠标）与 P2（语法高亮、IME、OSC 133）留待后续。避免 `theme!` 非空断言：identity 提前返回后的窄化直接可用，保持该形态。
