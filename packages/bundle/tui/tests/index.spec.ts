@@ -652,6 +652,65 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   }, 20000)
 
+  it('leads the TTY status row with the composed agent preset', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    // A minimal roster: composeAgent resolves+mounts a fresh session, and
+    // statusLine/metaData read the live composition via composedPreset.
+    test.ctx.provide('agentPresets', {
+      resolve: async () => ({ id: 'standard' }),
+      mount: async () => {},
+      composedPreset: () => 'standard',
+    } as never)
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    // A finalized turn with usage drives the base status text; the preset
+    // prefix leads it (session identity first).
+    test.recorded.agent?.session.append('assistant/message', {
+      turn: 1,
+      step: 1,
+      message: {
+        id: MessageId('a1'),
+        role: 'assistant',
+        content: [{ type: 'text', text: 'hi' }],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+      usage: { inputTokens: 1000, outputTokens: 500 },
+    }, { surfaceOp: 'append' })
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('◈ standard | tokens 1000+500') })
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('omits the preset prefix on the TTY status row without a roster', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    test.recorded.agent?.session.append('assistant/message', {
+      turn: 1,
+      step: 1,
+      message: {
+        id: MessageId('a1'),
+        role: 'assistant',
+        content: [{ type: 'text', text: 'hi' }],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+      usage: { inputTokens: 1000, outputTokens: 500 },
+    }, { surfaceOp: 'append' })
+    // The base status text renders unchanged, with no ◈ preset marker.
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('tokens 1000+500') })
+    expect(terminal.writes.join('')).not.toContain('◈ ')
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
   it('edits the draft through $EDITOR: suspend, replace, resume', async () => {
     const test = await bench([], {}, {}, { tty: true })
     const terminal = new FakeTerminal()

@@ -718,6 +718,11 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       const cost = (usage.inputTokens * (inputPrice ?? 0)) + (usage.outputTokens * (outputPrice ?? 0))
       if (cost > 0) text = text === '' ? formatCost(cost) : `${text} | ${formatCost(cost)}`
     }
+    // Session identity leads the status row: the preset one live agent runs
+    // on, same ◈ marker as the input meta row.
+    const presets = ctx.get('agentPresets')
+    const preset = presets?.composedPreset(agent.ctx)
+    if (preset !== undefined) text = text === '' ? `◈ ${preset}` : `◈ ${preset} | ${text}`
     return text
   }
   // Transient right status: a spinner while a turn runs, plus the escape
