@@ -31,6 +31,8 @@ export interface MetaRowData {
   model?: { provider: string; model: string }
   /** Current reasoning-effort label, when the adapter exposes one. */
   thinking?: string
+  /** Current agent preset id, when the deployment composes one. */
+  preset?: string
   /** Workspace directory display path. */
   cwd?: string
   /** Git worktree state, when inside a repository. */
@@ -64,6 +66,9 @@ export function renderMetaRow(data: MetaRowData, theme: SemanticTheme, width: nu
   }
   if (data.thinking !== undefined) {
     leftParts.push(theme.fg('accent', `⟳ ${data.thinking}`))
+  }
+  if (data.preset !== undefined) {
+    leftParts.push(theme.fg('command', `◈ ${data.preset}`))
   }
 
   const centerParts: string[] = []

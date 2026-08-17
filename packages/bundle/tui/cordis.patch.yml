@@ -16,7 +16,96 @@
 - id: hmr
   disabled: true
 
+# ── the agent plane moves behind agent presets ─────────────────────────────
+#
+# Mirrors the Web surface: every row below composes what ONE agent contributes
+# to the host registries (its tools, its prompt sections, its delegation
+# backends). The TUI is single-session, but aligning with the Web preset
+# semantics means the same rows sit in per-session compositions rather than
+# process-wide — the model-facing surface must be reconstructable from the
+# session log whichever surface produced it.
+#
+# Disabling rather than deleting is deliberate: the base is shared, and a row
+# absent from a surface overlay would silently reappear the day someone
+# reorders the composition.
+- id: tool-bash
+  disabled: true
+
+- id: tool-pwsh
+  disabled: true
+
+- id: tool-jobs
+  disabled: true
+
+- id: tool-fs
+  disabled: true
+
+- id: tool-fs-search
+  disabled: true
+
+- id: tool-str-replace-editor
+  disabled: true
+
+- id: skill-filesystem
+  disabled: true
+
+- id: tool-skill
+  disabled: true
+
+- id: tool-goal
+  disabled: true
+
+- id: plan-mode
+  disabled: true
+
+- id: compaction-basic
+  disabled: true
+
+- id: command-compact
+  disabled: true
+
+- id: tool-result-pruner
+  disabled: true
+
+- id: tool-subagent-control
+  disabled: true
+
+- id: tool-subagent-list-agents
+  disabled: true
+
+- id: tool-subagent
+  disabled: true
+
+- id: tool-subagent-fork
+  disabled: true
+
+- id: workflow-worker-thread
+  disabled: true
+
+- id: tool-workflow
+  disabled: true
+
+- id: tool-ralph
+  disabled: true
+
+- id: agent-instructions
+  disabled: true
+
+- id: tool-todo
+  disabled: true
+
+- id: tool-web
+  disabled: true
+
+# The preset roster. `config/agent-presets/` ships with the deployment and is
+# read-only (its entries carry `system` trust); `$DSH_HOME/.agent-presets` is
+# where a person — or an agent — authors their own.
 - insert:
+    - id: agent-presets
+      name: '@williamcodebox/omd-agent-presets'
+      config:
+        default: standard
+
     - id: tui-startup
       name: '@williamcodebox/omd-tui/startup'
 

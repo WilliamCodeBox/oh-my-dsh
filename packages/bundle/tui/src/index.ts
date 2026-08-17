@@ -19,6 +19,10 @@ import z from '@williamcodebox/schemastery'
 import { installModelSelection } from '@williamcodebox/omd-agent'
 import type { Agent, ModelSelectionRef } from '@williamcodebox/omd-agent'
 import type {} from '@williamcodebox/omd-agent-default-model'
+import { resolveSessionPreset } from '@williamcodebox/omd-agent-presets'
+// The agent-preset/selected SessionEventMap row and the cordis events merge
+// ride the preset package's type exports.
+import type {} from '@williamcodebox/omd-agent-presets/types'
 import { createUserMessage } from '@williamcodebox/omd-llm'
 import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, SessionEvent } from '@williamcodebox/omd-session'
@@ -287,6 +291,60 @@ function parseModel(pair: string): { provider: string; model: string } {
 function installSelection(selection: ModelSelectionRef): (agentCtx: Context) => void {
   return (agentCtx) => {
     installModelSelection(agentCtx, selection)
+  }
+}
+
+/**
+ * Build the composition setup for one TUI agent, mirroring the Web surface's
+ * `composeAgent` (api-proxy). A fresh session composes the deployment default
+ * (or the named preset); a resumed session composes what its log records, so
+ * history stays under the tool set that produced it. A rosterless deployment
+ * — a custom profile without the agent-presets row — keeps the base global
+ * layer, the same fallback the api-proxy uses.
+ *
+ * The preset id is resolved exactly once and both mounted and recorded from
+ * that one result, so the header and the live composition can never drift.
+ * @param ctx - the runner context, for the roster service.
+ * @param selection - the mutable model-selection ref installed on the scope.
+ * @param resumeId - the resumed session, or undefined for a fresh one.
+ * @returns the preset recorded on a fresh session's header (absent without a
+ *   roster) and the setup installing model selection plus the preset mount.
+ */
+async function composeAgent(
+  ctx: Context,
+  selection: ModelSelectionRef,
+  resumeId: SessionId | undefined,
+): Promise<{ agentPreset?: string; setup: (agentCtx: Context) => Promise<void> }> {
+  const presets = ctx.get('agentPresets')
+  if (presets === undefined) {
+    return {
+      setup: async (agentCtx) => {
+        installSelection(selection)(agentCtx)
+      },
+    }
+  }
+  if (resumeId !== undefined) {
+    // The session is reconstructed inside the factory; its log decides the
+    // composition. An unrecorded legacy session resolves the deployment
+    // default, matching the Web surface's cold-read fallback.
+    return {
+      setup: async (agentCtx) => {
+        installSelection(selection)(agentCtx)
+        const agent = agentCtx.agent
+        if (agent === undefined) throw new Error('tui-runner: resume setup has no scoped agent')
+        const stored = resolveSessionPreset(agent.session)
+        const resolved = await presets.resolve(stored)
+        await presets.mount(agentCtx, resolved.id)
+      },
+    }
+  }
+  const resolved = await presets.resolve(undefined)
+  return {
+    agentPreset: resolved.id,
+    setup: async (agentCtx) => {
+      installSelection(selection)(agentCtx)
+      await presets.mount(agentCtx, resolved.id)
+    },
   }
 }
 
@@ -564,14 +622,17 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   // the assembly listener reads ref.current per request.
   const selectionRef: ModelSelectionRef = { current: selection, assembled: undefined }
   const agentOptions = { provider: selection.provider, model: selection.model }
-  const setup = installSelection(selectionRef)
+  const composition = await composeAgent(ctx, selectionRef, resumeId)
   const handle = resumeId !== undefined
-    ? await agents.resume({ resumeSessionId: resumeId, agentOptions, setup })
+    ? await agents.resume({ resumeSessionId: resumeId, agentOptions, setup: composition.setup })
     : await agents.create({
       sessionId: SessionId(`session-${randomUUID()}`),
-      meta: { cwd: config.workspace ?? process.cwd() },
+      meta: {
+        cwd: config.workspace ?? process.cwd(),
+        ...composition.agentPreset === undefined ? {} : { agentPreset: composition.agentPreset },
+      },
       agentOptions,
-      setup,
+      setup: composition.setup,
     })
   const { agent } = handle
 
@@ -620,9 +681,12 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     const ctxInfo = transcript.state.context
     const usage = transcript.state.usage
     const total = usage.inputTokens + usage.outputTokens
+    const presets = ctx.get('agentPresets')
+    const preset = presets?.composedPreset(agent.ctx)
     return {
       ...(current !== undefined ? { model: { provider: current.provider, model: current.model } } : {}),
       ...(current?.reasoningEffort !== undefined ? { thinking: current.reasoningEffort } : {}),
+      ...(preset !== undefined ? { preset } : {}),
       cwd: displayCwd,
       ...(gitState !== undefined ? { git: gitState } : {}),
       ...(ctxInfo?.contextWindow !== undefined && total > 0
@@ -692,6 +756,11 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     return runningTransient(frame, elapsed, silent, STALL_WARN_SECONDS, statusTheme)
   }
 
+  /** Whether the session has started no turn yet: the only state a preset switch is legal in. */
+  function sessionBlank(session: Session): boolean {
+    return !session.events.some(event => event.type === 'turn/start')
+  }
+
   /**
    * Dispatch one submitted line: slash commands run through the command
    * runtime (never the model); everything else submits as a follow-up turn or
@@ -730,6 +799,55 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
         selectionRef.current = { ...selectionRef.current, reasoningEffort: level as ReasoningEffortId }
         notice.text = `thinking ${level}`
       }
+      return
+    }
+    if (line === '/preset' || line.startsWith('/preset ')) {
+      // Switch the agent preset while the session is still blank. Recomposing
+      // mid-conversation would leave logged tool calls the new composition
+      // cannot make, so a started session refuses exactly like the Web
+      // surface's agent-preset-locked.
+      void (async () => {
+        const presets = ctx.get('agentPresets')
+        if (presets === undefined || presenter === undefined) {
+          notice.text = 'presets unavailable'
+          return
+        }
+        if (!sessionBlank(agent.session)) {
+          notice.text = 'session already started; its preset is fixed'
+          return
+        }
+        const listed = await presets.list()
+        if (listed.length === 0) {
+          notice.text = 'no agent presets'
+          return
+        }
+        const options = listed.map(preset => ({
+          value: preset.id,
+          label: `${preset.id}${preset.name === undefined ? '' : `  ${preset.name}`}${preset.broken === undefined ? '' : '  (broken)'}`,
+        }))
+        const picked = await presenter.askQuestions([{ id: 'preset', question: 'Switch agent preset', options }])
+        const answer = picked.answers[0]
+        if (answer !== undefined && answer.selected.length === 1) {
+          // Re-check inside the modal window: a turn may have started since
+          // the picker opened (the Web surface re-reads inside its swap queue
+          // for the same reason).
+          if (!sessionBlank(agent.session)) {
+            notice.text = 'session already started; its preset is fixed'
+            return
+          }
+          const presetId = answer.selected[0]
+          if (presetId === undefined) return
+          try {
+            const preset = await presets.recompose(agent.ctx, presetId)
+            // Recorded only after the swap committed: the log states what the
+            // agent runs, and a rejected mount leaves the previous composition.
+            agent.session.append('agent-preset/selected', { agentPreset: preset.id })
+            notice.text = `preset ${preset.id}`
+          } catch (error) {
+            notice.text = `preset switch failed: ${error instanceof Error ? error.message : String(error)}`
+          }
+        }
+      })()
       return
     }
     if (line === '/editor') {
@@ -832,6 +950,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
         ...descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
         { name: 'model', description: 'switch provider/model' },
         { name: 'thinking', description: 'set reasoning effort level' },
+        { name: 'preset', description: 'switch agent preset while the session is blank' },
         { name: 'sessions', description: 'list and resume a session' },
         { name: 'editor', description: 'edit the draft in $EDITOR' },
       ],

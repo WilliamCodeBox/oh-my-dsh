@@ -1416,6 +1416,9 @@ importers:
 
   packages/bundle/tui:
     dependencies:
+      '@williamcodebox/omd-agent-presets':
+        specifier: workspace:^
+        version: link:../../preset/agent-presets
       '@williamcodebox/omd-cmdline':
         specifier: workspace:^
         version: link:../../boot/cmdline

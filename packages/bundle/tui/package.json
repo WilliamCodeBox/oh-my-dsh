@@ -44,6 +44,7 @@
     }
   },
   "dependencies": {
+    "@williamcodebox/omd-agent-presets": "workspace:^",
     "@williamcodebox/omd-cmdline": "workspace:^",
     "@williamcodebox/omd-tui-renderer": "workspace:^",
     "@williamcodebox/schemastery": "workspace:^",
