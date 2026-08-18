@@ -71,7 +71,7 @@ describe('sanitizedLines', () => {
 })
 
 describe('formatStatus', () => {
-  const base: TranscriptState = { items: [], todos: [], usage: { inputTokens: 0, outputTokens: 0 }, compactions: [] }
+  const base: TranscriptState = { items: [], todos: [], usage: { inputTokens: 0, outputTokens: 0 }, compactions: [], ledger: [] }
 
   it('is empty without side state', () => {
     expect(formatStatus(base)).toBe('')

@@ -15,6 +15,12 @@
       "path": "../../core/session"
     },
     {
+      "path": "../../core/tools"
+    },
+    {
+      "path": "../../compaction/compaction"
+    },
+    {
       "path": "../../llm/llm"
     },
     {
@@ -28,6 +34,9 @@
     },
     {
       "path": "../commands"
+    },
+    {
+      "path": "../../client/trajectory-model"
     }
   ]
 }

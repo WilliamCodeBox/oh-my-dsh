@@ -37,10 +37,12 @@ import type {
 import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
 import { sanitizeText } from './sanitize.ts'
-import { StatusRow, TranscriptView } from './transcript-view.ts'
+import { LedgerView, StatusRow, TranscriptView } from './transcript-view.ts'
+import { cappedLines, detailBody, KIND_LABEL } from './detail.ts'
 import { MetaRow, type MetaRowData } from './meta-row.ts'
 import { WorkspaceAutocomplete } from './autocomplete.ts'
 import { darkTheme, type SemanticTheme } from './theme.ts'
+import { detailTabsFor, formatElapsedSeconds, type DetailTabItem, type TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
 
 /** The production terminal: real process stdin/stdout streams. */
 export function processTerminal(): Terminal {
@@ -94,6 +96,30 @@ export class TuiPresenter {
   private haltHandler: ((outcome: unknown) => void) | undefined
   /** The input-context row (model/thinking | cwd/git | context bar). */
   private readonly metaRow: MetaRow
+  /** The status row, kept so the ledger layout can rebuild around it. */
+  private readonly statusRow: StatusRow
+  /** The layout root; rebuilt when the ledger view swaps in. */
+  private readonly layoutRoot: VStack
+  /**
+   * Foreground key dispatch: the ledger/detail key handlers live here and run
+   * before the runner's registry listener (registered later via {@link onKey})
+   * and before any focused component. This is the key-precedence contract:
+   * while the ledger or its detail overlay is up, Esc/Enter/Tab/arrows are
+   * consumed here — they never fall through to the registry's Esc (clear
+   * input / interrupt a running turn) or to the editor's submit.
+   */
+  private foreground: ((data: string) => boolean) | undefined
+  /** True while the detail overlay belongs to this presenter (vs an interaction modal). */
+  private detailOverlayActive = false
+  /** Ledger view state; the ledger rows render from these getters. */
+  private ledgerOpenState = false
+  private ledgerFocus = 0
+  private ledgerCells: () => readonly TrajectoryCellProps[] = () => []
+  private ledgerFilter: () => string | undefined = () => undefined
+  private ledgerScrollRef: ScrollView | undefined
+  private offLedgerForeground: (() => void) | undefined
+  /** Active detail tab index within the current cell's tab list. */
+  private detailTabIndex = 0
   /** Input-context data source; the runner replaces the getter per drive. */
   private metaData: () => MetaRowData = () => ({})
 
@@ -110,6 +136,7 @@ export class TuiPresenter {
     }
     const view = new TranscriptView(transcript, this.theme)
     const status = new StatusRow(width => this.renderStatus(width))
+    this.statusRow = status
     this.metaRow = new MetaRow(() => this.metaData(), this.theme)
     this.editor = new Editor(this.tui, this.theme.editor)
     if (autocomplete !== undefined) this.editor.setAutocompleteProvider(autocomplete)
@@ -119,7 +146,7 @@ export class TuiPresenter {
     }
     this.transcriptScroll = new ScrollView(view, { follow: 'end', primary: true, overscroll: 'chain' })
 
-    this.tui.setLayoutRoot(new VStack([
+    this.layoutRoot = new VStack([
       {
         component: this.transcriptScroll,
         basis: 0,
@@ -144,7 +171,20 @@ export class TuiPresenter {
         shrink: 1,
         minSize: 1,
       },
-    ]))
+    ])
+    this.tui.setLayoutRoot(this.layoutRoot)
+    // Registered first, so the foreground dispatch runs ahead of every later
+    // onKey listener (the runner's registry) and of focused components. The
+    // listener lives as long as the presenter, like the runner's registry.
+    this.onKey((data) => {
+      if (this.foreground === undefined) return false
+      // An interaction modal (approval/question) mounted above the ledger owns
+      // its keys through the focused SelectList/Input; the ledger handler
+      // yields to it. The detail overlay is the one overlay that needs the
+      // foreground (tab switching), so it stays active.
+      if (this.overlay !== undefined && !this.detailOverlayActive) return false
+      return this.foreground(data)
+    })
     transcript.on(() => { this.tui.requestRender() })
   }
 
@@ -299,6 +339,175 @@ export class TuiPresenter {
       }
     }
     return close
+  }
+
+  /**
+   * Install one foreground key handler and return its disposer. The handler
+   * runs ahead of the runner's registry and the focused component (see the
+   * constructor's `offForeground` seam); the disposer restores the handler
+   * that was active before, so the detail overlay stacks over the ledger.
+   */
+  private pushForeground(handler: (data: string) => boolean): () => void {
+    const previous = this.foreground
+    this.foreground = handler
+    return () => { this.foreground = previous }
+  }
+
+  /** Rebuild the layout root with the given primary scroll viewport. */
+  private rebuildLayout(scroll: ScrollView): void {
+    this.tui.setLayoutRoot(new VStack([
+      { component: scroll, basis: 0, grow: 1, minSize: 1 },
+      { component: this.statusRow, basis: 'auto', shrink: 1, minSize: 1 },
+      { component: this.metaRow, basis: 'auto', shrink: 1, minSize: 1 },
+      { component: this.editor, basis: 'auto', shrink: 1, minSize: 1 },
+    ]))
+  }
+
+  /** True while the ledger view replaces the transcript viewport. */
+  get ledgerOpen(): boolean {
+    return this.ledgerOpenState
+  }
+
+  /**
+   * Open the ledger view over the transcript (or close it when already open).
+   * While the ledger is open, ↑/↓ move the focus, Enter opens the focused
+   * cell's detail overlay, and Esc returns to the transcript and editor.
+   * @param cells - the (filtered) ledger cells, re-read before every render.
+   * @param filter - the active kind filter label, when one is applied.
+   */
+  openLedger(cells: () => readonly TrajectoryCellProps[], filter: () => string | undefined): void {
+    if (this.ledgerOpenState) {
+      this.closeLedger()
+      return
+    }
+    this.ledgerCells = cells
+    this.ledgerFilter = filter
+    this.ledgerFocus = 0
+    this.detailTabIndex = 0
+    const view = new LedgerView(() => {
+      const filter = this.ledgerFilter()
+      return {
+        cells: this.ledgerCells(),
+        focus: this.ledgerFocus,
+        ...(filter === undefined ? {} : { filter }),
+      }
+    }, this.theme)
+    this.ledgerScrollRef = new ScrollView(view)
+    this.rebuildLayout(this.ledgerScrollRef)
+    this.ledgerOpenState = true
+    // The ledger owns the keys; the editor must not see typing or submit.
+    this.tui.setFocus(null)
+    this.offLedgerForeground = this.pushForeground((data) => {
+      switch (data) {
+        case '\x1b[A':
+          this.moveLedgerFocus(-1)
+          break
+        case '\x1b[B':
+          this.moveLedgerFocus(1)
+          break
+        case '\r':
+        case '\n':
+          this.openLedgerDetail()
+          break
+        case '\x1b':
+          this.closeLedger()
+          break
+        default:
+          return false
+      }
+      return true
+    })
+    this.tui.requestRender()
+  }
+
+  /** Close the ledger and restore the transcript viewport and editor focus. */
+  closeLedger(): void {
+    if (!this.ledgerOpenState) return
+    this.offLedgerForeground?.()
+    this.offLedgerForeground = undefined
+    this.ledgerScrollRef = undefined
+    this.ledgerOpenState = false
+    this.rebuildLayout(this.transcriptScroll)
+    this.tui.setFocus(this.editor)
+    this.tui.requestRender()
+  }
+
+  /** Move the ledger focus by a signed delta, keeping it in bounds and visible. */
+  private moveLedgerFocus(delta: number): void {
+    const count = this.ledgerCells().length
+    if (count === 0) return
+    this.ledgerFocus = Math.min(count - 1, Math.max(0, this.ledgerFocus + delta))
+    this.ledgerScrollRef?.scrollTo(this.ledgerFocus)
+    this.tui.requestRender()
+  }
+
+  /** Open the focused cell's detail overlay, when a row is focused. */
+  private openLedgerDetail(): void {
+    const cell = this.ledgerCells()[this.ledgerFocus]
+    if (cell === undefined) return
+    this.showDetail(cell)
+  }
+
+  /**
+   * Show one ledger cell's detail overlay: a title, a horizontal tab row
+   * (from the shared model's {@link detailTabsFor}), and the active tab's
+   * capped body. ←/→ (or Tab/Shift+Tab) switch tabs; Esc or Enter closes.
+   * The overlay's keys run through the foreground seam, ahead of the
+   * registry's Esc/Ctrl+C handling and of the editor, so closing and tabbing
+   * never leak into the quit machine or the draft.
+   */
+  showDetail(cell: TrajectoryCellProps): void {
+    if (this.overlay !== undefined) return
+    const tabs = detailTabsFor(cell)
+    this.detailTabIndex = 0
+    const card = new Box(1, 1)
+    const title = new Text('', 0, 0)
+    const tabRow = new Text('', 0, 0)
+    const body = new Text('', 0, 0)
+    card.addChild(title)
+    card.addChild(tabRow)
+    card.addChild(new Text('', 0, 0))
+    card.addChild(body)
+    const close = this.mountOverlay(card)
+    const render = (): void => {
+      title.setText(this.theme.fg('accent', `${KIND_LABEL[cell.kind]} #${cell.index} · ${formatElapsedSeconds(cell.timeSeconds)}`))
+      tabRow.setText(this.tabLine(tabs))
+      const tabId = tabs[Math.min(this.detailTabIndex, Math.max(0, tabs.length - 1))]?.id
+      body.setText(cappedLines(detailBody(cell, tabId ?? 'overview')).join('\n'))
+    }
+    render()
+    this.detailOverlayActive = true
+    const offForeground = this.pushForeground((data) => {
+      if (data === '\x1b' || data === '\r' || data === '\n') {
+        offForeground()
+        close()
+        this.detailOverlayActive = false
+        // mountOverlay restores editor focus; the ledger wants to keep the
+        // key ownership until it closes too.
+        if (this.ledgerOpenState) this.tui.setFocus(null)
+        return true
+      }
+      if (data === '\x1b[C' || data === '\t') {
+        this.detailTabIndex = (this.detailTabIndex + 1) % tabs.length
+        render()
+        this.tui.requestRender()
+        return true
+      }
+      if (data === '\x1b[D' || data === '\x1b[Z') {
+        this.detailTabIndex = (this.detailTabIndex - 1 + tabs.length) % tabs.length
+        render()
+        this.tui.requestRender()
+        return true
+      }
+      return false
+    })
+  }
+
+  /** One horizontal tab row; the active tab is marked and accented. */
+  private tabLine(tabs: readonly DetailTabItem[]): string {
+    return tabs.map((tab, index) => index === this.detailTabIndex
+      ? this.theme.fg('accent', `▸${tab.label}`)
+      : this.theme.fg('dim', tab.label)).join('  ')
   }
 
   /**

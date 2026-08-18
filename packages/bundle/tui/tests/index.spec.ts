@@ -9,7 +9,7 @@ import AgentDefaultModelConfig from '@williamcodebox/omd-agent-default-model'
 import ApprovalService from '@williamcodebox/omd-user-approval'
 import UserQuestionService from '@williamcodebox/omd-user-questions'
 import CommandRuntime from '@williamcodebox/omd-commands'
-import { CallId, createAssistantMessage, createToolResultMessage, MessageId } from '@williamcodebox/omd-llm'
+import { CallId, createAssistantMessage, createToolResultMessage, createUserMessage, MessageId } from '@williamcodebox/omd-llm'
 import SessionStore from '@williamcodebox/omd-session'
 import type { Session, UserMessage } from '@williamcodebox/omd-session'
 import { apply, Config, internals, runningTransient, StdinInputSource } from '../src/index.ts'
@@ -788,6 +788,113 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     expect((await runPromise).code).toBe(130)
     await test.ctx.fiber.dispose()
   }, 20000)
+
+  it('opens the ledger from /ledger, shows the detail overlay, and returns to the editor on Escape', async () => {
+    const test = await bench([], {}, {
+      afterCreate: (session) => {
+        appendTurn(session, createUserMessage({
+          content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' },
+        }), 'hi back')
+      },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+
+    terminal.send('/ledger')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('ledger · 2 records') }, { timeout: 10000 })
+
+    // Enter opens the focused user cell's detail overlay; Tab switches tabs.
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('User #1') }, { timeout: 10000 })
+    terminal.send('\t')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('▸Preview') }, { timeout: 10000 })
+
+    // Esc closes the overlay, then the ledger; the editor submits again.
+    terminal.send('\x1b')
+    terminal.send('\x1b')
+    terminal.send('hi')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(test.recorded.followup).toHaveLength(1) }, { timeout: 10000 })
+
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('filters the ledger by kind from /filter and clears it', async () => {
+    const test = await bench([], {}, {
+      afterCreate: (session) => {
+        appendTurn(session, createUserMessage({
+          content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' },
+        }), 'hi back')
+      },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+
+    terminal.send('/filter')
+    terminal.send(' ')
+    terminal.send('message')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('ledger filter message') }, { timeout: 10000 })
+    terminal.send('/ledger')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('ledger · 1 record · filter message') }, { timeout: 10000 })
+
+    // A bare /filter clears the active kind.
+    terminal.send('\x1b')
+    terminal.send('/filter')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('ledger filter cleared') }, { timeout: 10000 })
+
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('rejects an unknown ledger kind via the status notice', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+    terminal.send('/filter')
+    terminal.send(' ')
+    terminal.send('bogus')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('unknown ledger kind: bogus') }, { timeout: 10000 })
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('ignores /ledger on the pipe path without a presenter', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: '/' }, { kind: 'char', char: 'l' }, { kind: 'char', char: 'e' },
+        { kind: 'char', char: 'd' }, { kind: 'char', char: 'g' }, { kind: 'char', char: 'e' },
+        { kind: 'char', char: 'r' }, { kind: 'submit' },
+        { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      {},
+    )
+    const result = await test.run()
+    // No presenter on the pipe path: the ledger command must not submit a
+    // follow-up turn or crash the drive loop.
+    expect(test.recorded.followup).toHaveLength(0)
+    expect(result.code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
   it('rejects an approval prompt by selecting the second option', async () => {
     const test = await bench([], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },

@@ -15,6 +15,8 @@ Folded terminal transcript model and pi-tui-backed presentation layer for the `o
 
 Side state the renderer shows beside the transcript rides the folded projection: the latest todo-list snapshot, request header, provider route context, the `session/end-seed` marker, and observed compaction replacements.
 
+Alongside the display items, the fold maintains a trajectory-style record ledger (`state.ledger`): one `TrajectoryCellProps` row per record in event order — `system`/`user`/`context`/`compacted`/`message`/`tool`/`subtool` — appended on creation and merged in place when a paired event settles it (tool result, compaction summary/end), so per-event cost stays O(1) and the array reference stays stable. The presenter's ledger view renders these rows, and the detail overlay shows one row's tab bodies via `detailBody`, with the tab set coming from the shared model's `detailTabsFor`.
+
 Transcript material is **append-origin surface events only**. The session surface contract (`isAppendSurfaceEvent` in `packages/core/session/src/surface.ts`) names append-origin events the transcript's durable source material and keeps replacement copies model-only — a landed compaction replacement would erase conversation the human already saw. Replacements therefore surface as `CompactionNote` entries, so the renderer can indicate that context was compacted without erasing what the user already saw.
 
 ## Public modules
@@ -22,8 +24,9 @@ Transcript material is **append-origin surface events only**. The session surfac
 | Export | Role |
 |---|---|
 | `./transcript` | The `Transcript` fold model and the `textOf` block-text extractor. |
-| `./presenter` | `TuiPresenter` — the pi-tui alternate-screen surface (scroll viewport, status row, meta row, editor) plus the `processTerminal()` production backend and `workspaceAutocomplete()`. |
-| `./transcript-view` | `TranscriptView`/`StatusRow` — themed rendering of folded items (user background cards, assistant Markdown, state-colored tool cards with diffs, one blank line between items) and the dynamic status row. |
+| `./presenter` | `TuiPresenter` — the pi-tui alternate-screen surface (scroll viewport, status row, meta row, editor, ledger/detail overlays via a foreground key seam) plus the `processTerminal()` production backend and `workspaceAutocomplete()`. |
+| `./transcript-view` | `TranscriptView`/`StatusRow`/`LedgerView` — themed rendering of folded items (user background cards, assistant Markdown, state-colored tool cards with diffs, one blank line between items), the dynamic status row, and the ledger view (one row per record with a focus marker and filter header). |
+| `./detail` | `detailBody`/`cappedLines`/`KIND_LABEL` — plain-text tab bodies for one ledger cell's detail overlay, capped at `DETAIL_LINE_CAP` lines with a remainder marker. |
 | `./meta-row` | `MetaRow`/`renderMetaRow` — the input-context row (model/thinking, cwd/git, context bar). |
 | `./theme` | `darkTheme`/`lightTheme`/`themeForScheme` — semantic 256-color themes (foreground roles, user background, markdown and editor sub-themes). |
 | `./scheme` | `detectTerminalScheme` — terminal color-scheme query for theme selection. |

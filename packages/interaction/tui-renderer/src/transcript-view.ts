@@ -22,6 +22,7 @@ import { capped, formatItem, sanitizedLines } from './format.ts'
 import { sanitizeText } from './sanitize.ts'
 import type { ColorToken, SemanticTheme } from './theme.ts'
 import type { JsonValue } from '@williamcodebox/omd-session'
+import { formatElapsedSeconds, type TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
 
 /** Per-item-kind line stylers; each maps one sanitized display line. */
 export interface TranscriptTheme {
@@ -104,7 +105,7 @@ function diffsFromMetaValue(meta: JsonValue | undefined): DiffLike[] | undefined
 }
 
 /** One unified-diff edit line. */
-type DiffEdit = { kind: 'ctx' | 'del' | 'add'; text: string }
+export type DiffEdit = { kind: 'ctx' | 'del' | 'add'; text: string }
 
 /** LCS row cap: beyond this the full DP table would stall the render thread. */
 const LCS_MAX_LINES = 1500
@@ -115,7 +116,7 @@ const LCS_MAX_LINES = 1500
  * per side; larger diffs fall back to a linear add/remove dump so huge tool
  * results degrade to readable output instead of freezing the UI.
  */
-function lcsDiff(before: string[], after: string[]): DiffEdit[] {
+export function lcsDiff(before: string[], after: string[]): DiffEdit[] {
   if (before.length > LCS_MAX_LINES || after.length > LCS_MAX_LINES) {
     const edits: DiffEdit[] = []
     const beforeSet = new Set(before)
@@ -329,5 +330,53 @@ export class StatusRow implements Component {
   render(width: number): string[] {
     const text = this.read(width)
     return text === '' ? [] : [text]
+  }
+}
+
+/** One ledger render snapshot, re-read before every render. */
+export interface LedgerViewData {
+  readonly cells: readonly TrajectoryCellProps[]
+  /** Focused row index; the view clamps it defensively. */
+  readonly focus: number
+  /** Active kind filter label, when one is applied. */
+  readonly filter?: string
+}
+
+/**
+ * The `/ledger` view: one row per trajectory ledger cell (index, kind,
+ * summary text, own duration) with a focused-row marker, a record/filter
+ * header, and a key hint line. Rows render only for the given width; the
+ * presenter owns the focus/scroll state and the Enter/Esc keys.
+ */
+export class LedgerView implements Component {
+  constructor(
+    private readonly read: () => LedgerViewData,
+    private readonly theme: SemanticTheme,
+  ) {}
+
+  invalidate(): void {}
+
+  render(width: number): string[] {
+    const { cells, focus, filter } = this.read()
+    const lines = [
+      this.theme.fg('accent', `ledger · ${cells.length} record${cells.length === 1 ? '' : 's'}${filter === undefined ? '' : ` · filter ${filter}`}`),
+      this.theme.fg('dim', '↑/↓ navigate · enter detail · esc close'),
+    ]
+    const selected = cells.length === 0 ? -1 : Math.min(Math.max(0, focus), cells.length - 1)
+    for (let index = 0; index < cells.length; index++) {
+      lines.push(this.row(cells[index]!, index === selected, width))
+    }
+    return lines
+  }
+
+  /** One ledger row: marker, #index, kind, capped summary, duration. */
+  private row(cell: TrajectoryCellProps, selected: boolean, width: number): string {
+    const marker = selected ? this.theme.fg('accent', '▸') : ' '
+    const index = this.theme.fg('dim', `#${String(cell.index).padStart(4)}`)
+    const kind = this.theme.fg('muted', cell.kind.padEnd(8))
+    const duration = this.theme.fg('dim', formatElapsedSeconds(cell.timeSeconds))
+    const textBudget = Math.max(8, width - 2 - 6 - 9 - 13)
+    const text = sanitizeText(capped(cell.text === '' ? '(empty)' : cell.text, textBudget))
+    return `${marker} ${index} ${kind} ${text} ${duration}`
   }
 }

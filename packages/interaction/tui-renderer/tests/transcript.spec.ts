@@ -12,6 +12,7 @@ import type { AssistantItem, ToolItem, TurnItem, UserItem } from '../src/transcr
 import type { SessionEvent } from '@williamcodebox/omd-session'
 import { CallId, MessageId } from '@williamcodebox/omd-llm'
 import { CommandId } from '@williamcodebox/omd-commands'
+import { CompactionId } from '@williamcodebox/omd-compaction'
 
 /** Build one event; surface events pass `surfaceOp: 'append'` explicitly. */
 function ev<T extends SessionEvent['type']>(
@@ -288,5 +289,251 @@ describe('Transcript', () => {
     off()
     transcript.fold(ev('turn/start', { turn: 2 }, 3))
     expect(calls).toBe(2)
+  })
+})
+
+describe('Transcript ledger', () => {
+  it('projects user and message cells with step timing and usage', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('turn/start', { turn: 1 }, 1))
+    transcript.fold(ev('step/start', { turn: 1, step: 1 }, 2))
+    transcript.fold(ev('user/message', userText('hello'), 3, { surfaceOp: 'append' }))
+    transcript.fold(chunk(1, 1, 'Hel', 4))
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 1, message: assistantText('Hello!'),
+      usage: { inputTokens: 10, outputTokens: 5, reasoningTokens: 2 },
+    }, 5, { surfaceOp: 'append' }))
+
+    const [user, message] = transcript.state.ledger
+    expect(user).toMatchObject({
+      index: 1, kind: 'user', text: 'hello', inputDetail: 'hello',
+      previewMarkdown: 'hello', opensTurn: true, timeSeconds: 0, startedAt: 3000,
+    })
+    expect(message).toMatchObject({
+      index: 2, kind: 'message', text: 'Hello!', outputDetail: 'Hello!',
+      previewMarkdown: 'Hello!', input: 10, output: 5, think: 2,
+      timeSeconds: 3, startedAt: 2000,
+    })
+    expect(message?.assistantMetrics).toEqual({
+      timingRecorded: true, stepStartTime: 2000, firstTokenTime: 4000,
+      completedTime: 5000, usageProvided: true, outputTokens: 5,
+    })
+  })
+
+  it('records reasoning-only messages and empty messages as activity summaries', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 0,
+      message: {
+        id: MessageId('a1'), role: 'assistant',
+        content: [{ type: 'reasoning', text: 'think line 1\nthink line 2' }],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+    }, 1, { surfaceOp: 'append' }))
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 1,
+      message: {
+        id: MessageId('a2'), role: 'assistant',
+        content: [{ type: 'tool-call', id: CallId('c1'), name: 'bash', arguments: '{}' }],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+    }, 2, { surfaceOp: 'append' }))
+
+    const [thinking, toolOnly] = transcript.state.ledger
+    expect(thinking?.text).toBe('think line 1')
+    expect(thinking?.thinkingDetail).toBe('think line 1\nthink line 2')
+    expect(toolOnly?.text).toBe('Tool call only')
+    expect(toolOnly?.outputDetail).toBeUndefined()
+  })
+
+  it('classifies injected-context user messages as context rows', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('user/message', {
+      id: MessageId('u1'), role: 'user',
+      content: [{ type: 'text', text: 'file changed' }],
+      source: { kind: 'plugin', plugin: 'fs', form: 'notice', summary: 'file changed' },
+    }, 1, { surfaceOp: 'append' }))
+
+    const [cell] = transcript.state.ledger
+    expect(cell?.kind).toBe('context')
+    expect(cell?.opensTurn).toBeUndefined()
+    expect(cell?.messageSource).toEqual({ kind: 'plugin', plugin: 'fs', form: 'notice', summary: 'file changed' })
+  })
+
+  it('tracks a tool call/result pair: duration, output, error, and schema', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('request/header', {
+      header: {
+        config: { provider: 'p', model: 'm' },
+        system: 'sys',
+        tools: [{ name: 'bash', description: 'run commands', parameters: { type: 'object' } }],
+      },
+      reason: 'initial',
+    }, 1))
+    transcript.fold(ev('tool/call', { turn: 1, step: 1, callId: CallId('c1'), name: 'bash', arguments: '{"cmd":"ls"}' }, 2))
+    transcript.fold(ev('tool/result', {
+      turn: 1, step: 1,
+      message: {
+        id: MessageId('r1'), role: 'user',
+        content: [{ type: 'tool-result', toolCallId: CallId('c1'), content: [{ type: 'text', text: 'file list' }] }],
+        source: { kind: 'tool', callId: CallId('c1') },
+      },
+    }, 5, { surfaceOp: 'append' }))
+
+    const [, tool] = transcript.state.ledger
+    expect(tool).toMatchObject({
+      kind: 'tool', callId: 'c1', text: 'bash {"cmd":"ls"}',
+      inputDetail: '{"cmd":"ls"}', outputDetail: 'file list',
+      result: 'file list', isError: false, timeSeconds: 3, startedAt: 2000,
+      schemaDetail: JSON.stringify({ name: 'bash', description: 'run commands', parameters: { type: 'object' } }, null, 2),
+    })
+  })
+
+  it('marks a failed tool result and creates a cell from an orphan result', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/call', { turn: 1, step: 1, callId: CallId('c1'), name: 'bash', arguments: '{}' }, 1))
+    transcript.fold(ev('tool/result', {
+      turn: 1, step: 1,
+      message: {
+        id: MessageId('r1'), role: 'user',
+        content: [{ type: 'tool-result', toolCallId: CallId('c1'), content: [{ type: 'text', text: '' }] }],
+        source: { kind: 'tool', callId: CallId('c1') },
+      },
+      error: { name: 'EACCES', code: 'EACCES' },
+    }, 2, { surfaceOp: 'append' }))
+    transcript.fold(ev('tool/result', {
+      turn: 2, step: 1,
+      message: {
+        id: MessageId('r2'), role: 'user',
+        content: [{ type: 'tool-result', toolCallId: CallId('orphan'), content: [{ type: 'text', text: 'orphan output' }] }],
+        source: { kind: 'tool', callId: CallId('orphan') },
+      },
+    }, 3, { surfaceOp: 'append' }))
+
+    const [failed, orphan] = transcript.state.ledger
+    expect(failed).toMatchObject({
+      kind: 'tool', outputDetail: 'EACCES: EACCES', isError: true,
+      result: 'EACCES', timeSeconds: 1,
+    })
+    expect(orphan).toMatchObject({
+      kind: 'tool', callId: 'orphan', text: 'orphan output', outputDetail: 'orphan output',
+      timeSeconds: null,
+    })
+  })
+
+  it('projects subtool records from the code-dispatch pair', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/code-dispatch-start', {
+      rootCallId: CallId('root'), parentCallId: CallId('root'),
+      subCallId: CallId('root:code:1'), name: 'read_file', arguments: { path: 'a' },
+    }, 1))
+    transcript.fold(ev('tool/code-dispatch', {
+      rootCallId: CallId('root'), parentCallId: CallId('root'),
+      subCallId: CallId('root:code:1'), name: 'read_file', arguments: { path: 'a' },
+      isError: false, content: [{ type: 'text', text: 'contents' }],
+    }, 3))
+
+    const [subtool] = transcript.state.ledger
+    expect(subtool).toMatchObject({
+      kind: 'subtool', callId: 'root:code:1',
+      text: 'read_file {"path":"a"}', inputDetail: '{"path":"a"}',
+      outputDetail: 'contents', result: 'contents', isError: false,
+      timeSeconds: 2, startedAt: 1000,
+    })
+  })
+
+  it('marks a failed subtool result and drops a stray settle without a start', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('tool/code-dispatch-start', {
+      rootCallId: CallId('root'), parentCallId: CallId('root'),
+      subCallId: CallId('root:code:1'), name: 'bash', arguments: {},
+    }, 1))
+    transcript.fold(ev('tool/code-dispatch', {
+      rootCallId: CallId('root'), parentCallId: CallId('root'),
+      subCallId: CallId('root:code:1'), name: 'bash', arguments: {},
+      isError: true, content: [{ type: 'text', text: 'boom' }],
+    }, 2))
+    transcript.fold(ev('tool/code-dispatch', {
+      rootCallId: CallId('root'), parentCallId: CallId('root'),
+      subCallId: CallId('stray'), name: 'bash', arguments: {},
+      isError: false, content: [{ type: 'text', text: 'never started' }],
+    }, 3))
+
+    const [subtool] = transcript.state.ledger
+    expect(subtool).toMatchObject({ kind: 'subtool', result: 'error', isError: true, timeSeconds: 1 })
+    expect(transcript.state.ledger).toHaveLength(1)
+  })
+
+  it('tracks the compaction lifecycle with summary content and failure', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('compaction/start', { compactionId: CompactionId('c1'), turn: null }, 1))
+    transcript.fold(ev('compaction/summary', {
+      compactionId: CompactionId('c1'),
+      summary: [{ type: 'text', text: 'summary line 1\nsummary line 2' }],
+      shadowedRange: { start: 1, end: 2 }, shadowedSeqs: [1, 2], shadowedTokenCount: 100,
+      provider: 'p', model: 'm',
+    }, 2))
+    transcript.fold(ev('compaction/end', { compactionId: CompactionId('c1'), turn: null }, 4))
+
+    const [cell] = transcript.state.ledger
+    expect(cell).toMatchObject({
+      kind: 'compacted', text: 'summary line 1', outputDetail: 'summary line 1\nsummary line 2',
+      timeSeconds: 3, startedAt: 1000,
+    })
+
+    const failing = new Transcript()
+    failing.fold(ev('compaction/start', { compactionId: CompactionId('c2'), turn: null }, 1))
+    failing.fold(ev('compaction/end', { compactionId: CompactionId('c2'), turn: null, error: 'cancelled' }, 2))
+    const [failed] = failing.state.ledger
+    expect(failed).toMatchObject({ kind: 'compacted', text: 'Compaction failed: cancelled', isError: true, timeSeconds: 1 })
+  })
+
+  it('marks an empty-summary compaction as context compacted', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('compaction/start', { compactionId: CompactionId('c1'), turn: null }, 1))
+    transcript.fold(ev('compaction/summary', {
+      compactionId: CompactionId('c1'),
+      summary: [],
+      shadowedRange: { start: 1, end: 1 }, shadowedSeqs: [1], shadowedTokenCount: 0,
+      provider: 'p', model: 'm',
+    }, 2))
+    const [cell] = transcript.state.ledger
+    expect(cell).toMatchObject({ kind: 'compacted', text: 'Context compacted' })
+    expect(cell?.outputDetail).toBeUndefined()
+  })
+
+  it('projects system cells for initial and change headers, not resume or config-only changes', () => {
+    const transcript = new Transcript()
+    const header = (system: string, tools: { name: string }[]) => ({
+      config: { provider: 'p', model: 'm' },
+      system,
+      tools: tools.map(tool => ({ name: tool.name, description: '', parameters: {} })),
+    })
+    transcript.fold(ev('request/header', { header: header('sys v1', [{ name: 'bash' }]), reason: 'initial' }, 1))
+    transcript.fold(ev('request/header', { header: header('sys v2', [{ name: 'bash' }]), reason: 'change' }, 2))
+    transcript.fold(ev('request/header', { header: header('sys v2', [{ name: 'bash' }]), reason: 'change' }, 3))
+    transcript.fold(ev('request/header', { header: header('sys v2', [{ name: 'bash' }, { name: 'read' }]), reason: 'change' }, 4))
+    transcript.fold(ev('request/header', { header: header('sys v2', [{ name: 'bash' }, { name: 'read' }]), reason: 'resume' }, 5))
+
+    const cells = transcript.state.ledger
+    expect(cells.map(cell => cell.text)).toEqual([
+      'Initial System Prompt',
+      'System Prompt Updated',
+      'Tools Updated',
+    ])
+    expect(cells[0]?.promptDetail?.system).toBe('sys v1')
+    expect(cells[1]?.promptDetail?.system).toBe('sys v2')
+    expect(cells[1]?.previousPromptDetail?.system).toBe('sys v1')
+    // A config-only change (no system/tools delta) and a resume produce no row.
+    expect(cells).toHaveLength(3)
+  })
+
+  it('does not emit ledger rows for turns, commands, context, or end-seed events', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('turn/start', { turn: 1 }, 1))
+    transcript.fold(ev('request/context', { provider: 'p', model: 'm' }, 2))
+    transcript.fold(ev('command/run', { commandId: CommandId('c1'), name: 'ping', source: { kind: 'user' } }, 3))
+    transcript.fold(ev('session/end-seed', {}, 4))
+    expect(transcript.state.ledger).toHaveLength(0)
   })
 })

@@ -39,6 +39,9 @@
       "path": "../../interaction/tui-renderer"
     },
     {
+      "path": "../../client/trajectory-model"
+    },
+    {
       "path": "../../runtime-diagnostics/invariants"
     },
     {

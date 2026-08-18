@@ -15,6 +15,8 @@
 
 渲染器在转录旁展示的旁路状态同样挂在折叠投影上：最新 todo 快照、request header、provider 路由上下文、`session/end-seed` 标记与观察到的压缩替换。
 
+在展示条目之外，折叠还维护一个 trajectory 式记录台账（`state.ledger`）：按事件顺序每条记录一行 `TrajectoryCellProps`——`system`/`user`/`context`/`compacted`/`message`/`tool`/`subtool`——创建时追加，配对事件结算时原地合并（工具结果、压缩 summary/end），因此单事件成本保持 O(1)，数组引用保持稳定。presenter 的台账视图渲染这些行，详情浮层经 `detailBody` 展示某一行的 tab 正文，tab 集合来自共享模型的 `detailTabsFor`。
+
 转录材料**仅限 append-origin surface 事件**。会话 surface 契约（`packages/core/session/src/surface.ts` 的 `isAppendSurfaceEvent`）将 append-origin 事件命名为"转录的持久材料"，替换副本仅保留在 model-visible 面——压缩替换落地会抹掉用户已看到的对话。因此替换仅以 `CompactionNote` 条目呈现，渲染器可据此提示上下文已被压缩，而不抹除用户已见内容。
 
 ## 公开模块
@@ -22,8 +24,9 @@
 | 导出 | 职责 |
 |---|---|
 | `./transcript` | `Transcript` 折叠模型与 `textOf` 块文本提取器。 |
-| `./presenter` | `TuiPresenter` — pi-tui 备用屏幕表面（滚动视口、状态行、meta 行、编辑器）、`processTerminal()` 生产后端与 `workspaceAutocomplete()`。 |
-| `./transcript-view` | `TranscriptView`/`StatusRow` — 折叠条目的主题化渲染（user 背景卡片、assistant Markdown、带 diff 的状态色工具卡、条目间一空行分隔）与动态状态行。 |
+| `./presenter` | `TuiPresenter` — pi-tui 备用屏幕表面（滚动视口、状态行、meta 行、编辑器，以及经前台键位 seam 的台账/详情浮层）、`processTerminal()` 生产后端与 `workspaceAutocomplete()`。 |
+| `./transcript-view` | `TranscriptView`/`StatusRow`/`LedgerView` — 折叠条目的主题化渲染（user 背景卡片、assistant Markdown、带 diff 的状态色工具卡、条目间一空行分隔）、动态状态行，以及台账视图（每条记录一行，带焦点标记与过滤头部）。 |
+| `./detail` | `detailBody`/`cappedLines`/`KIND_LABEL` — 单个台账单元格详情浮层的纯文本 tab 正文，以 `DETAIL_LINE_CAP` 行封顶并附余量标记。 |
 | `./meta-row` | `MetaRow`/`renderMetaRow` — 输入上下文行（model/thinking、cwd/git、上下文条）。 |
 | `./theme` | `darkTheme`/`lightTheme`/`themeForScheme` — 语义 256 色主题（前景角色、user 背景、markdown 与编辑器子主题）。 |
 | `./scheme` | `detectTerminalScheme` — 主题选择的终端配色方案查询。 |

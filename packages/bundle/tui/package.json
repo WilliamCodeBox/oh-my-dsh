@@ -46,6 +46,7 @@
   "dependencies": {
     "@williamcodebox/omd-agent-presets": "workspace:^",
     "@williamcodebox/omd-cmdline": "workspace:^",
+    "@williamcodebox/omd-client-trajectory-model": "workspace:^",
     "@williamcodebox/omd-tui-renderer": "workspace:^",
     "@williamcodebox/schemastery": "workspace:^",
     "commander": "^15.0.0",

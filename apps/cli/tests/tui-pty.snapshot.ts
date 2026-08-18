@@ -2,7 +2,8 @@
  * The `omd --profile tui` PTY case: boots the real profile composition (base +
  * tui bundle) under a POSIX pseudo-terminal, drives raw keys through the
  * presenter, and asserts the terminal journey — typed input rendered, a
- * keyless follow-up turn, clean Ctrl+C quit, and alternate-screen restore.
+ * keyless follow-up turn, the /ledger record view with its detail overlay
+ * (open, tab-switch, close), clean Ctrl+C quit, and alternate-screen restore.
  * Runs in the keyless snapshot gate; the POSIX python driver self-allocates
  * the PTY (CI has no TTY of its own).
  */
@@ -202,6 +203,45 @@ describe.skipIf(process.platform === 'win32')('tui profile PTY case (real Loader
       // machines (tsx import graph), so the PTY driver gets double the default
       // process budget before its marker/deadline logic trips.
       expect(output).toContain('hello')
+      // The alternate screen was restored on quit.
+      expect(output).toContain('\u001b[?1049l')
+      // No fatal load or runner error text reached the terminal.
+      expect(output).not.toContain('omd: ')
+    },
+    2 * LOADER_SMOKE_TEST_TIMEOUT_MS,
+  )
+
+  it(
+    'opens the ledger from /ledger, shows a cell detail overlay, switches tabs, and Escs back to the editor',
+    async () => {
+      const output = await runTuiPtySmoke([
+        // The editor's top border renders once the presenter owns the screen.
+        { waitFor: '──', send: 'hello' },
+        // The editor renders the typed line; Enter submits the keyless turn.
+        { waitFor: 'hello', send: '\r' },
+        // Give the keyless turn time to fail fast and settle, then open the
+        // ledger; the submitted user message folded into the first user row.
+        { delayMs: 9000, send: '/ledger\r' },
+        // The ledger header renders with its record count; Enter opens the
+        // focused user cell's detail overlay.
+        { waitFor: 'ledger · ', send: '\r' },
+        // The overlay title names the cell; Tab switches to the next tab.
+        { waitFor: 'User #1', send: '\t' },
+        // The active-tab marker moved; Esc closes the overlay, then the
+        // ledger. Space the Esc presses so the terminal parser delivers two
+        // distinct keys and each close settles before the next action.
+        { waitFor: '▸Preview', send: '\x1b' },
+        { delayMs: 500, send: '\x1b' },
+        // Back on the idle editor: confirm the quit, then quit (exit 130).
+        { delayMs: 500, send: '\x03' },
+        { send: '\x03' },
+      ], 130, 2 * LOADER_SMOKE_TEST_TIMEOUT_MS)
+      // The ledger opened with the submitted user message as the focused row.
+      expect(output).toContain('ledger · ')
+      // Enter opened the detail overlay over that row.
+      expect(output).toContain('User #1')
+      // Tab switched the active tab to Preview.
+      expect(output).toContain('▸Preview')
       // The alternate screen was restored on quit.
       expect(output).toContain('\u001b[?1049l')
       // No fatal load or runner error text reached the terminal.

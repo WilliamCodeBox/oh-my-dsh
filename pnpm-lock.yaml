@@ -1419,6 +1419,9 @@ importers:
       '@williamcodebox/omd-agent-presets':
         specifier: workspace:^
         version: link:../../preset/agent-presets
+      '@williamcodebox/omd-client-trajectory-model':
+        specifier: workspace:^
+        version: link:../../client/trajectory-model
       '@williamcodebox/omd-cmdline':
         specifier: workspace:^
         version: link:../../boot/cmdline
@@ -5049,9 +5052,15 @@ importers:
       '@williamcodebox/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+      '@williamcodebox/omd-client-trajectory-model':
+        specifier: workspace:^
+        version: link:../../client/trajectory-model
       '@williamcodebox/omd-commands':
         specifier: workspace:^
         version: link:../commands
+      '@williamcodebox/omd-compaction':
+        specifier: workspace:^
+        version: link:../../compaction/compaction
       '@williamcodebox/omd-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
@@ -5061,6 +5070,9 @@ importers:
       '@williamcodebox/omd-session':
         specifier: workspace:^
         version: link:../../core/session
+      '@williamcodebox/omd-tools':
+        specifier: workspace:^
+        version: link:../../core/tools
       '@williamcodebox/omd-user-approval':
         specifier: workspace:^
         version: link:../user-approval

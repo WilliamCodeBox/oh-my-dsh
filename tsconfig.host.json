@@ -182,6 +182,11 @@
     { "path": "./packages/skill/tool-skill" },
     { "path": "./packages/interaction/tool-ask-user" },
     { "path": "./packages/interaction/tui-renderer" },
+    // The framework-neutral trajectory model is consumed by the host TUI
+    // surface (ledger rows + detail tabs); it stays in packages/client (its
+    // client-side home) and is referenced from the host aggregate so the
+    // host program type-checks against its built declarations.
+    { "path": "./packages/client/trajectory-model" },
     { "path": "./packages/context/agent-instructions" },
     { "path": "./packages/core/agent-loop" },
     { "path": "./packages/llm/llm-retry" },

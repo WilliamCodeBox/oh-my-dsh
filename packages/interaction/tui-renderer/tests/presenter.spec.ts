@@ -5,11 +5,12 @@
  * process streams so tests run without a TTY.
  */
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Terminal } from '@earendil-works/pi-tui'
 import { Transcript } from '../src/transcript.ts'
 import { TuiPresenter } from '../src/presenter.ts'
 import { TranscriptView } from '../src/transcript-view.ts'
+import type { TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
 
 /** In-memory Terminal capturing writes, lifecycle calls, and the input callback. */
 class FakeTerminal implements Terminal {
@@ -285,6 +286,113 @@ describe('TuiPresenter', () => {
     await mountedAgain
     terminal.send('\x1b')
     expect(await cancelled).toEqual({ answers: [{ id: 'q2', selected: [] }] })
+    presenter.stop()
+  })
+})
+
+describe('TuiPresenter ledger', () => {
+  /** Two ledger cells: a user row and an open tool row. */
+  const cells = (): TrajectoryCellProps[] => [
+    {
+      index: 1, kind: 'user', text: 'hello', inputDetail: 'hello',
+      messageSource: { kind: 'user' }, timeSeconds: 0, startedAt: 1000,
+    },
+    {
+      index: 2, kind: 'tool', text: 'bash {}', callId: 'c1',
+      inputDetail: '{}', timeSeconds: null, startedAt: 2000,
+    },
+  ]
+
+  it('opens the ledger, navigates, opens a detail overlay, switches tabs, and closes', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    presenter.openLedger(cells, () => undefined)
+    expect(presenter.ledgerOpen).toBe(true)
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('ledger · 2 records') })
+
+    // Focus moves to the tool row; Enter opens its detail overlay.
+    terminal.send('\x1b[B')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(presenter.interactionPending).toBe(true) })
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('Tool #2') })
+
+    // Tool tabs: Summary/Payload/Schema/Timing; Tab advances to Payload.
+    terminal.send('\t')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('▸Payload') })
+    terminal.send('\x1b[C')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('▸Schema') })
+
+    // Esc closes the detail and returns to the still-open ledger; Esc again
+    // closes the ledger and restores the editor.
+    terminal.send('\x1b')
+    await vi.waitFor(() => { expect(presenter.interactionPending).toBe(false) })
+    expect(presenter.ledgerOpen).toBe(true)
+    terminal.send('\x1b')
+    expect(presenter.ledgerOpen).toBe(false)
+    presenter.stop()
+  })
+
+  it('renders the active kind filter in the ledger header', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    presenter.openLedger(cells, () => 'tool')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('ledger · 2 records · filter tool') })
+    presenter.stop()
+  })
+
+  it('keeps ledger keys ahead of a later registry listener', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.setInput('draft')
+    // The runner registers its registry listener after construction (like
+    // drivePresenter); its Esc would clear the input, so the ledger's own
+    // Esc must consume first.
+    presenter.onKey((data) => {
+      if (data === '\x1b') {
+        presenter.setInput('')
+        return true
+      }
+      return false
+    })
+    presenter.start()
+    presenter.openLedger(cells, () => undefined)
+    terminal.send('\x1b')
+    expect(presenter.ledgerOpen).toBe(false)
+    expect(presenter.getInput()).toBe('draft')
+    presenter.stop()
+  })
+
+  it('yields ledger keys to an interaction modal mounted above it', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    presenter.openLedger(cells, () => undefined)
+    const approval = presenter.askApproval('fs.write')
+    const { promise: mounted, resolve } = Promise.withResolvers<undefined>()
+    setTimeout(resolve, 10)
+    await mounted
+    // Arrow keys move the SelectList (not the ledger focus): down + Enter
+    // picks Reject, proving the modal owns the keys while it is up.
+    terminal.send('\x1b[B')
+    terminal.send('\r')
+    expect(await approval).toBe('rejected')
+    expect(presenter.ledgerOpen).toBe(true)
+    presenter.stop()
+  })
+
+  it('toggles the ledger closed and ignores Enter with no rows', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    presenter.openLedger(() => [], () => undefined)
+    expect(presenter.ledgerOpen).toBe(true)
+    terminal.send('\r')
+    expect(presenter.interactionPending).toBe(false)
+    // A second open call toggles it closed, like /ledger.
+    presenter.openLedger(() => [], () => undefined)
+    expect(presenter.ledgerOpen).toBe(false)
     presenter.stop()
   })
 })

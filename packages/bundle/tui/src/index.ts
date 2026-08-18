@@ -30,6 +30,7 @@ import { TuiPresenter, KeybindingRegistry, Transcript, darkTheme, detectTerminal
 import type { MetaRowData, SemanticTheme } from '@williamcodebox/omd-tui-renderer'
 import type { ReasoningEffortId } from '@williamcodebox/omd-llm'
 import { watchGitStatus, type GitStatus } from './git.ts'
+import { LedgerProjection, isLedgerKind } from './ledger.ts'
 import type {} from '@williamcodebox/omd-permission-presets'
 // The approval/request waterfall declaration rides the ApprovalService merge;
 // the empty import registers the Context augmentation for ctx.on typing.
@@ -648,6 +649,8 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   // Resume replays stored seed events first: constructor seeds never emit
   // through `session/event`, so a resumed transcript starts from storage.
   for (const event of agent.session.events) transcript.fold(event)
+  // Kind-filtered view over the transcript's trajectory ledger for /ledger.
+  const ledger = new LedgerProjection(transcript)
 
   // Running-turn timing for the transient: `runStartedAt` anchors the elapsed
   // counter, `lastActivityAt` tracks the last durable event so a long silent
@@ -806,6 +809,35 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       }
       return
     }
+    if (line === '/ledger') {
+      // Toggle the trajectory ledger view over the transcript. The projection
+      // feeds the presenter's LedgerView; a live turn keeps streaming behind
+      // it and the ledger rows update on the next render.
+      if (presenter === undefined) {
+        notice.text = 'ledger unavailable'
+      } else {
+        presenter.openLedger(() => ledger.cells, () => ledger.filter)
+      }
+      return
+    }
+    const filterMatch = /^\/filter(?:\s+(\S+))?$/.exec(line)
+    if (filterMatch !== null) {
+      const kind = filterMatch[1]
+      if (kind === undefined) {
+        ledger.setFilter(undefined)
+        notice.text = 'ledger filter cleared'
+      } else {
+        const normalized = kind.toLowerCase()
+        if (isLedgerKind(normalized)) {
+          ledger.setFilter(normalized)
+          notice.text = `ledger filter ${normalized}`
+        } else {
+          notice.text = `unknown ledger kind: ${kind}`
+        }
+      }
+      presenter?.requestRender()
+      return
+    }
     if (line === '/preset' || line.startsWith('/preset ')) {
       // Switch the agent preset while the session is still blank. Recomposing
       // mid-conversation would leave logged tool calls the new composition
@@ -955,6 +987,8 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
         ...descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
         { name: 'model', description: 'switch provider/model' },
         { name: 'thinking', description: 'set reasoning effort level' },
+        { name: 'ledger', description: 'show the record ledger' },
+        { name: 'filter', description: 'filter the ledger by record kind' },
         { name: 'preset', description: 'switch agent preset while the session is blank' },
         { name: 'sessions', description: 'list and resume a session' },
         { name: 'editor', description: 'edit the draft in $EDITOR' },
