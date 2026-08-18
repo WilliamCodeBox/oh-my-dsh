@@ -1,7 +1,7 @@
 {
   "name": "@williamcodebox/omd-subagent-cli",
   "description": "Out-of-process CLI subagent backend: drives any headless coding-agent CLI (pi, oh-my-pi, opencode) with a prompt and parses its final text",
-  "version": "0.1.0-rc.8",
+  "version": "0.1.0-rc.9",
   "publishConfig": {
     "access": "public"
   },
