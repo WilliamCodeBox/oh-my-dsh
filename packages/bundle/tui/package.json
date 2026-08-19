@@ -1,7 +1,7 @@
 {
   "name": "@williamcodebox/omd-tui",
   "description": "The dsh interactive terminal surface bundle: a TUI front door over dsh-base",
-  "version": "0.1.0-rc.9",
+  "version": "0.1.0-rc.10",
   "publishConfig": {
     "access": "public"
   },
