@@ -419,3 +419,80 @@ describe('TuiPresenter ledger', () => {
     showOverlay.mockRestore()
   })
 })
+
+describe('TuiPresenter welcome and todos', () => {
+  it('renders welcome lines for an empty transcript and drops them once content folds', async () => {
+    const terminal = new FakeTerminal()
+    const transcript = new Transcript()
+    const presenter = makePresenter(terminal, transcript)
+    presenter.setMetaData(() => ({
+      model: { provider: 'test-provider', model: 'test-model' },
+      preset: 'standard',
+      cwd: '~/work/oh-my-dsh',
+    }))
+    presenter.start()
+    await vi.waitFor(() => {
+      const out = terminal.writes.join('')
+      expect(out).toContain('test-provider/test-model')
+      expect(out).toContain('workspace: ~/work/oh-my-dsh')
+      expect(out).toContain('preset: standard')
+      expect(out).toContain('type a message to start · ? keys')
+      expect(out).toContain('/preset · /todos · /workspace <path>')
+    })
+    // The first folded item replaces the welcome: the fresh frame must no
+    // longer carry the hint lines.
+    const welcomeEnd = terminal.writes.length
+    transcript.fold({ type: 'turn/start', seq: 1, time: 1000, data: { turn: 1 } } as never)
+    await vi.waitFor(() => {
+      const fresh = terminal.writes.slice(welcomeEnd).join('')
+      expect(fresh).toContain('-- turn 1 --')
+      expect(fresh).not.toContain('type a message to start')
+    })
+    presenter.stop()
+  })
+
+  it('prefers the folded request header over the meta row for the welcome model', async () => {
+    const terminal = new FakeTerminal()
+    const transcript = transcriptWith([
+      { type: 'request/header', seq: 1, time: 1000, data: { header: { config: { provider: 'header-provider', model: 'header-model' } }, reason: 'initial' } },
+    ])
+    const presenter = makePresenter(terminal, transcript)
+    presenter.setMetaData(() => ({ model: { provider: 'meta-provider', model: 'meta-model' }, cwd: '~/w' }))
+    presenter.start()
+    await vi.waitFor(() => {
+      const out = terminal.writes.join('')
+      expect(out).toContain('header-provider/header-model')
+      expect(out).not.toContain('meta-provider/meta-model')
+    })
+    presenter.stop()
+  })
+
+  it('opens the todos overlay with status glyphs and closes on Escape or Enter', async () => {
+    const terminal = new FakeTerminal()
+    const presenter = makePresenter(terminal, new Transcript())
+    presenter.start()
+    presenter.openTodos(() => [
+      { content: 'write tests', status: 'completed' },
+      { content: 'run checks', status: 'in_progress' },
+      { content: 'ship it', status: 'pending' },
+    ])
+    expect(presenter.interactionPending).toBe(true)
+    await vi.waitFor(() => {
+      const out = terminal.writes.join('')
+      expect(out).toContain('todos · 3')
+      expect(out).toContain('write tests')
+      expect(out).toContain('run checks')
+      expect(out).toContain('ship it')
+    })
+    // Escape closes the overlay and restores the editor.
+    terminal.send('\x1b')
+    expect(presenter.interactionPending).toBe(false)
+
+    // Enter closes it too.
+    presenter.openTodos(() => [{ content: 'empty list', status: 'pending' }])
+    expect(presenter.interactionPending).toBe(true)
+    terminal.send('\r')
+    expect(presenter.interactionPending).toBe(false)
+    presenter.stop()
+  })
+})

@@ -67,6 +67,8 @@ export function formatItem(item: TranscriptItem): string[] {
       return item.end === undefined
         ? [`-- turn ${item.turn} --`]
         : [`-- turn ${item.turn} ${item.end.reason.kind} --`]
+    case 'subagent':
+      return [`subagent ${item.provider} ${item.state}`]
   }
 }
 

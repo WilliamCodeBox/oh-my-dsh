@@ -30,6 +30,20 @@ function foldUser(transcript: Transcript, text: string, seq: number): void {
   }, seq, { surfaceOp: 'append' }))
 }
 
+function foldInjectedContext(
+  transcript: Transcript,
+  text: string,
+  seq: number,
+  source: Record<string, unknown> = { kind: 'agent-instructions', form: 'instructions', changes: [{ action: 'set', scope: 'root', path: 'AGENTS.md' }] },
+): void {
+  transcript.fold(ev('user/message', {
+    id: `u${seq}`,
+    role: 'user',
+    content: [{ type: 'text', text }],
+    source,
+  }, seq, { surfaceOp: 'append' }))
+}
+
 function foldAssistant(transcript: Transcript, text: string, seq: number): void {
   transcript.fold(ev('assistant/message', {
     turn: 1,
@@ -77,6 +91,48 @@ describe('TranscriptView themed path', () => {
     const lines = themedLines(t => foldUser(t, 'hello', 2))
     expect(lines.join('\n')).toContain('\x1b[48;5;237m')
     expect(lines.join('\n')).toContain('hello')
+  })
+
+  it('collapses injected-context rows to one dim line by default', () => {
+    const transcript = new Transcript()
+    foldInjectedContext(transcript, '<system-reminder>\nlong workspace instructions\n</system-reminder>', 2)
+    const lines = new TranscriptView(transcript, darkTheme).render(80)
+    const joined = lines.join('\n')
+    // One dim summary line with the source's file path; no body text.
+    expect(joined).toContain('▸ context · AGENTS.md · ctrl+o expands')
+    expect(joined).not.toContain('long workspace instructions')
+    expect(joined).not.toContain('\x1b[48;5;237m')
+    expect(joined).toContain('\x1b[38;5;240m') // dim token
+  })
+
+  it('expands injected-context rows when contextExpanded flips', () => {
+    const transcript = new Transcript()
+    foldInjectedContext(transcript, '<system-reminder>\nlong workspace instructions\n</system-reminder>', 2)
+    const view = new TranscriptView(transcript, darkTheme)
+    view.contextExpanded = true
+    const joined = view.render(80).join('\n')
+    expect(joined).toContain('long workspace instructions')
+    expect(joined).toContain('\x1b[48;5;237m')
+    expect(joined).not.toContain('ctrl+o expands')
+  })
+
+  it('labels the skill catalog and skill-invocation rows', () => {
+    const transcript = new Transcript()
+    foldInjectedContext(transcript, '<available_skills>\n- a\n</available_skills>', 2, { kind: 'skill-catalog', form: 'catalog' })
+    foldInjectedContext(transcript, 'skill body', 3, { kind: 'skill-invocation', name: 'fs.read', form: 'instructions' })
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('▸ context · skill catalog · ctrl+o expands')
+    expect(joined).toContain('▸ context · skill fs.read · ctrl+o expands')
+    expect(joined).not.toContain('<available_skills>')
+  })
+
+  it('keeps direct user prompts full-width regardless of context collapse', () => {
+    const transcript = new Transcript()
+    foldUser(transcript, 'my prompt', 2)
+    const view = new TranscriptView(transcript, darkTheme)
+    expect(view.render(80).join('\n')).toContain('my prompt')
+    view.contextExpanded = false
+    expect(view.render(80).join('\n')).toContain('my prompt')
   })
 
   it('renders assistant Markdown bold and code', () => {
@@ -253,5 +309,113 @@ describe('TranscriptView themed path', () => {
     const joined = lines.join('\n')
     expect(joined).toContain('\\x1b')
     expect(joined).not.toContain('\x1b[31mred')
+  })
+})
+
+describe('TranscriptView subagent activity', () => {
+  it('renders a running subagent dimmed', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle({ kind: 'start', runId: 'r-1', provider: 'task', id: 'child-1', time: 1000 })
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('\x1b[38;5;240m') // dim token
+    expect(joined).toContain('⟳ subagent task')
+  })
+
+  it('merges a start→done transition into a success line on re-render', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle({ kind: 'start', runId: 'r-1', provider: 'task', id: 'child-1', time: 1000 })
+    const view = new TranscriptView(transcript, darkTheme)
+    expect(view.render(80).join('\n')).toContain('⟳ subagent task')
+    // The settled edge merges in place; the fingerprint flip must rebuild.
+    transcript.subagentLifecycle({ kind: 'end', runId: 'r-1', provider: 'task', id: 'child-1', time: 5000 })
+    const settled = view.render(80).join('\n')
+    expect(settled).toContain('✓ subagent task')
+    expect(settled).not.toContain('⟳ subagent task')
+    expect(settled).toContain('\x1b[38;5;114m') // success token
+  })
+
+  it('renders a failed subagent in error color with the failure text', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle({ kind: 'start', runId: 'r-1', provider: 'task', id: 'child-1', time: 1000 })
+    transcript.subagentLifecycle({ kind: 'end', runId: 'r-1', provider: 'task', id: 'child-1', time: 5000, error: 'model failure' })
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('✗ subagent task model failure')
+    expect(joined).toContain('\x1b[38;5;167m') // error token
+  })
+})
+
+describe('TranscriptView reasoning preview', () => {
+  it('renders reasoning above the text, dimmed and capped with a continuation note', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 1,
+      message: {
+        id: 'a1', role: 'assistant',
+        content: [
+          { type: 'reasoning', text: Array.from({ length: 12 }, (_, i) => `think ${i + 1}`).join('\n') },
+          { type: 'text', text: 'final answer' },
+        ],
+        source: { kind: 'model', provider: 'deepseek', model: 'deepseek-chat' },
+      },
+    }, 2, { surfaceOp: 'append' }))
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('think 1')
+    expect(joined).toContain('think 10')
+    expect(joined).not.toContain('think 11')
+    expect(joined).toContain('… 2 more reasoning lines')
+    expect(joined).toContain('\x1b[38;5;240m') // dim token
+    // Reasoning sits above the answer text.
+    expect(joined.indexOf('think 1')).toBeLessThan(joined.indexOf('final answer'))
+  })
+
+  it('shows a short reasoning preview without a truncation note', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 1,
+      message: {
+        id: 'a1', role: 'assistant',
+        content: [
+          { type: 'reasoning', text: 'brief thought' },
+          { type: 'text', text: 'answer' },
+        ],
+        source: { kind: 'model', provider: 'deepseek', model: 'deepseek-chat' },
+      },
+    }, 2, { surfaceOp: 'append' }))
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('brief thought')
+    expect(joined).not.toContain('more reasoning lines')
+  })
+})
+
+describe('TranscriptView turn end states', () => {
+  it('renders a failed turn bracket in error color with the error message', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('turn/start', { turn: 1 }, 1))
+    transcript.fold(ev('turn/end', {
+      turn: 1, reason: { kind: 'error', error: { message: 'provider exploded', code: 'RATE_LIMIT' } },
+    }, 2))
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('-- turn 1 error --')
+    expect(joined).toContain('provider exploded')
+    expect(joined).toContain('\x1b[38;5;167m') // error token
+  })
+
+  it('renders a max-tokens turn bracket in warning color', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('turn/start', { turn: 1 }, 1))
+    transcript.fold(ev('turn/end', { turn: 1, reason: { kind: 'max-tokens' } }, 2))
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('-- turn 1 max-tokens --')
+    expect(joined).toContain('\x1b[38;5;179m') // warning token
+    expect(joined).not.toContain('\x1b[38;5;167m') // not error
+  })
+
+  it('keeps other turn reasons dim', () => {
+    const transcript = new Transcript()
+    transcript.fold(ev('turn/start', { turn: 1 }, 1))
+    transcript.fold(ev('turn/end', { turn: 1, reason: { kind: 'completed' } }, 2))
+    const joined = new TranscriptView(transcript, darkTheme).render(80).join('\n')
+    expect(joined).toContain('-- turn 1 completed --')
+    expect(joined).toContain('\x1b[38;5;240m') // dim token
   })
 })

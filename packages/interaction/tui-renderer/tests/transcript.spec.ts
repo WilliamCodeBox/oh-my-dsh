@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { Transcript, textOf } from '../src/transcript.ts'
-import type { AssistantItem, ToolItem, TurnItem, UserItem } from '../src/transcript.ts'
+import type { AssistantItem, SubagentItem, ToolItem, TurnItem, UserItem } from '../src/transcript.ts'
 import type { SessionEvent } from '@williamcodebox/omd-session'
 import { CallId, MessageId } from '@williamcodebox/omd-llm'
 import { CommandId } from '@williamcodebox/omd-commands'
@@ -289,6 +289,133 @@ describe('Transcript', () => {
     off()
     transcript.fold(ev('turn/start', { turn: 2 }, 3))
     expect(calls).toBe(2)
+  })
+})
+
+describe('Transcript subagent lifecycle', () => {
+  const start = (runId = 'r-1', time = 1000) => ({
+    kind: 'start' as const, runId, provider: 'task', id: `child-${runId}`, time,
+  })
+  const end = (runId = 'r-1', time = 5000, error?: string) => ({
+    kind: 'end' as const, runId, provider: 'task', id: `child-${runId}`, time,
+    ...(error !== undefined ? { error } : {}),
+  })
+
+  it('appends a running item on start', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle(start())
+    const item = transcript.state.items[0] as SubagentItem
+    expect(item).toMatchObject({
+      kind: 'subagent', runId: 'r-1', provider: 'task', id: 'child-r-1', state: 'running',
+    })
+    // Edges are not session events, so they fold with seq 0.
+    expect(item.seq).toBe(0)
+    expect(item.error).toBeUndefined()
+  })
+
+  it('merges a done edge into the open card in place', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle(start())
+    const running = transcript.state.items[0]
+    transcript.subagentLifecycle(end())
+    const items = transcript.state.items
+    expect(items).toHaveLength(1)
+    // Same item reference: the end edge merged, it did not append.
+    expect(items[0]).toBe(running)
+    expect((items[0] as SubagentItem).state).toBe('done')
+    expect((items[0] as SubagentItem).error).toBeUndefined()
+  })
+
+  it('merges a failed edge with the failure text in place', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle(start())
+    transcript.subagentLifecycle(end('r-1', 5000, 'model failure'))
+    const item = transcript.state.items[0] as SubagentItem
+    expect(item.state).toBe('failed')
+    expect(item.error).toBe('model failure')
+  })
+
+  it('appends a settled item when the end edge has no matching start', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle(end('orphan', 5000, 'boom'))
+    const item = transcript.state.items[0] as SubagentItem
+    expect(item.state).toBe('failed')
+    expect(item.error).toBe('boom')
+    expect(item.runId).toBe('orphan')
+  })
+
+  it('pairs ends to starts by run id across interleaved runs', () => {
+    const transcript = new Transcript()
+    transcript.subagentLifecycle(start('a', 1000))
+    transcript.subagentLifecycle(start('b', 2000))
+    transcript.subagentLifecycle(end('a', 3000, 'first failed'))
+    transcript.subagentLifecycle(end('b', 4000))
+    const [first, second] = transcript.state.items as [SubagentItem, SubagentItem]
+    expect(first.state).toBe('failed')
+    expect(first.error).toBe('first failed')
+    expect(second.state).toBe('done')
+  })
+
+  it('notifies listeners on lifecycle edges', () => {
+    const transcript = new Transcript()
+    let calls = 0
+    const off = transcript.on(() => { calls++ })
+    transcript.subagentLifecycle(start())
+    transcript.subagentLifecycle(end())
+    expect(calls).toBe(2)
+    off()
+    transcript.subagentLifecycle(start('x'))
+    expect(calls).toBe(2)
+  })
+})
+
+describe('Transcript reasoning capture', () => {
+  it('captures reasoning blocks as thinking on the finalized assistant item', () => {
+    const transcript = new Transcript()
+    transcript.fold(chunk(1, 0, 'streamed', 1))
+    transcript.fold(ev('assistant/message', {
+      turn: 1, step: 0,
+      message: {
+        id: MessageId('a1'), role: 'assistant',
+        content: [
+          { type: 'reasoning', text: 'think one' },
+          { type: 'text', text: 'final answer' },
+        ],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+    }, 2, { surfaceOp: 'append' }))
+
+    const item = transcript.state.items[0] as AssistantItem
+    expect(item.thinking).toBe('think one')
+    expect(item.text).toBe('final answer')
+  })
+
+  it('joins reasoning blocks and leaves thinking absent without them', () => {
+    const withReasoning = new Transcript()
+    withReasoning.fold(ev('assistant/message', {
+      turn: 1, step: 0,
+      message: {
+        id: MessageId('a1'), role: 'assistant',
+        content: [
+          { type: 'reasoning', text: 'line 1' },
+          { type: 'reasoning', text: 'line 2' },
+          { type: 'text', text: 'answer' },
+        ],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+    }, 1, { surfaceOp: 'append' }))
+    expect((withReasoning.state.items[0] as AssistantItem).thinking).toBe('line 1\nline 2')
+
+    const plain = new Transcript()
+    plain.fold(ev('assistant/message', {
+      turn: 1, step: 0,
+      message: {
+        id: MessageId('a2'), role: 'assistant',
+        content: [{ type: 'text', text: 'answer' }],
+        source: { kind: 'model', provider: 'p', model: 'm' },
+      },
+    }, 1, { surfaceOp: 'append' }))
+    expect((plain.state.items[0] as AssistantItem).thinking).toBeUndefined()
   })
 })
 

@@ -12,8 +12,8 @@
 
 export { Transcript, textOf } from './transcript.ts'
 export type {
-  AssistantItem, CompactionNote, ToolItem, ToolResult, TranscriptItem, TranscriptState,
-  TurnItem, UserItem,
+  AssistantItem, CompactionNote, SubagentItem, SubagentLifecycleEdge, ToolItem, ToolResult,
+  TranscriptItem, TranscriptState, TurnItem, UserItem,
 } from './transcript.ts'
 export { contextBar, formatItem, formatStatus } from './format.ts'
 export { needsSanitize, sanitizeText } from './sanitize.ts'

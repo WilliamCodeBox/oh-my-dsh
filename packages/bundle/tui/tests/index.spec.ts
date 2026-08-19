@@ -11,7 +11,12 @@ import UserQuestionService from '@williamcodebox/omd-user-questions'
 import CommandRuntime from '@williamcodebox/omd-commands'
 import { CallId, createAssistantMessage, createToolResultMessage, createUserMessage, MessageId } from '@williamcodebox/omd-llm'
 import SessionStore from '@williamcodebox/omd-session'
+import { SessionId } from '@williamcodebox/omd-session'
 import type { Session, UserMessage } from '@williamcodebox/omd-session'
+// The subagent lifecycle event names ride the cordis Events merge; the
+// runner folds the edges into the transcript from the parent-scoped events.
+import { SubagentRunId } from '@williamcodebox/omd-subagent'
+import type {} from '@williamcodebox/omd-subagent'
 import { apply, Config, internals, runningTransient, StdinInputSource } from '../src/index.ts'
 import { Keymap } from '../src/keymap.ts'
 import { darkTheme, textOf } from '@williamcodebox/omd-tui-renderer'
@@ -602,6 +607,27 @@ describe('tui runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('toggles injected-context rows on Ctrl+O without leaking the key into the editor', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) })
+    // Ctrl+O must be consumed by the registry (no crash, nothing typed) and
+    // the next keystrokes must still reach the editor untouched.
+    terminal.send('\x0f')
+    terminal.send('\x0f')
+    terminal.send('x')
+    terminal.send('\r')
+    terminal.send('\x03')
+    terminal.send('\x03')
+    const result = await runPromise
+    expect(result.code).toBe(130)
+    expect(test.recorded.followup).toHaveLength(1)
+    expect(test.recorded.followup[0]!.content).toEqual([{ type: 'text', text: 'x' }])
+    await test.ctx.fiber.dispose()
+  })
+
   it('answers an approval prompt over the presenter modal: Enter allows', async () => {
     const test = await bench([], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },
@@ -895,6 +921,164 @@ await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('editor upda
     expect(result.code).toBe(130)
     await test.ctx.fiber.dispose()
   })
+
+  it('opens the todo overlay from /todos and closes on Escape', async () => {
+    const test = await bench([], {}, {
+      afterCreate: (session) => {
+        session.append('todo/write', { todos: [
+          { content: 'write tests', status: 'completed' },
+          { content: 'run checks', status: 'in_progress' },
+          { content: 'ship it', status: 'pending' },
+        ] })
+      },
+    }, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+    terminal.send('/todos')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('todos · 3') }, { timeout: 10000 })
+    expect(terminal.writes.join('')).toContain('write tests')
+    expect(terminal.writes.join('')).toContain('run checks')
+    // Escape closes the overlay; the editor submits again.
+    terminal.send('\x1b')
+    terminal.send('hi')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(test.recorded.followup).toHaveLength(1) }, { timeout: 10000 })
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('ignores /todos on the pipe path without a presenter', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: '/' }, { kind: 'char', char: 't' }, { kind: 'char', char: 'o' },
+        { kind: 'char', char: 'd' }, { kind: 'char', char: 'o' }, { kind: 'char', char: 's' },
+        { kind: 'submit' },
+        { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      {},
+    )
+    const result = await test.run()
+    // No presenter on the pipe path: the todos command must not submit a
+    // follow-up turn or crash the drive loop.
+    expect(test.recorded.followup).toHaveLength(0)
+    expect(result.code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('switches the workspace override from /workspace with the fs-tool boundary notice', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+    terminal.send('/workspace')
+    terminal.send(' ')
+    terminal.send('/tmp')
+    terminal.send('/new-workspace')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('workspace /tmp/new-workspace') }, { timeout: 10000 })
+    // The fs tool root stays the session header cwd; the notice documents
+    // the boundary instead of silently claiming the switch.
+    expect(terminal.writes.join('')).toContain('fs tools keep session cwd')
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('reports the current workspace from a bare /workspace', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+    terminal.send('/workspace')
+    terminal.send('\r')
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('workspace ') }, { timeout: 10000 })
+    // A bare /workspace only reports the current override; the fs-tool
+    // boundary sentence belongs to the switching notice.
+    expect(terminal.writes.join('')).not.toContain('fs tools keep session cwd')
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('submits multiline input on the pipe path: ctrl+j inserts a newline, Enter submits the whole text', async () => {
+    const test = await bench(
+      [
+        { kind: 'char', char: '\x0a' },
+        { kind: 'char', char: 'x' },
+        { kind: 'submit' },
+        { kind: 'ctrl-c' },
+        { kind: 'ctrl-c' },
+      ],
+      {},
+      { afterFollowup: (_ctx, session, message) => { appendTurn(session, message, 'ok') } },
+    )
+    const result = await test.run()
+    expect(test.recorded.followup).toHaveLength(1)
+    expect(test.recorded.followup[0]!.content).toEqual([{ type: 'text', text: '\nx' }])
+    expect(result.code).toBe(130)
+    await test.ctx.fiber.dispose()
+  })
+
+  it('inserts a newline on ctrl+j over the presenter and submits the whole multiline draft', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+    terminal.send('a')
+    terminal.send('\x0a') // ctrl+j: insert newline, never submit
+    terminal.send('b')
+    terminal.send('\r') // Enter submits the whole multiline draft
+    await vi.waitFor(() => { expect(test.recorded.followup).toHaveLength(1) }, { timeout: 10000 })
+    expect(test.recorded.followup[0]!.content).toEqual([{ type: 'text', text: 'a\nb' }])
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
+  it('folds subagent lifecycle edges from the parent-scoped events into the transcript', async () => {
+    const test = await bench([], {}, {}, { tty: true })
+    const terminal = new FakeTerminal()
+    internals.createTerminal = () => terminal
+    const runPromise = test.run()
+    await vi.waitFor(() => { expect(terminal.started).toBe(true) }, { timeout: 10000 })
+    await vi.waitFor(() => { expect(test.recorded.agent).toBeDefined() })
+    const agentCtx = test.recorded.agent!.ctx
+    // The runner listens on the driven agent's scoped context; emitting on
+    // that same context delivers the lifecycle pair to the transcript.
+    agentCtx.emit('subagent/start', {
+      runId: SubagentRunId('run-1'),
+      provider: 'spawn',
+      id: SessionId('child-1'),
+      local: true,
+    })
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('⟳ subagent spawn') }, { timeout: 10000 })
+    agentCtx.emit('subagent/end', {
+      runId: SubagentRunId('run-1'),
+      provider: 'spawn',
+      id: SessionId('child-1'),
+      local: true,
+      stopReason: 'error',
+    })
+    await vi.waitFor(() => { expect(terminal.writes.join('')).toContain('✗ subagent spawn error') }, { timeout: 10000 })
+    terminal.send('\x03')
+    terminal.send('\x03')
+    expect((await runPromise).code).toBe(130)
+    await test.ctx.fiber.dispose()
+  }, 20000)
+
   it('rejects an approval prompt by selecting the second option', async () => {
     const test = await bench([], {}, {
       afterCreate: (session) => { session.append('turn/start', { turn: 1 }) },

@@ -1471,6 +1471,9 @@ importers:
       '@williamcodebox/omd-session':
         specifier: workspace:^
         version: link:../../core/session
+      '@williamcodebox/omd-subagent':
+        specifier: workspace:^
+        version: link:../../subagent/subagent
       '@williamcodebox/omd-user-approval':
         specifier: workspace:^
         version: link:../../interaction/user-approval

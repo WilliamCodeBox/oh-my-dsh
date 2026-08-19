@@ -40,6 +40,11 @@ import type {} from '@williamcodebox/omd-user-approval'
 import type {} from '@williamcodebox/omd-user-questions'
 import type {} from '@williamcodebox/omd-commands'
 import type {} from '@williamcodebox/omd-session-persistence'
+// The subagent lifecycle edge shapes and the cordis Events merge ride the
+// subagent package's type exports; the runner only observes its own
+// delegations through the parent-scoped events, it never starts runs.
+import type {} from '@williamcodebox/omd-subagent'
+import type { SubagentRunEndInfo, SubagentRunInfo } from '@williamcodebox/omd-subagent'
 import { parseCommand } from '@williamcodebox/omd-commands'
 // Empty type imports carry the Loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
@@ -423,6 +428,16 @@ async function drivePresenter(
       },
     })
     registry.register({
+      key: '\x0f',
+      display: 'Ctrl+O',
+      description: 'expand or collapse injected context rows',
+      handler: () => {
+        // Injected context (workspace instructions, skill catalog) folds to
+        // one line per row until expanded; the key is never a modal key.
+        presenter.toggleContextExpanded()
+      },
+    })
+    registry.register({
       key: '\x03',
       display: 'Ctrl+C',
       description: 'clear input / cancel / quit (three-step)',
@@ -670,15 +685,66 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     }
   })
 
+  // Subagent activity folds as lifecycle edges from the parent-scoped cordis
+  // events. The listeners sit on the driven agent's scoped context, so a
+  // delegation's start/end pair reaches the transcript only when this agent
+  // is its delegating parent (scope-filtered by the carrier). Edges are not
+  // session events, so they never replay from storage on resume.
+  const offSubagentStart = agent.ctx.on('subagent/start', (info: SubagentRunInfo) => {
+    transcript.subagentLifecycle({
+      kind: 'start',
+      runId: info.runId,
+      provider: info.provider,
+      id: info.id,
+      time: Date.now(),
+    })
+  })
+  const offSubagentEnd = agent.ctx.on('subagent/end', (info: SubagentRunEndInfo) => {
+    transcript.subagentLifecycle({
+      kind: 'end',
+      runId: info.runId,
+      provider: info.provider,
+      id: info.id,
+      time: Date.now(),
+      // Only a completed child settles clean; every other stop reason reads
+      // as a failure on the card (aborted, max tokens, refusal included).
+      ...(info.stopReason === 'completed' ? {} : { error: info.stopReason }),
+    })
+  })
+
   const interactive = internals.isTTY
   const commands = ctx.get('commands')
   const commandAbort = new AbortController()
+  // Slash-command descriptors for autocomplete; stable for the run.
+  const descriptors = commands?.list(agent) ?? []
   // Input-context row data: model/thinking from the selection ref, cwd,
-  // git worktree state (polled), context usage from the transcript.
-  const workspace = config.workspace ?? process.cwd()
+  // git worktree state (polled), context usage from the transcript. The
+  // workspace is the runner's display/autocomplete/git root — /workspace
+  // switches it at runtime, while the session header cwd (the fs tool root)
+  // stays fixed at creation; the command's notice documents that boundary.
+  let workspace = config.workspace ?? process.cwd()
   const home = homedir()
-  const displayCwd = workspace === home ? '~' : workspace.startsWith(`${home}/`) ? `~${workspace.slice(home.length)}` : workspace
+  const displayFor = (path: string): string =>
+    path === home ? '~' : path.startsWith(`${home}/`) ? `~${path.slice(home.length)}` : path
+  let displayCwd = displayFor(workspace)
   let gitState: GitStatus | undefined
+  // Rebuildable autocomplete: /workspace re-points the @-file root by
+  // building a fresh provider over the new workspace.
+  const buildAutocomplete = (basePath: string) => workspaceAutocomplete(
+    [
+      ...descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
+      { name: 'model', description: 'switch provider/model' },
+      { name: 'thinking', description: 'set reasoning effort level' },
+      { name: 'ledger', description: 'show the record ledger' },
+      { name: 'filter', description: 'filter the ledger by record kind' },
+      { name: 'preset', description: 'switch agent preset while the session is blank' },
+      { name: 'sessions', description: 'list and resume a session' },
+      { name: 'editor', description: 'edit the draft in $EDITOR' },
+      { name: 'todos', description: 'show the todo list' },
+      { name: 'workspace', description: 'switch the workspace override' },
+    ],
+    basePath,
+  )
   const metaData = (): MetaRowData => {
     const current = selectionRef.current
     const ctxInfo = transcript.state.context
@@ -818,6 +884,41 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
       } else {
         presenter.openLedger(() => ledger.cells, () => ledger.filter)
       }
+      return
+    }
+    if (line === '/todos') {
+      // Full todo list over the transcript; the snapshot is re-read before
+      // every render, so live todo/write updates the overlay while it is up.
+      if (presenter === undefined) {
+        notice.text = 'todos unavailable'
+      } else {
+        presenter.openTodos(() => transcript.state.todos)
+      }
+      return
+    }
+    const workspaceMatch = /^\/workspace(?:\s+(.+))?$/.exec(line)
+    if (workspaceMatch !== null) {
+      const next = workspaceMatch[1]
+      if (next === undefined) {
+        notice.text = `workspace ${displayCwd}`
+      } else {
+        // Expand a leading ~ the same way the meta row's display path does.
+        const resolved = next === '~' || next.startsWith('~/') ? join(home, next.slice(1)) : next
+        workspace = resolved
+        displayCwd = displayFor(workspace)
+        // Re-point the @-file completion root and the git watcher. The fs
+        // tool root stays the session header cwd (fixed at creation) — the
+        // notice documents that boundary instead of silently claiming it.
+        presenter?.editor.setAutocompleteProvider(buildAutocomplete(workspace))
+        offGit()
+        gitState = undefined
+        offGit = watchGitStatus(workspace, (status) => {
+          gitState = status
+          presenter?.requestRender()
+        })
+        notice.text = `workspace ${displayCwd} · fs tools keep session cwd`
+      }
+      presenter?.requestRender()
       return
     }
     const filterMatch = /^\/filter(?:\s+(\S+))?$/.exec(line)
@@ -981,20 +1082,7 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     const scheme = await detectTerminalScheme(process.stdin, io.stdout)
     statusTheme = themeForScheme(scheme)
     // @-file and slash-command completion over the workspace directory.
-    const descriptors = commands?.list(agent) ?? []
-    const autocomplete = workspaceAutocomplete(
-      [
-        ...descriptors.map(descriptor => ({ name: descriptor.name, description: descriptor.description })),
-        { name: 'model', description: 'switch provider/model' },
-        { name: 'thinking', description: 'set reasoning effort level' },
-        { name: 'ledger', description: 'show the record ledger' },
-        { name: 'filter', description: 'filter the ledger by record kind' },
-        { name: 'preset', description: 'switch agent preset while the session is blank' },
-        { name: 'sessions', description: 'list and resume a session' },
-        { name: 'editor', description: 'edit the draft in $EDITOR' },
-      ],
-      config.workspace ?? process.cwd(),
-    )
+    const autocomplete = buildAutocomplete(workspace)
     presenter = new TuiPresenter(internals.createTerminal(), transcript, {
       onSubmit: dispatchLine,
       statusLine,
@@ -1041,6 +1129,8 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
     // while persistence drains; the pipe path has no presenter.
     commandAbort.abort()
     offEvents()
+    offSubagentStart()
+    offSubagentEnd()
     offApproval()
     offQuestions?.()
     presenter?.stop()
@@ -1062,6 +1152,8 @@ async function runOnce(ctx: Context, config: Config, io: TuiIo, input: InputSour
   } catch (error) {
     commandAbort.abort()
     offEvents()
+    offSubagentStart()
+    offSubagentEnd()
     offApproval()
     offQuestions?.()
     presenter?.stop()

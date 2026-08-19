@@ -34,6 +34,7 @@ import type {
   AskUserQuestionItem,
 } from '@williamcodebox/omd-user-questions/types'
 import type { Component } from '@earendil-works/pi-tui'
+import type { TodoItem } from '@williamcodebox/omd-session'
 import type { Transcript } from './transcript.ts'
 import { sanitizeText } from './sanitize.ts'
 import { LedgerView, StatusRow, TranscriptView } from './transcript-view.ts'
@@ -62,6 +63,21 @@ export function workspaceAutocomplete(
   return new WorkspaceAutocomplete(commands, basePath)
 }
 
+/** Status glyph and color per todo status, mirroring the Web plan strip. */
+const TODO_GLYPH: Readonly<Record<TodoItem['status'], { glyph: string; token: 'success' | 'accent' | 'dim' }>> = {
+  completed: { glyph: '✓', token: 'success' },
+  in_progress: { glyph: '◐', token: 'accent' },
+  pending: { glyph: '○', token: 'dim' },
+}
+
+/** One todo row for the overlay: status glyph + sanitized content. */
+function todoRows(todos: readonly TodoItem[], theme: SemanticTheme): string[] {
+  return todos.map((todo) => {
+    const style = TODO_GLYPH[todo.status]
+    return ` ${theme.fg(style.token, style.glyph)} ${sanitizeText(todo.content)}`
+  })
+}
+
 /** Presenter callbacks the runner supplies. */
 export interface PresenterOptions {
   /** Called with each editor-submitted input line. */
@@ -87,6 +103,8 @@ export class TuiPresenter {
   readonly editor: Editor
   /** The transcript scroll viewport, for runner-driven history paging. */
   readonly transcriptScroll: ScrollView
+  /** The transcript view; the runner toggles injected-context expansion. */
+  private readonly view: TranscriptView
   private started = false
   /** The live interaction overlay, when one is asking. */
   private overlay: { handle: OverlayHandle } | undefined
@@ -134,10 +152,19 @@ export class TuiPresenter {
     if (!isViewportTUI(this.tui)) {
       throw new Error('tui-renderer: the presenter requires a viewport TUI')
     }
-    const view = new TranscriptView(transcript, this.theme)
+    const view = new TranscriptView(transcript, this.theme, {
+      empty: () => this.welcomeLines(transcript),
+    })
+    this.view = view
     const status = new StatusRow(width => this.renderStatus(width))
     this.statusRow = status
-    this.metaRow = new MetaRow(() => this.metaData(), this.theme)
+    // The welcome block already shows model/workspace/preset; the meta row
+    // would duplicate them on the empty transcript, so it hides until the
+    // first message folds.
+    this.metaRow = new MetaRow(
+      () => (transcript.state.items.length === 0 ? {} : this.metaData()),
+      this.theme,
+    )
     this.editor = new Editor(this.tui, this.theme.editor)
     if (autocomplete !== undefined) this.editor.setAutocompleteProvider(autocomplete)
     this.editor.onSubmit = (line) => {
@@ -169,7 +196,9 @@ export class TuiPresenter {
         component: this.editor,
         basis: 'auto',
         shrink: 1,
-        minSize: 1,
+        // A multiline draft (ctrl+j / shift+enter) needs more than one row;
+        // minSize 3 keeps a few lines visible even in a tight terminal.
+        minSize: 3,
       },
     ])
     this.tui.setLayoutRoot(this.layoutRoot)
@@ -224,6 +253,21 @@ export class TuiPresenter {
   /** Request a halt of the current drive loop with an arbitrary payload. */
   halt(outcome: unknown): void {
     this.haltHandler?.(outcome)
+  }
+
+  /** Whether injected-context rows currently render expanded. */
+  get contextExpanded(): boolean {
+    return this.view.contextExpanded
+  }
+
+  /**
+   * Expand or collapse the injected-context rows (workspace instructions,
+   * skill catalog) in the transcript. Rows default collapsed, matching the
+   * Web surface's disclosure rows; Ctrl+O toggles.
+   */
+  toggleContextExpanded(): void {
+    this.view.contextExpanded = !this.view.contextExpanded
+    this.tui.requestRender()
   }
 
   /**
@@ -366,7 +410,7 @@ export class TuiPresenter {
       { component: scroll, basis: 0, grow: 1, minSize: 1 },
       { component: this.statusRow, basis: 'auto', shrink: 1, minSize: 1 },
       { component: this.metaRow, basis: 'auto', shrink: 1, minSize: 1 },
-      { component: this.editor, basis: 'auto', shrink: 1, minSize: 1 },
+      { component: this.editor, basis: 'auto', shrink: 1, minSize: 3 },
     ]))
   }
 
@@ -595,6 +639,71 @@ export class TuiPresenter {
       }
       return false
     })
+  }
+
+  /**
+   * Open the todo-list overlay: one status-glyph row per todo, scrollable;
+   * ↑/↓ scroll, Escape or Enter closes and restores the editor. The list is
+   * re-read before every render, so live `todo/write` snapshots update the
+   * overlay while it is open.
+   * @param get - the current todo list, re-read per render.
+   */
+  openTodos(get: () => readonly TodoItem[]): void {
+    if (this.overlay !== undefined) return
+    const body = new Text('', 0, 0)
+    const scroll = new ScrollView(body)
+    const dialog = new DialogBox(
+      this.theme,
+      () => `todos · ${get().length}`,
+      [scroll],
+      () => '↑/↓ scroll · esc / enter close',
+    )
+    const close = this.mountOverlay(dialog)
+    const render = (): void => {
+      body.setText(todoRows(get(), this.theme).join('\n'))
+    }
+    render()
+    const offKey = this.onKey((data) => {
+      if (data === '\x1b' || data === '\r' || data === '\n') {
+        offKey()
+        close()
+        return true
+      }
+      if (data === '\x1b[A') {
+        scroll.scrollBy(-1)
+        this.tui.requestRender()
+        return true
+      }
+      if (data === '\x1b[B') {
+        scroll.scrollBy(1)
+        this.tui.requestRender()
+        return true
+      }
+      return false
+    })
+  }
+
+  /**
+   * Welcome lines for the empty transcript: provider/model (from the folded
+   * request header, falling back to the live meta row), workspace, preset,
+   * and hint lines for the built-in slash commands. Rendered only while the
+   * transcript has no items; the first folded event replaces them.
+   */
+  private welcomeLines(transcript: Transcript): string[] {
+    const data = this.metaData()
+    const header = transcript.state.header
+    const model = header !== undefined
+      ? { provider: header.config.provider, model: header.config.model }
+      : data.model
+    const lines: string[] = []
+    lines.push(model === undefined
+      ? this.theme.fg('accent', 'dsh')
+      : this.theme.fg('accent', `dsh · ${model.provider}/${model.model}`))
+    if (data.cwd !== undefined) lines.push(this.theme.fg('dim', `workspace: ${data.cwd}`))
+    if (data.preset !== undefined) lines.push(this.theme.fg('dim', `preset: ${data.preset}`))
+    lines.push(this.theme.fg('dim', 'type a message to start · ? keys'))
+    lines.push(this.theme.fg('dim', '/preset · /todos · /workspace <path>'))
+    return lines
   }
 
   /**

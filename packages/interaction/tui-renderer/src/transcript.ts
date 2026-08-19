@@ -131,6 +131,8 @@ interface MutableAssistantItem {
   turn: number
   step: number
   text: string
+  /** Joined reasoning blocks of the assembled message, when one carried any. */
+  thinking?: string
   usage?: TokenUsage
   message?: AssistantMessage
   streaming: boolean
@@ -143,6 +145,8 @@ export interface AssistantItem extends TranscriptItemBase {
   readonly step: number
   /** Visible text: chunk deltas while streaming, the assembled content at finalization. */
   readonly text: string
+  /** Joined reasoning blocks of the assembled message, when one carried any. */
+  readonly thinking?: string
   /** Token accounting from the assembled message, when the adapter reported it. */
   readonly usage?: TokenUsage
   /** Assembled message, present once the stream finalized. */
@@ -208,8 +212,42 @@ export interface CommandItem extends TranscriptItemBase {
   readonly result?: CommandResult
 }
 
+/**
+ * One subagent lifecycle edge observed by the runner from the parent-scoped
+ * `subagent/start` / `subagent/end` cordis events. Edges are not session
+ * events, so they carry no seq; the fold records them with `seq: 0`.
+ */
+export interface SubagentLifecycleEdge {
+  readonly kind: 'start' | 'end'
+  /** Run id pairing the start edge with its end edge. */
+  readonly runId: string
+  /** Provider name that ran the child. */
+  readonly provider: string
+  /** The child agent's session id. */
+  readonly id: string
+  /** Edge timestamp in Unix epoch milliseconds. */
+  readonly time: number
+  /** Settled outcome failure, when the run failed. */
+  readonly error?: string
+}
+
+/** A subagent activity line: opened by `subagent/start`, settled by `subagent/end`. */
+export interface SubagentItem extends TranscriptItemBase {
+  readonly kind: 'subagent'
+  /** Run id pairing the lifecycle edge pair. */
+  readonly runId: string
+  /** Provider name that ran the child. */
+  readonly provider: string
+  /** The child agent's session id. */
+  readonly id: string
+  /** Lifecycle state; `'running'` until the paired end edge merges in place. */
+  readonly state: 'running' | 'done' | 'failed'
+  /** Settled outcome failure, when the run failed. */
+  readonly error?: string
+}
+
 /** One item in the folded transcript surface. */
-export type TranscriptItem = UserItem | AssistantItem | ToolItem | TurnItem | CommandItem
+export type TranscriptItem = UserItem | AssistantItem | ToolItem | TurnItem | CommandItem | SubagentItem
 
 /** Readonly projection of the folded transcript and its side state. */
 export interface TranscriptState {
@@ -348,12 +386,19 @@ export class Transcript {
       }
       case 'assistant/message': {
         const { turn, step, message, usage } = event.data
+        // Reasoning blocks ride the assembled message only; the streaming
+        // chunk path stays text-only (mirrors pushMessageLedgerCell).
+        const thinking = message.content
+          .filter(block => block.type === 'reasoning')
+          .map(block => block.text ?? '')
+          .join('\n')
         if (usage !== undefined) this.accumulateUsage(usage)
         if (isAppendSurfaceEvent(event)) {
           if (this.pending !== undefined && this.pending.turn === turn && this.pending.step === step) {
             this.pending.text = textOf(message.content)
             if (usage !== undefined) this.pending.usage = usage
             this.pending.message = message
+            if (thinking !== '') this.pending.thinking = thinking
             this.pending.streaming = false
             this.pending = undefined
           } else {
@@ -366,6 +411,7 @@ export class Transcript {
               step,
               text: textOf(message.content),
               ...(usage !== undefined ? { usage } : {}),
+              ...(thinking !== '' ? { thinking } : {}),
               message,
               streaming: false,
             })
@@ -545,6 +591,30 @@ export class Transcript {
         // Log-only or plugin-extended event types the transcript does not
         // surface. Merge-extensible union: no assertNever here.
         break
+    }
+    for (const listener of this.listeners) listener()
+  }
+
+  /**
+   * Apply one subagent lifecycle edge, called by the runner from its
+   * parent-scoped `subagent/start` / `subagent/end` listeners. `start`
+   * appends a running activity item; `end` merges the settled state into
+   * the matching item in place, like command results. Edges are not session
+   * events, so folded items record `seq: 0`.
+   */
+  subagentLifecycle(edge: SubagentLifecycleEdge): void {
+    if (edge.kind === 'start') {
+      this.items.push({
+        kind: 'subagent',
+        seq: 0,
+        time: edge.time,
+        runId: edge.runId,
+        provider: edge.provider,
+        id: edge.id,
+        state: 'running',
+      })
+    } else {
+      this.mergeSubagentEnd(edge)
     }
     for (const listener of this.listeners) listener()
   }
@@ -744,6 +814,39 @@ export class Transcript {
       }
     }
     this.items.push({ kind: 'command', seq, time, commandId, name: '', args: '', result })
+  }
+
+  /**
+   * Merge a settled outcome into its open subagent card, creating the card
+   * from the end edge when the pairing start was not folded (defensive; the
+   * start precedes its end in every real run). The edge's identity fields
+   * match the start by contract, so only the state (and failure) merge.
+   */
+  private mergeSubagentEnd(edge: SubagentLifecycleEdge): void {
+    const state: SubagentItem['state'] = edge.error === undefined ? 'done' : 'failed'
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      const item = this.items[i]
+      if (item === undefined) continue
+      if (item.kind === 'subagent' && item.runId === edge.runId && item.state === 'running') {
+        // In-place merge, mirroring closeTurn/mergeToolResult: the
+        // `kind === 'subagent'` narrow proved the shape; readonly is the
+        // only wall (the view cache keys on item identity).
+        const mutable = item as SubagentItem & { state: SubagentItem['state']; error?: string }
+        mutable.state = state
+        if (edge.error !== undefined) mutable.error = edge.error
+        return
+      }
+    }
+    this.items.push({
+      kind: 'subagent',
+      seq: 0,
+      time: edge.time,
+      runId: edge.runId,
+      provider: edge.provider,
+      id: edge.id,
+      state,
+      ...(edge.error !== undefined ? { error: edge.error } : {}),
+    })
   }
 
   /** Record a compaction replacement; the folded transcript is untouched. */

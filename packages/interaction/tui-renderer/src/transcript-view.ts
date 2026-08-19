@@ -17,11 +17,12 @@
  */
 
 import { Box, Markdown, Text, type Component } from '@earendil-works/pi-tui'
-import type { Transcript, TranscriptItem, ToolItem } from './transcript.ts'
+import type { AssistantItem, Transcript, TranscriptItem, ToolItem } from './transcript.ts'
 import { capped, formatItem, sanitizedLines } from './format.ts'
 import { sanitizeText } from './sanitize.ts'
 import type { ColorToken, SemanticTheme } from './theme.ts'
 import type { JsonValue } from '@williamcodebox/omd-session'
+import type { MessageSource } from '@williamcodebox/omd-llm'
 import { formatElapsedSeconds, type TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
 
 /** Per-item-kind line stylers; each maps one sanitized display line. */
@@ -70,12 +71,62 @@ function fingerprintOf(item: TranscriptItem): string {
       return `turn:${item.end?.reason.kind ?? 'open'}`
     case 'command':
       return `command:${item.name}:${item.result?.kind ?? 'open'}`
+    case 'subagent':
+      return `subagent:${item.state}:${item.error ?? ''}`
   }
 }
 
 /** Build the Markdown component for one message item's sanitized text. */
 function markdownFor(text: string, theme: SemanticTheme): Markdown {
   return new Markdown(sanitizeText(text), 0, 0, theme.markdown)
+}
+
+/** Cap for the dim reasoning preview above a finalized assistant message. */
+const THINKING_LINE_CAP = 10
+
+/**
+ * Dim reasoning lines for one finalized assistant item: the joined
+ * `reasoning` blocks capped to {@link THINKING_LINE_CAP} lines with an
+ * explicit continuation note when truncated. Read per render so the cached
+ * assistant component picks up thinking set at finalization.
+ */
+function thinkingLines(item: AssistantItem, theme: SemanticTheme): string[] {
+  if (item.thinking === undefined) return []
+  const lines = item.thinking.split('\n')
+  const shown = lines.slice(0, THINKING_LINE_CAP)
+  const hidden = lines.length - shown.length
+  const out = shown.map(line => theme.fg('dim', sanitizeText(line)))
+  if (hidden > 0) {
+    out.push(theme.fg('dim', sanitizeText(`… ${hidden} more reasoning line${hidden === 1 ? '' : 's'}`)))
+  }
+  return out
+}
+
+/** Whether a user item is injected context rather than a direct user prompt. */
+function isInjectedContext(source: MessageSource | undefined): source is Exclude<MessageSource, { kind: 'user' }> {
+  return source !== undefined && source.kind !== 'user'
+}
+
+/**
+ * Short display label for one injected-context source: the loaded file
+ * paths for workspace instructions, the catalog name for skills, otherwise
+ * the source kind. Mirrors the Web provenance labels. Source kinds are
+ * merge-extensible, so kinds not visible in this package's compilation
+ * compare through the string form.
+ */
+function contextLabel(source: MessageSource): string {
+  const kind = String(source.kind)
+  if (kind === 'agent-instructions') {
+    const changes = (source as { changes?: ReadonlyArray<{ readonly path?: string }> }).changes
+    const paths = changes?.map(change => change.path).filter((path): path is string => path !== undefined)
+    return paths !== undefined && paths.length > 0 ? paths.join(', ') : 'workspace instructions'
+  }
+  if (kind === 'skill-catalog') return 'skill catalog'
+  if (kind === 'skill-invocation') {
+    const name = (source as { name?: string }).name
+    return name === undefined ? 'skill' : `skill ${name}`
+  }
+  return source.kind
 }
 
 /** One file diff embedded in a tool result's `meta`. */
@@ -235,14 +286,32 @@ function persistentBg(bg: (text: string) => string): (text: string) => string {
   return text => bg(text.replace(/\x1b\[0m/g, `\x1b[0m${fill}`))
 }
 
+/** Options controlling the transcript view's rendering. */
+export interface TranscriptViewOptions {
+  /**
+   * Lines rendered instead of an empty body while the transcript has no
+   * items (the welcome screen). Re-read before every render, so the
+   * presenter's meta row and header can update the welcome live.
+   */
+  empty?: () => string[]
+}
+
 /** Render the folded transcript items as sanitized display lines. */
 export class TranscriptView implements Component {
   private readonly semantic: SemanticTheme | undefined
   private readonly cache = new Map<TranscriptItem, CachedRender>()
+  /**
+   * Whether injected-context user rows (workspace instructions, skill
+   * catalog) render in full. Rows default collapsed to one dim line,
+   * matching the Web surface's collapsed-by-default disclosure rows; the
+   * presenter's Ctrl+O toggle flips this.
+   */
+  contextExpanded = false
 
   constructor(
     private readonly transcript: Transcript,
     semantic?: SemanticTheme,
+    private readonly options: TranscriptViewOptions = {},
   ) {
     this.semantic = semantic
   }
@@ -251,6 +320,12 @@ export class TranscriptView implements Component {
   invalidate(): void {}
 
   render(width: number): string[] {
+    // The welcome state owns an empty transcript: with nothing folded yet,
+    // the empty callback's lines render instead of a blank viewport.
+    if (this.transcript.state.items.length === 0) {
+      const empty = this.options.empty
+      if (empty !== undefined) return empty()
+    }
     if (this.semantic === undefined) {
       const lines: string[] = []
       for (const item of this.transcript.state.items) {
@@ -281,7 +356,12 @@ export class TranscriptView implements Component {
         const card = new Box(1, 1, persistentBg(text => theme.bg('userBg', text)))
         const md = markdownFor(item.text, theme)
         card.addChild(md)
-        return (width) => card.render(width)
+        const full = (width: number): string[] => card.render(width)
+        if (!isInjectedContext(item.source)) return full
+        // Injected context folds to one dim line until Ctrl+O expands it.
+        // The flag is read per render, so the cached closure follows toggles.
+        const collapsed = [theme.fg('dim', sanitizeText(`▸ context · ${contextLabel(item.source)} · ctrl+o expands`))]
+        return (width) => this.contextExpanded ? full(width) : collapsed
       }
       case 'assistant': {
         const md = markdownFor(item.text, theme)
@@ -299,7 +379,11 @@ export class TranscriptView implements Component {
               lastSetAt = now
             }
           }
-          return md.render(width)
+          // Thinking arrives with finalization, so it is read per render
+          // (not captured at build time) and always sits above the text.
+          const thinking = thinkingLines(item, theme)
+          if (thinking.length === 0) return md.render(width)
+          return [...thinking, ...md.render(width)]
         }
       }
       case 'tool': {
@@ -307,7 +391,30 @@ export class TranscriptView implements Component {
         return (width) => card.render(width)
       }
       case 'turn': {
-        const lines = formatItem(item).map(line => theme.fg('dim', sanitizeText(line)))
+        const end = item.end
+        const bracket = formatItem(item)
+        if (end !== undefined && end.reason.kind === 'error') {
+          const lines = bracket.map(line => theme.fg('error', sanitizeText(line)))
+          lines.push(theme.fg('error', sanitizeText(end.reason.error.message)))
+          return () => lines
+        }
+        if (end !== undefined && end.reason.kind === 'max-tokens') {
+          const lines = bracket.map(line => theme.fg('warning', sanitizeText(line)))
+          return () => lines
+        }
+        const lines = bracket.map(line => theme.fg('dim', sanitizeText(line)))
+        return () => lines
+      }
+      case 'subagent': {
+        const token: ColorToken = item.state === 'running'
+          ? 'dim'
+          : item.state === 'done' ? 'success' : 'error'
+        const line = item.state === 'running'
+          ? `⟳ subagent ${item.provider}`
+          : item.state === 'done'
+            ? `✓ subagent ${item.provider}`
+            : `✗ subagent ${item.provider}${item.error === undefined ? '' : ` ${item.error}`}`
+        const lines = [theme.fg(token, sanitizeText(line))]
         return () => lines
       }
       case 'command': {

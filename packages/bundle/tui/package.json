@@ -63,6 +63,7 @@
     "@williamcodebox/omd-llm": "workspace:^",
     "@williamcodebox/omd-permission-presets": "workspace:^",
     "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
     "@williamcodebox/omd-user-approval": "workspace:^",
     "@williamcodebox/omd-user-questions": "workspace:^",
     "@williamcodebox/cordis": "workspace:^"
@@ -76,6 +77,7 @@
     "@williamcodebox/omd-llm": "workspace:^",
     "@williamcodebox/omd-permission-presets": "workspace:^",
     "@williamcodebox/omd-session": "workspace:^",
+    "@williamcodebox/omd-subagent": "workspace:^",
     "@williamcodebox/omd-user-approval": "workspace:^",
     "@williamcodebox/omd-user-questions": "workspace:^",
     "@williamcodebox/cordis": "workspace:^"

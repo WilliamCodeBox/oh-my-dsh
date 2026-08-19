@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { formatCount, formatItem, formatStatus, sanitizedLines } from '../src/format.ts'
-import type { AssistantItem, ToolItem, TranscriptState, TurnItem, UserItem } from '../src/transcript.ts'
+import type { AssistantItem, SubagentItem, ToolItem, TranscriptState, TurnItem, UserItem } from '../src/transcript.ts'
 
 const user = (text: string): UserItem => ({ kind: 'user', seq: 1, time: 1000, text, source: { kind: 'user' }, turn: 1 })
 const assistant = (text: string, streaming = false): AssistantItem => ({
@@ -57,6 +57,17 @@ describe('formatItem', () => {
   it('renders turn brackets with the ending reason', () => {
     expect(formatItem(turn(2))).toEqual(['-- turn 2 --'])
     expect(formatItem(turn(2, { time: 5000, reason: { kind: 'completed' } }))).toEqual(['-- turn 2 completed --'])
+  })
+
+  it('renders subagent activity lines with provider and state', () => {
+    const subagent = (state: SubagentItem['state'], error?: string): SubagentItem => ({
+      kind: 'subagent', seq: 0, time: 1000, runId: 'r-1', provider: 'task', id: 'child-1', state,
+      ...(error !== undefined ? { error } : {}),
+    })
+    expect(formatItem(subagent('running'))).toEqual(['subagent task running'])
+    expect(formatItem(subagent('done'))).toEqual(['subagent task done'])
+    // The identity path carries no failure text; that is a themed concern.
+    expect(formatItem(subagent('failed', 'boom'))).toEqual(['subagent task failed'])
   })
 })
 

@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-tui-injected-context-folding.md
+2026-08-18-tui-injected-context-folding.md: 76dbae7238ee0a9be89cd253287d5294290a26cd
+2026-08-18-tui-injected-context-folding.zh.md: cc627549d2b69bf8790d5e836776169c7df0e9c7
