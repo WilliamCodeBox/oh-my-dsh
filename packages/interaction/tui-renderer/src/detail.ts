@@ -33,8 +33,11 @@ export function cappedLines(text: string, cap: number = DETAIL_LINE_CAP): string
   return [...lines.slice(0, cap), `… (+${lines.length - cap} more lines)`]
 }
 
+/** Tabs the terminal detail overlay renders: {@link detailTabsFor}'s output, minus the Web-only tabs. */
+export type RenderedDetailTab = Exclude<DetailTab, 'options' | 'usage'>
+
 /** One detail tab's body for one cell. */
-export function detailBody(cell: TrajectoryCellProps, tab: DetailTab): string {
+export function detailBody(cell: TrajectoryCellProps, tab: RenderedDetailTab): string {
   switch (tab) {
     case 'overview': {
       const lines = [cell.text]
@@ -63,10 +66,6 @@ export function detailBody(cell: TrajectoryCellProps, tab: DetailTab): string {
       return toolsBody(cell.promptDetail)
     case 'diff':
       return diffBody(cell)
-    /* v8 ignore next 2 -- unreachable: no detailTabsFor branch emits these ids */
-    case 'options':
-    case 'usage':
-      return ''
   }
 }
 

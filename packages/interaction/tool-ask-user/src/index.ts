@@ -14,7 +14,9 @@ export const name = 'tool-ask-user'
 export const inject = ['tools', 'userQuestions']
 
 const description = 'Ask the user a concise question when you need confirmation, a choice, or missing information before proceeding. '
-  + 'Send one or more questions, each with a stable id that will be echoed in the answer.'
+  + 'Send one or more questions, each with a stable id that will be echoed in the answer. '
+  + 'Options must be written in plain user language from the user\'s perspective — never repo paths, module names, or implementation vocabulary. '
+  + 'Split options by the outcome the user wants (for example view, modify, or explain), not by which part of the code would change.'
 
 export function apply(ctx: Context): void {
   ctx.tools.register(defineTool({
@@ -42,7 +44,7 @@ export function apply(ctx: Context): void {
                 type: 'object',
                 additionalProperties: true,
                 properties: {
-                  label: { type: 'string', required: true, description: 'Short user-facing option label.' },
+                  label: { type: 'string', required: true, description: 'Short user-facing option label in plain language; no paths or internal names.' },
                   description: { type: 'string', description: 'One sentence explaining the tradeoff or impact.' },
                 },
               },

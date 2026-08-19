@@ -10,7 +10,6 @@
  */
 
 import {
-  Box,
   Editor,
   Input,
   ProcessTerminal,
@@ -38,8 +37,9 @@ import type { Component } from '@earendil-works/pi-tui'
 import type { Transcript } from './transcript.ts'
 import { sanitizeText } from './sanitize.ts'
 import { LedgerView, StatusRow, TranscriptView } from './transcript-view.ts'
-import { cappedLines, detailBody, KIND_LABEL } from './detail.ts'
+import { cappedLines, detailBody, KIND_LABEL, type RenderedDetailTab } from './detail.ts'
 import { MetaRow, type MetaRowData } from './meta-row.ts'
+import { DialogBox } from './overlay-box.ts'
 import { WorkspaceAutocomplete } from './autocomplete.ts'
 import { darkTheme, type SemanticTheme } from './theme.ts'
 import { detailTabsFor, formatElapsedSeconds, type DetailTabItem, type TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
@@ -321,7 +321,14 @@ export class TuiPresenter {
         if (index !== -1) this.overlayQueue.splice(index, 1)
       }
     }
-    const handle = this.tui.showOverlay(component)
+    // Bottom-anchored, opaque dialogs: interaction modals rise from the
+    // bottom edge like the Web surface's ask panel, capped at 70% of the
+    // terminal so a long option list cannot swallow the screen.
+    const handle = this.tui.showOverlay(component, {
+      anchor: 'bottom-center',
+      margin: 1,
+      maxHeight: '70%',
+    })
     this.overlay = { handle }
     if (focus !== undefined) this.tui.setFocus(focus)
     let closed = false
@@ -460,20 +467,21 @@ export class TuiPresenter {
     if (this.overlay !== undefined) return
     const tabs = detailTabsFor(cell)
     this.detailTabIndex = 0
-    const card = new Box(1, 1)
-    const title = new Text('', 0, 0)
     const tabRow = new Text('', 0, 0)
     const body = new Text('', 0, 0)
-    card.addChild(title)
-    card.addChild(tabRow)
-    card.addChild(new Text('', 0, 0))
-    card.addChild(body)
-    const close = this.mountOverlay(card)
+    const dialog = new DialogBox(
+      this.theme,
+      () => `${KIND_LABEL[cell.kind]} #${cell.index} · ${formatElapsedSeconds(cell.timeSeconds)}`,
+      [tabRow, new Text('', 0, 0), body],
+      () => '←/→ switch tab · esc close',
+    )
+    const close = this.mountOverlay(dialog)
     const render = (): void => {
-      title.setText(this.theme.fg('accent', `${KIND_LABEL[cell.kind]} #${cell.index} · ${formatElapsedSeconds(cell.timeSeconds)}`))
       tabRow.setText(this.tabLine(tabs))
       const tabId = tabs[Math.min(this.detailTabIndex, Math.max(0, tabs.length - 1))]?.id
-      body.setText(cappedLines(detailBody(cell, tabId ?? 'overview')).join('\n'))
+      // detailTabsFor never emits the Web-only 'options'/'usage' tabs; the
+      // 'overview' fallback is always in its output.
+      body.setText(cappedLines(detailBody(cell, (tabId ?? 'overview') as RenderedDetailTab)).join('\n'))
     }
     render()
     this.detailOverlayActive = true
@@ -520,13 +528,17 @@ export class TuiPresenter {
     items: SelectItem[],
   ): Promise<string | undefined> {
     const { promise, resolve } = Promise.withResolvers<string | undefined>()
-    const card = new Box(1, 1)
-    card.addChild(new Text(sanitizeText(title), 0, 0))
-    if (detail !== undefined && detail !== '') card.addChild(new Text(sanitizeText(detail), 0, 0))
-    card.addChild(new Text('', 0, 0))
     const list = new SelectList(items, 5, this.theme.editor.selectList)
-    card.addChild(list)
-    const close = this.mountOverlay(card, list)
+    const dialog = new DialogBox(
+      this.theme,
+      () => title,
+      [
+        ...(detail !== undefined && detail !== '' ? [new Text(sanitizeText(detail), 0, 0)] : []),
+        list,
+      ],
+      () => '↑/↓ choose · enter confirm · esc cancel',
+    )
+    const close = this.mountOverlay(dialog, list)
     list.onSelect = (item) => { close(); resolve(item.value) }
     list.onCancel = () => { close(); resolve(undefined) }
     this.tui.requestRender()
@@ -540,11 +552,16 @@ export class TuiPresenter {
   private promptText(title: string, detail: string | undefined): Promise<string | undefined> {
     const { promise, resolve } = Promise.withResolvers<string | undefined>()
     const input = new Input()
-    const card = new Box(1, 1)
-    card.addChild(new Text(sanitizeText(title), 0, 0))
-    if (detail !== undefined && detail !== '') card.addChild(new Text(sanitizeText(detail), 0, 0))
-    card.addChild(input)
-    const close = this.mountOverlay(card, input)
+    const dialog = new DialogBox(
+      this.theme,
+      () => title,
+      [
+        ...(detail !== undefined && detail !== '' ? [new Text(sanitizeText(detail), 0, 0)] : []),
+        input,
+      ],
+      () => 'enter submit · esc cancel',
+    )
+    const close = this.mountOverlay(dialog, input)
     input.onSubmit = (value) => { close(); resolve(value) }
     input.onEscape = () => { close(); resolve(undefined) }
     this.tui.requestRender()
@@ -563,14 +580,13 @@ export class TuiPresenter {
    */
   showHelp(entries: readonly { key: string; description: string }[]): void {
     if (this.overlay !== undefined) return
-    const card = new Box(1, 1)
-    card.addChild(new Text(this.theme.fg('accent', 'Keys'), 0, 0))
-    for (const entry of entries) {
-      card.addChild(new Text(`  ${entry.key.padEnd(20)} ${entry.description}`, 0, 0))
-    }
-    card.addChild(new Text('', 0, 0))
-    card.addChild(new Text(this.theme.fg('dim', 'esc / enter to close'), 0, 0))
-    const close = this.mountOverlay(card)
+    const dialog = new DialogBox(
+      this.theme,
+      () => 'Keys',
+      entries.map(entry => new Text(`  ${entry.key.padEnd(20)} ${entry.description}`, 0, 0)),
+      () => 'esc / enter to close',
+    )
+    const close = this.mountOverlay(dialog)
     const offKey = this.onKey((data) => {
       if (data === '\x1b' || data === '\r' || data === '\n') {
         offKey()

@@ -427,18 +427,33 @@ export class Transcript {
       }
       case 'tool/code-dispatch': {
         const { subCallId, isError, content } = event.data
-        const cellIndex = this.subtoolCellByCallId.get(subCallId)
         const text = textOf(content)
-        if (cellIndex !== undefined) {
-          const cell = this.ledger[cellIndex]
-          if (cell !== undefined && cell.kind === 'subtool') {
-            this.ledger[cellIndex] = {
-              ...cell,
-              outputDetail: text,
-              isError,
-              timeSeconds: Math.max(0, (event.time - (cell.startedAt ?? event.time)) / 1000),
-              result: isError ? 'error' : text === '' ? 'No output' : firstLine(text),
-            }
+        const summary = text === '' ? 'No output' : firstLine(text)
+        const cellIndex = this.subtoolCellByCallId.get(subCallId)
+        if (cellIndex === undefined) {
+          // Defensive: the pairing start was not folded (mirrors
+          // mergeToolLedgerCell); the cell records the settled result alone.
+          this.subtoolCellByCallId.set(subCallId, this.pushLedgerCell({
+            kind: 'subtool',
+            callId: subCallId,
+            text: isError ? 'subtool error' : summary,
+            sourceSeq: event.seq,
+            outputDetail: text,
+            isError,
+            timeSeconds: null,
+            startedAt: event.time,
+            result: isError ? 'error' : summary,
+          }))
+          break
+        }
+        const cell = this.ledger[cellIndex]
+        if (cell !== undefined && cell.kind === 'subtool') {
+          this.ledger[cellIndex] = {
+            ...cell,
+            outputDetail: text,
+            isError,
+            timeSeconds: Math.max(0, (event.time - (cell.startedAt ?? event.time)) / 1000),
+            result: isError ? 'error' : summary,
           }
         }
         break

@@ -40,8 +40,8 @@ export type ColorToken =
   | 'diffContext'
   | 'diffHunk'
 
-/** Background roles: message layering and tool-card state. */
-export type BgToken = 'userBg'
+/** Background roles: message layering, tool-card state, and dialog chrome. */
+export type BgToken = 'userBg' | 'modalBg'
 
 /** One theme's palette: 256-color index per semantic role. */
 export interface ThemePalette {
@@ -106,6 +106,7 @@ const DARK_PALETTE: ThemePalette = {
   },
   bg: {
     userBg: 237,
+    modalBg: 235,
   },
 }
 
@@ -138,6 +139,7 @@ const LIGHT_PALETTE: ThemePalette = {
   },
   bg: {
     userBg: 255,
+    modalBg: 255,
   },
 }
 

@@ -442,7 +442,7 @@ describe('Transcript ledger', () => {
     })
   })
 
-  it('marks a failed subtool result and drops a stray settle without a start', () => {
+  it('marks a failed subtool result and records a stray settle without a start defensively', () => {
     const transcript = new Transcript()
     transcript.fold(ev('tool/code-dispatch-start', {
       rootCallId: CallId('root'), parentCallId: CallId('root'),
@@ -459,9 +459,14 @@ describe('Transcript ledger', () => {
       isError: false, content: [{ type: 'text', text: 'never started' }],
     }, 3))
 
-    const [subtool] = transcript.state.ledger
+    const [subtool, stray] = transcript.state.ledger
     expect(subtool).toMatchObject({ kind: 'subtool', result: 'error', isError: true, timeSeconds: 1 })
-    expect(transcript.state.ledger).toHaveLength(1)
+    expect(stray).toMatchObject({
+      kind: 'subtool', callId: 'stray',
+      text: 'never started', outputDetail: 'never started', result: 'never started',
+      isError: false, timeSeconds: null, startedAt: 3000,
+    })
+    expect(transcript.state.ledger).toHaveLength(2)
   })
 
   it('tracks the compaction lifecycle with summary content and failure', () => {

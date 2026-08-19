@@ -7,8 +7,10 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import type { Terminal } from '@earendil-works/pi-tui'
+import { TuiAltScreen } from '@earendil-works/pi-tui'
 import { Transcript } from '../src/transcript.ts'
 import { TuiPresenter } from '../src/presenter.ts'
+import { DialogBox } from '../src/overlay-box.ts'
 import { TranscriptView } from '../src/transcript-view.ts'
 import type { TrajectoryCellProps } from '@williamcodebox/omd-client-trajectory-model'
 
@@ -117,6 +119,16 @@ describe('TuiPresenter', () => {
     transcript.fold({ type: 'turn/start', seq: 1, time: 1000, data: { turn: 1 } } as never)
     const lines = new TranscriptView(transcript).render(80)
     expect(lines.join('\n')).toContain('-- turn 1 --')
+  })
+
+  it('toggles injected-context expansion on the transcript view', () => {
+    const presenter = makePresenter(new FakeTerminal(), new Transcript())
+    expect(presenter.contextExpanded).toBe(false)
+    presenter.toggleContextExpanded()
+    expect(presenter.contextExpanded).toBe(true)
+    presenter.toggleContextExpanded()
+    expect(presenter.contextExpanded).toBe(false)
+    presenter.stop()
   })
 
   it('consumes a raw Ctrl+C key before other listeners', () => {
@@ -394,5 +406,16 @@ describe('TuiPresenter ledger', () => {
     presenter.openLedger(() => [], () => undefined)
     expect(presenter.ledgerOpen).toBe(false)
     presenter.stop()
+  })
+
+  it('mounts interaction overlays bottom-anchored with the dialog chrome', () => {
+    const showOverlay = vi.spyOn(TuiAltScreen.prototype, 'showOverlay')
+    const presenter = makePresenter(new FakeTerminal(), new Transcript())
+    presenter.showHelp([{ key: 'j/k', description: 'scroll' }])
+    expect(showOverlay).toHaveBeenCalledWith(
+      expect.any(DialogBox),
+      { anchor: 'bottom-center', margin: 1, maxHeight: '70%' },
+    )
+    showOverlay.mockRestore()
   })
 })
